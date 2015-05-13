@@ -1,0 +1,10 @@
+Package: evolvability
+Type: Package
+Title: Calculation of Evolvability Parameters
+Version: 1.1
+Authors@R: person("Geir H.", "Bolstad", email = "geir.bolstad@nina.no",
+                  role = c("aut", "cre"))
+Description: An implementation of the evolvability parameters defined in Hansen and Houle (2008).
+License: GPL (>= 2)
+Imports:
+    coda
