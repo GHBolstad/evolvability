@@ -1,3 +1,4 @@
+#' @export
 evolvabilityMeansMCMC = function(G_mcmc){
   X = list()
   X$post.dist = 
@@ -19,13 +20,14 @@ evolvabilityMeansMCMC = function(G_mcmc){
               c(e_mean = e_mean, e_min = e_min, e_max = e_max, 
                 r_mean = r_mean, c_mean = c_mean, a_mean = a_mean, i_mean = i_mean)}
     ))
-  X$post.dist = as.mcmc(X$post.dist)
-  X$post.medians = cbind(median = apply(X$post.dist, 2, median), HPDinterval(X$post.dist))
+  X$post.dist = coda::as.mcmc(X$post.dist)
+  X$post.medians = cbind(median = apply(X$post.dist, 2, median), coda::HPDinterval(X$post.dist))
   X$call = match.call()
   class(X) = "evolvabilityMeansMCMC"
   X
 }
 
+#' @export
 print.evolvabilityMeansMCMC = function(x, ...){
   cat("Call:\n")
   print(x$call)

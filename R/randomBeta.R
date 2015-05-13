@@ -16,7 +16,7 @@
 #' @examples
 #' ## Two vectors of dimension 3:
 #' randomBeta(n = 2, k = 3)  
-
+#' @export
 
 randomBeta = function(n = 1, k = 2){
   X = matrix(rnorm(n*k), ncol = n)

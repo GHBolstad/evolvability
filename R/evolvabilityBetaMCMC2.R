@@ -1,3 +1,4 @@
+#' @export
 evolvabilityBetaMCMC2 = function(G_mcmc, Beta_mcmc, post.dist=FALSE){
   G_Beta = cbind(G_mcmc, Beta_mcmc)
   dimG = sqrt(ncol(G_mcmc))
@@ -13,8 +14,8 @@ evolvabilityBetaMCMC2 = function(G_mcmc, Beta_mcmc, post.dist=FALSE){
                  c(eB = eB, rB = rB, cB = cB, aB = aB, iB = iB)
                }))
   X = list()
-  X$Beta.median = cbind(median = apply(Beta_mcmc, 2, median), HPDinterval(mcmc(Beta_mcmc)))
-  X$summary = cbind(median = apply(X1, 2, median), HPDinterval(mcmc(X1)))
+  X$Beta.median = cbind(median = apply(Beta_mcmc, 2, median), coda::HPDinterval(coda::mcmc(Beta_mcmc)))
+  X$summary = cbind(median = apply(X1, 2, median), coda::HPDinterval(coda::mcmc(X1)))
   if(post.dist == TRUE){
     X$post.dist = X1
   }
@@ -23,6 +24,7 @@ evolvabilityBetaMCMC2 = function(G_mcmc, Beta_mcmc, post.dist=FALSE){
   X
 }
 
+#' @export
 print.evolvabilityBetaMCMC2 = function(x, ...){
   cat("Call:\n")
   print(x$call)

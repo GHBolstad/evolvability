@@ -1,3 +1,4 @@
+#' @export
 evolvabilityMeans = function(G, means=1)  {
   if(means[1]==1) means=rep(1, nrow(G))
   G = G/(means%*%t(means))

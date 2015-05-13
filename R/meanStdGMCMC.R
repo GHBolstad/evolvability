@@ -1,3 +1,4 @@
+#' @export
 meanStdGMCMC = function(G_mcmc, means_mcmc){
   X = cbind(means_mcmc, G_mcmc)
   n1 = ncol(means_mcmc)

@@ -1,3 +1,4 @@
+#' @export
 evolvabilityBeta = function(G, Beta, means = 1){
   if(means[1]==1) means=rep(1, nrow(G))
   G = G/(means%*%t(means))
@@ -14,7 +15,7 @@ evolvabilityBeta = function(G, Beta, means = 1){
 }
 
 
-
+#' @export
 summary.evolvabilityBeta = function(object, ...){
   X = list()
   X$call = object$call
@@ -25,6 +26,7 @@ summary.evolvabilityBeta = function(object, ...){
   X
 }
 
+#' @export
 print.summary.evolvabilityBeta = function(x, ...){
   cat("Call:\n")
   print(x$call)

@@ -1,3 +1,5 @@
+#' @export
+
 evolvabilityBetaMCMC = function(G_mcmc, Beta, post.dist = FALSE){
   X1 = t(apply(G_mcmc, 1,
                function(G){
@@ -14,9 +16,9 @@ evolvabilityBetaMCMC = function(G_mcmc, Beta, post.dist = FALSE){
             aB = X1[,(3*n+1):(4*n)], iB = X1[,(4*n+1):(5*n)])
   X_summary = cbind(sapply(X2, function(x) apply(x, 1, mean)))
   colnames(X_summary) = c("e_mean", "r_mean", "c_mean", "a_mean", "i_mean")
-  X = lapply(X2, function(x) rbind(median = apply(x, 2, median), t(HPDinterval(mcmc(x)))))
+  X = lapply(X2, function(x) rbind(median = apply(x, 2, median), t(coda::HPDinterval(coda::mcmc(x)))))
   X$Beta = Beta
-  X$summary = rbind(median = apply(X_summary, 2, median), t(HPDinterval(mcmc(X_summary))))
+  X$summary = rbind(median = apply(X_summary, 2, median), t(coda::HPDinterval(coda::mcmc(X_summary))))
   X$call = match.call()
   class(X) = "evolvabilityBetaMCMC"
   X2$summary = X_summary
@@ -24,6 +26,7 @@ evolvabilityBetaMCMC = function(G_mcmc, Beta, post.dist = FALSE){
   X
 }
 
+#' @export
 print.evolvabilityBetaMCMC = function(x, ...){
   cat("Call:\n")
   print(x$call)
@@ -39,6 +42,7 @@ print.evolvabilityBetaMCMC = function(x, ...){
   print(t(x$iB))
 } 
 
+#' @export
 summary.evolvabilityBetaMCMC = function(object, ...){
   X = list()
   X$call = object$call
@@ -51,6 +55,7 @@ summary.evolvabilityBetaMCMC = function(object, ...){
   X
 }
 
+#' @export
 print.summary.evolvabilityBetaMCMC = function(x, ...){
   cat("Call:\n")
   print(x$call)
