@@ -2,20 +2,11 @@ evolvabilityBeta = function(G, Beta, means = 1){
   if(means[1]==1) means=rep(1, nrow(G))
   G = G/(means%*%t(means))
   Beta = cbind(Beta)
-  if(ncol(Beta)>1){
-    eB = apply(Beta, 2, function(x) t(x)%*%G%*%x )
-    rB = apply(Beta, 2, function(x) sqrt(t(x)%*%(G%*%G)%*%x))
-    cB = apply(Beta, 2, function(x) 1/(t(x)%*%solve(G)%*%x))
+    eB = diag(t(Beta)%*%G%*%Beta) 
+    rB = sqrt(diag(t(Beta)%*%(G%*%G)%*%Beta))
+    cB = 1/diag(t(Beta)%*%solve(G)%*%Beta)
     aB = cB/eB
     iB = 1-aB
-  }
-  if(ncol(Beta)==1){
-    eB = t(Beta)%*%G%*%Beta 
-    rB = sqrt(t(Beta)%*%(G%*%G)%*%Beta)
-    cB = 1/(t(Beta)%*%solve(G)%*%Beta)
-    aB = cB/eB
-    iB = 1-aB
-  }
   est = list(Beta = Beta, e = eB, r = rB, c = cB, a = aB, i = iB)
   class(est) = "evolvabilityBeta"
   est$call <- match.call()

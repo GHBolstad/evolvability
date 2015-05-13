@@ -2,20 +2,11 @@ evolvabilityBetaMCMC = function(G_mcmc, Beta, post.dist = FALSE){
   X1 = t(apply(G_mcmc, 1,
                function(G){
                  G = matrix(G, ncol=sqrt(length(G)))
-                 if(ncol(Beta) > 1){
-                   eB = apply(Beta, 2, function(x) t(x)%*%G%*%x )
-                   rB = apply(Beta, 2, function(x) sqrt(t(x)%*%(G%*%G)%*%x))
-                   cB = apply(Beta, 2, function(x) 1/(t(x)%*%solve(G)%*%x))
-                   aB = cB/eB
-                   iB = 1- aB
-                 }
-                 if(ncol(Beta) == 1){
-                   eB = t(Beta)%*%G%*%Beta 
-                   rB = sqrt(t(Beta)%*%(G%*%G)%*%Beta)
-                   cB = 1/(t(Beta)%*%solve(G)%*%Beta)
+                   eB = diag(t(Beta)%*%G%*%Beta) 
+                   rB = sqrt(diag(t(Beta)%*%(G%*%G)%*%Beta))
+                   cB = 1/diag(t(Beta)%*%solve(G)%*%Beta)
                    aB = cB/eB
                    iB = 1-aB
-                 }
                  c(eB = eB, rB = rB, cB = cB, aB = aB, iB = iB)
                }))
   n = ncol(Beta)
