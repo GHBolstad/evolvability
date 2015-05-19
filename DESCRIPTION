@@ -1,10 +1,13 @@
 Package: evolvability
 Type: Package
 Title: Calculation of Evolvability Parameters
-Version: 1.1
+Version: 1.1.0
 Authors@R: person("Geir H.", "Bolstad", email = "geir.bolstad@nina.no",
                   role = c("aut", "cre"))
-Description: An implementation of the evolvability parameters defined in Hansen and Houle (2008).
+Description: This package calculates evolvability parameters from estimated G-matrices as defined 
+    in Hansen and Houle (2008) <doi:10.1111/j.1420-9101.2008.01573.x>. It can use both point estimates 
+    and posterior/bootstrap distributions of the G-matrices. This package was released with Bolstad et al. 
+    (2014) <doi:10.1098/rstb.2013.0255>, which contains some examples of use.
 License: GPL (>= 2)
 Imports:
     coda
