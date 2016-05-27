@@ -49,7 +49,7 @@ summary.evolvabilityBetaMCMC = function(object, ...){
   X$Averages = object$summary
   X$Minimum = sapply(object[1:5], function(x) x[, which(x[1,]==min(x[1,]))])
   colnames(X$Minimum) = paste(colnames(X$Min), "_min", sep="")
-  X$Maximum = sapply(object[1:5], function(x) x[, which(x[1,]==min(x[1,]))])
+  X$Maximum = sapply(object[1:5], function(x) x[, which(x[1,]==max(x[1,]))])
   colnames(X$Maximum) = paste(colnames(X$Max), "_max", sep="")
   class(X) = "summary.evolavbilityBetaMCMC"
   X
