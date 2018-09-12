@@ -6,7 +6,8 @@
 #' 
 #' @param mod output from \code{\link{rate_gls}}.
 #' @param n number of bootsrap samples
-
+#' @export
+#' 
 rate_glsboot <- function(mod, n = 10){
   boot_distribution <- matrix(NA, ncol = 6, nrow = n)
   colnames(boot_distribution) <- c("Intercept", "Slope", "a", "b", "mean_x", "Sigma^2")

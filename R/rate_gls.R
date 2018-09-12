@@ -11,10 +11,9 @@
 #' @param model either "predictor_BM" or "predictor_geometricBM"
 #' @param Beta starting values for the a nad b parameters 
 #'  
-#'    
 #' 
 #' @importFrom ape vcv
-
+#' @export
 
 rate_gls <- function(x, y, tree, model = "predictor_BM", Beta = as.matrix(c(mean(y^2), 0)), maxiter = 100, silent = FALSE){
   ### phylogenetic relatedness matrix ###
