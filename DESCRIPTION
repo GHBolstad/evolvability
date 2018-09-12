@@ -11,3 +11,4 @@ Description: This package calculates evolvability parameters from estimated G-ma
 License: GPL (>= 2)
 Imports:
     coda
+RoxygenNote: 6.0.1
