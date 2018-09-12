@@ -13,8 +13,6 @@
 #' 
 #' @examples
 #' 
-#' @importFrom ape vcv
-#'
 #' @export
 #' 
 rate_glsboot <- function(mod, n = 10){
@@ -22,7 +20,7 @@ rate_glsboot <- function(mod, n = 10){
   colnames(boot_distribution) <- c("Intercept", "Slope", "a", "b", "mean_x", "Sigma^2")
   
   for(i in 1:n){
-    Data <- ratesim(tree=mod$tree, 
+    Data <- rate_sim(tree=mod$tree, 
                     startv_x = mod$param["mean_x", ], 
                     sigma_x = sqrt(mod$param["Sigma^2", ]),
                     a = mod$param["a",],
