@@ -3,7 +3,8 @@
 #' \code{Almer} Linear mixed model with correlated random effects structure
 #' 
 #' \code{Almer} fits a univariate linear mixed model incorporating a correlated random effects structure. Can be used to fit 
-#' phylogenetic mixed models and animal models. The function is based on the \code{\link{lme4}} package and is very similar to \code{\link{lmer}}.
+#' phylogenetic mixed models and animal models. The function is based on the \code{\link{lme4}} package and is very similar to \code{\link{lmer}},
+#' apart from the A argument.
 #' 
 #' @param A an optional named list of sparce matrices. The names must correspond to the names of the random effects in the formula argument. All levels of the random effect should appear as row and column names for the matrices (SAME ORDER? or is names sufficient?)
 #' @param formula as in \code{\link{lmer}}.
@@ -31,8 +32,6 @@
 #' @importFrom Matrix Matrix t
 #' 
 #' @export
-
-
 
 Almer <- function(formula, data = NULL, REML = TRUE, A = list(), 
                   control = lmerControl(check.nobs.vs.nlev  = "ignore", 

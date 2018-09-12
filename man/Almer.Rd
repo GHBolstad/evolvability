@@ -47,7 +47,8 @@ Almer(formula, data = NULL, REML = TRUE, A = list(),
 }
 \details{
 \code{Almer} fits a univariate linear mixed model incorporating a correlated random effects structure. Can be used to fit 
-phylogenetic mixed models and animal models. The function is based on the \code{\link{lme4}} package and is very similar to \code{\link{lmer}}.
+phylogenetic mixed models and animal models. The function is based on the \code{\link{lme4}} package and is very similar to \code{\link{lmer}},
+apart from the A argument.
 }
 \examples{
 
