@@ -1,16 +1,26 @@
 #' Generalized least squares rate model
 #' 
-#' \code{ratesim} Generalized least squares rate model
+#' \code{rate_gls} Generalized least squares rate model
 #' 
-#' \code{ratesim} Fits a generalized least squares model to estimate parameters of the evolutoinary model of two traits x and y, 
+#' \code{rate_gls} Fits a generalized least squares model to estimate parameters of the evolutoinary model of two traits x and y, 
 #' where the rate of y depends on the value of x. x evolves eiter accoriding to a Brownian motion model of evolution or a geometric 
 #' Brownian motion  model of evolution. 
+#'
+#' @param x trait values must be equal to the length of y and tips on the tree 
+#' @param y trait values 
+#' @param model either "predictor_BM" or "predictor_geometricBM"
+#' @param Beta starting values for the a nad b parameters 
+#'  
+#'    
+#' 
+#' @importFrom ape vcv
 
 
 rate_gls <- function(x, y, tree, model = "predictor_BM", Beta = as.matrix(c(mean(y^2), 0)), maxiter = 100, silent = FALSE){
   ### phylogenetic relatedness matrix ###
   # A <- Matrix::Matrix(ape::vcv(tree), sparse = TRUE)
   # Ainv <- Matrix::solve(A)
+  # check out repeated-entry sparce matrix class (by Steve Walker???, is this the "dgTMatrix" class)
   A <- ape::vcv(tree)
   Ainv <- solve(A)
   

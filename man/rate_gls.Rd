@@ -7,11 +7,20 @@
 rate_gls(x, y, tree, model = "predictor_BM", Beta = as.matrix(c(mean(y^2),
   0)), maxiter = 100, silent = FALSE)
 }
+\arguments{
+\item{x}{trait values must be equal to the length of y and tips on the tree}
+
+\item{y}{trait values}
+
+\item{model}{either "predictor_BM" or "predictor_geometricBM"}
+
+\item{Beta}{starting values for the a nad b parameters}
+}
 \description{
-\code{ratesim} Generalized least squares rate model
+\code{rate_gls} Generalized least squares rate model
 }
 \details{
-\code{ratesim} Fits a generalized least squares model to estimate parameters of the evolutoinary model of two traits x and y, 
+\code{rate_gls} Fits a generalized least squares model to estimate parameters of the evolutoinary model of two traits x and y, 
 where the rate of y depends on the value of x. x evolves eiter accoriding to a Brownian motion model of evolution or a geometric 
 Brownian motion  model of evolution.
 }
