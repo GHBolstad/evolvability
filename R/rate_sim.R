@@ -1,8 +1,8 @@
 #' Simulating evolutionary rate model
 #' 
-#' \code{ratesim} Simulating evolutionary rate model
+#' \code{rate_sim} Simulating evolutionary rate model
 #' 
-#' \code{ratesim} Simulates different evolutionary rates models where a trait x evolves according to a Brownian motion or geometric Bronian motion 
+#' \code{rate_sim} Simulates different evolutionary rates models where a trait x evolves according to a Brownian motion or geometric Bronian motion 
 #' process (constant evolutionary rate) while the rate of a second trait, y, is a linear function of x.  
 #' 
 #' @param tree a \code{\link{phylo}} object. Must be ultrametric and scaled to unit length.
@@ -22,7 +22,7 @@
 #' @export
 
 
-ratesim <- function(tree, startv_x, sigma_x, a, b, model = "predictor_BM"){
+rate_sim <- function(tree, startv_x, sigma_x, a, b, model = "predictor_BM"){
   
   EDGE <- cbind(tree$edge, round(tree$edge.length, 3))
   EDGE[,3][EDGE[,3]==0] <- 0.001 #adding one timestep to the edges that was rounded down to zero
