@@ -16,6 +16,9 @@ rate_gls(x, y, tree, model = "predictor_BM", Beta = as.matrix(c(mean(y^2),
 
 \item{Beta}{starting values for the a nad b parameters}
 }
+\value{
+\code{rate_gls}
+}
 \description{
 \code{rate_gls} Generalized least squares rate model
 }
@@ -23,4 +26,10 @@ rate_gls(x, y, tree, model = "predictor_BM", Beta = as.matrix(c(mean(y^2),
 \code{rate_gls} Fits a generalized least squares model to estimate parameters of the evolutoinary model of two traits x and y, 
 where the rate of y depends on the value of x. x evolves eiter accoriding to a Brownian motion model of evolution or a geometric 
 Brownian motion  model of evolution.
+}
+\examples{
+
+}
+\author{
+Geir H. Bolstad
 }

@@ -11,9 +11,18 @@ rate_glsboot(mod, n = 10)
 
 \item{n}{number of bootsrap samples}
 }
+\value{
+\code{rate_glsboot}
+}
 \description{
 \code{rate_glsboot} Boostrap of the rate gls model fit
 }
 \details{
 \code{rate_glsboot} Provides a parametric boostrap of the generalized least squares rate model fit, using \code{\link{rate_sim}}
+}
+\examples{
+
+}
+\author{
+Geir H. Bolstad
 }

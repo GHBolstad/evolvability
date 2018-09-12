@@ -6,6 +6,15 @@
 #' 
 #' @param mod output from \code{\link{rate_gls}}.
 #' @param n number of bootsrap samples
+#' 
+#' @return \code{rate_glsboot} 
+#' 
+#' @author Geir H. Bolstad
+#' 
+#' @examples
+#' 
+#' @importFrom ape vcv
+#'
 #' @export
 #' 
 rate_glsboot <- function(mod, n = 10){
