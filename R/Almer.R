@@ -40,7 +40,7 @@ Almer <- function(formula, data = NULL, REML = TRUE, A = list(),
                   start = NULL, verbose = 0L, subset, weights, na.action,
                   offset, contrasts = NULL, devFunOnly = FALSE, ...){
   cholA <- lapply(A, chol)
-  mod <- lFormula(formula, data, REML, subset, weights, na.action, offset, contrasts, control, ...)
+  mod <- lFormula(formula, data, control=control) # have to check how to include the additional arguments
   for(i in seq_along(cholA)){
     j <- match(names(cholA)[i], names(mod$reTrms$cnms))
     if(length(j)>1) stop("an A matrix can only be associated with one random effect term")

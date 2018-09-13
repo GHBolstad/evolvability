@@ -27,7 +27,7 @@ rate_glsboot <- function(mod, n = 10){
                     b = mod$param["b",],
                     model = mod$model)
     boot_distribution[i,] <- c(rate_gls(x=Data$x, y=Data$y, tree=mod$tree, Beta = as.matrix(mod$param[1:2,]), model = mod$model, silent = TRUE)$param)
-    print(paste("Bootstrap iteration", i))
+    print(paste("Bootstrap sample", i))
   }
   
   return(cbind(mod$param, t(apply(boot_distribution, 2, function(x) quantile(x, probs = c(0.025, 0.975))))))
