@@ -23,6 +23,7 @@
 
 
 rate_sim <- function(tree, startv_x, sigma_x, a, b, model = "predictor_BM"){
+  if(a <= 0) stop("a must be positive")
   
   EDGE <- cbind(tree$edge, round(tree$edge.length, 3))
   EDGE[,3][EDGE[,3]==0] <- 0.001 #adding one timestep to the edges that was rounded down to zero
@@ -40,7 +41,8 @@ rate_sim <- function(tree, startv_x, sigma_x, a, b, model = "predictor_BM"){
   }
 
   if(model == "predictor_BM"){ # finding a k value to avoid negative roots
-    k <- abs(b*min(sapply(x_evo, min)))+1
+    if((a + b*min(sapply(x_evo, min)))<0) k <- abs(b*min(sapply(x_evo, min))/a)+1
+    else k <- 1
   } 
   
   # Simulating y-values
@@ -63,4 +65,7 @@ rate_sim <- function(tree, startv_x, sigma_x, a, b, model = "predictor_BM"){
   return(DATA)
 }
 
-
+# testing:
+# tree <- geiger::sim.bdtree(b = 1, d = 0, n = 1000, t = 4)
+# tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
+# rate_sim(tree, startv_x=0, sigma_x=1, a= 0.001, b=1)
