@@ -8,7 +8,7 @@
 #'
 #' @param x trait values must be equal to the length of y and tips on the tree 
 #' @param y trait values 
-#' @param model either "predictor_BM" or "predictor_geometricBM"
+#' @param model either "predictor_BM", "predictor_geometricBM" or "residual_rate"
 #' @param Beta starting values for the a nad b parameters 
 #'  
 #' @return \code{rate_gls} 
@@ -21,7 +21,10 @@
 #' 
 #' @export
 
-rate_gls <- function(x, y, tree, model = "predictor_BM", Beta = as.matrix(c(mean(y^2), 0)), maxiter = 100, silent = FALSE){
+# TODO:
+# The next thing todo is to go through the function line for line for the model residual_rate
+
+rate_gls <- function(x, y, tree, model = "predictor_BM", Beta = as.matrix(c(mean(y^2), 0)), sigma_y = NULL, maxiter = 100, silent = FALSE){
   ### phylogenetic relatedness matrix ###
   # A <- Matrix::Matrix(ape::vcv(tree), sparse = TRUE)
   # Ainv <- Matrix::solve(A)
@@ -42,19 +45,18 @@ rate_gls <- function(x, y, tree, model = "predictor_BM", Beta = as.matrix(c(mean
   
   # phylogenetic weighted mean
   X <- matrix(rep(1, length(x)), ncol = 1) # design matrix
-  V <- A*c(sigma2) # residual covariance matrix
+  R <- A*c(sigma2) # residual covariance matrix
   if(model == "predictor_BM")          mean_x <- solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%x
   if(model == "predictor_geometricBM") mean_x <- exp(solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%log(x))
   if(model == "residual_rate")         mean_x <- mean(x)
   
   
   ### gls model
-  
-  # functions for the different models (to compute a, b, and V)
+  # functions for the different models (to compute a, b, and R)
   if(model == "predictor_BM"){
-    a_func <- function(Beta, sigma2) Beta[1,1]
-    b_func <- function(Beta, sigma2) 2*Beta[2,1]
-    V_func <- function(a, b, sigma2, t_a) 2*a^2*t_a^2 + c(sigma2*(b/2)^2) * t_a*(1 - 2*t_a + 4*t_a^2)
+    a_func <- function(Beta, sigma2, mean_x) Beta[1,1]
+    b_func <- function(Beta, sigma2, mean_x) 2*Beta[2,1]
+    R_func <- function(a, b, sigma2, t_a, V=NULL) 2*a^2*t_a^2 + c(sigma2*(b/2)^2) * t_a*(1 - 2*t_a + 4*t_a^2)
     #a_SE_func <- function(Beta_vcov, sigma2) sqrt(Beta_vcov[1,1])
     #b_SE_func <- function(Beta_vcov, sigma2) sqrt(4*Beta_vcov[2,2])
   }
@@ -64,9 +66,9 @@ rate_gls <- function(x, y, tree, model = "predictor_BM", Beta = as.matrix(c(mean
       X[is.na(X)] <- 0
       return(X)
     }
-    a_func <- function(Beta, sigma2) Beta[1,1]-3*Beta[2,1]*f(sigma2)*(exp(sigma2/2)-1)
-    b_func <- function(Beta, sigma2) 3*sigma2*Beta[2,1]/(2*f(sigma2))
-    V_func <- function(a, b, sigma2, t_a){
+    a_func <- function(Beta, sigma2, mean_x) Beta[1,1]-3*Beta[2,1]*f(sigma2)*(exp(sigma2/2)-1)
+    b_func <- function(Beta, sigma2, mean_x) 3*sigma2*Beta[2,1]/(2*f(sigma2))
+    R_func <- function(a, b, sigma2, t_a, V=NULL){
       2*a^2*t_a^2 + 8*a*b*t_a/sigma2*(exp(0.5*sigma2*t_a)-1)+
         2*b^2/sigma2^2*(exp(sigma2*t_a)-1)*(exp(sigma2*t_a)-1+2*(exp(0.5*sigma2*t_a)-exp(0.5*sigma2))^2+
                                               4/3*(exp(0.5*sigma2)-exp(0.5*sigma2*t_a))*(f(sigma2, t_a)*exp(0.5*sigma2*t_a)-f(sigma2)*exp(0.5*sigma2))-
@@ -77,46 +79,73 @@ rate_gls <- function(x, y, tree, model = "predictor_BM", Beta = as.matrix(c(mean
     #a_SE_func <- function(Beta_vcov, sigma2) sqrt(Beta_vcov[1,1] + 9*f(sigma2)^2*(exp(sigma2/2)-1)^2*Beta_vcov[2,2] - 3*f(sigma2)*(exp(sigma2/2-1)*Beta_vcov[1,2]))
     #b_SE_func <- function(Beta_vcov, sigma2) sqrt(9*sigma2^2*Beta_vcov[2,2]/(4*f(sigma2)^2))
   }
-  
+  if(model == "residual_rate"){
+    a_func <- function(Beta, sigma2, mean_x) (1+mean_x^2/sigma2)*Beta[1,1] - Beta[2,1]*mean_x
+    b_func <- function(Beta, sigma2, mean_x) Beta[2,1] - Beta[1,1]*mean_x/sigma2
+    R_func <- function(a, b, sigma2, t_a, V){
+      Vinv <- solve(V)
+      dVmin2 <- diag(x = diag(Vinv)^-2)
+      return(2*dVmin2%*%Vinv*dVmin2%*%Vinv+diag(dVmin2%*%Vinv)%*%t(diag(dVmin2%*%Vinv)))
+    }  
+  }
+
   # initial values
   RSS <- NA                                       # residual sum of squares
   t_a <- as.vector(A[!lower.tri(A)])              # age of common ancestor        
-  a   <- as.vector(a_func(Beta, sigma2))          # parameter of the process
-  b   <- as.vector(b_func(Beta, sigma2))          # parameter of the process
-  V <- A                                          # residual covariance matrix
-  V[!lower.tri(V)] <- V_func(a, b, sigma2, t_a)
-  V[lower.tri(V)] <- t(V)[lower.tri(V)]
-  Vinv <- solve(V)
+  a   <- as.vector(a_func(Beta, sigma2, mean_x))  # parameter of the process
+  b   <- as.vector(b_func(Beta, sigma2, mean_x))  # parameter of the process
+  
+  # residual covariance matrix
+  if(model != "residual_rate") {
+    R <- A                                          
+    R[!lower.tri(R)] <- R_func(a, b, sigma2, t_a, V)
+    R[lower.tri(R)] <- t(R)[lower.tri(R)]
+  }
+  if(model == "residual_rate") {
+    if(is.null(sigma_y)) sigma_y <- sqrt(var(solve(C)%*%y))
+    E <- a*diag(length(x))+diag(x = b*x)
+    V <- c(sigma_y^2)*A + E
+    R <- R_func(a, b, sigma2, t_a, V)
+  }
+  Rinv <- solve(R)
   
   # response variable
   if(model == "residual_rate") {
     y_mean <- as.matrix(apply(cbind(y), 1, function(x) (sum(y)-x)/(length(y)-1)))
-    y_predicted <- y_mean +(V - solve(diag(x = diag(Vinv))))%*%Vinv%*%(y-y_mean)
+    y_predicted <- y_mean +(R - solve(diag(x = diag(Rinv))))%*%Rinv%*%(y-y_mean)
     y2 <- (y-y_predicted)^2
   }
   else y2 <- y^2
   
+
   # design matrix  
   X <- as.matrix(cbind(rep(1, length(x)), x))  ## x - mean(x) have changed so that x is not mean centred
   
   # updating values
   for(i in 1:maxiter){
-    Beta <- solve(t(X)%*%Vinv%*%X)%*%t(X)%*%Vinv%*%y2
-    a <- a_func(Beta, sigma2)
-    b <- b_func(Beta, sigma2)
-    V[!lower.tri(V)] <- V_func(a, b, sigma2, t_a)
-    V[lower.tri(V)] <- t(V)[lower.tri(V)]
-    Vinv <- solve(V)
+    Beta <- solve(t(X)%*%Rinv%*%X)%*%t(X)%*%Rinv%*%y2
+    a <- a_func(Beta, sigma2, mean_x)
+    b <- b_func(Beta, sigma2, mean_x)
+    if(model != "residual_rate") {
+      R[!lower.tri(R)] <- R_func(a, b, sigma2, t_a)
+      R[lower.tri(R)] <- t(R)[lower.tri(R)]
+    }
+    if(model == "residual_rate") {
+      E <- a*diag(length(x))+diag(x = b*x)
+      V <- c(sigma_y^2)*A + E
+      R <- R_func(a, b, sigma2, t_a, V)
+    }
+    Rinv <- solve(R)
     
     # residual sum of squares
-    RSS[i] <- t(y2-X%*%Beta)%*%Vinv%*%(y2-X%*%Beta)
+    RSS[i] <- t(y2-X%*%Beta)%*%Rinv%*%(y2-X%*%Beta)
     if(!silent) print(paste("Residual sum of squares:", RSS[i]))
     if(i>1){
       if(RSS[i]<=RSS[i-1] & RSS[i-1]-RSS[i]<1e-8) break()
     }
   }
   
-  # Beta_vcov <- solve(t(X)%*%Vinv%*%X)
+  # Beta_vcov <- solve(t(X)%*%Rinv%*%X)
   # Beta_SE <- sqrt(diag(Beta_vcov))
   # param <- cbind(rbind(Beta, a, b, sigma2), rbind(cbind(Beta_SE), a_SE_func(Beta_vcov, sigma2), b_SE_func(Beta_vcov, sigma2), sigma2_SE))
   # colnames(param) <- c("Estimate", "SE")
@@ -126,14 +155,15 @@ rate_gls <- function(x, y, tree, model = "predictor_BM", Beta = as.matrix(c(mean
   colnames(param) <- c("Estimate")
   rownames(param) <- c("Intercept", "Slope", "a", "b", "mean_x", "Sigma^2")
   
-  TSS <- t(y2)%*%Vinv%*%(y2) # (generalized) total sum of squares
+  TSS <- t(y2)%*%Rinv%*%(y2) # (generalized) total sum of squares
   Rsquared <- 1-(RSS[i]/TSS)
   
-  # V_scaled <- V/diag(V)[1]
+  # V_scaled <- R/diag(R)[1]
   # C <- t(chol(V_scaled))
   # C_inv <- solve(C)
   # resid_var <- sum((C_inv%*%(y2-X%*%Beta))^2)/(length(y2)-nrow(Beta))
   
-  if(i == maxiter) print(paste("Model reached maximum number of iterations without convergence"))
-  return(list(param = param, RSS = RSS, Rsquared = Rsquared, V=V, tree = tree, model = model))
+  if(i == maxiter) warning("Model reached maximum number of iterations without convergence")
+  
+  return(list(param = param, RSS = RSS, Rsquared = Rsquared, R=R, tree = tree, model = model))
 }

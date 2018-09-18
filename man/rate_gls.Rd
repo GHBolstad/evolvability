@@ -5,14 +5,14 @@
 \title{Generalized least squares rate model}
 \usage{
 rate_gls(x, y, tree, model = "predictor_BM", Beta = as.matrix(c(mean(y^2),
-  0)), maxiter = 100, silent = FALSE)
+  0)), sigma_y = NULL, maxiter = 100, silent = FALSE)
 }
 \arguments{
 \item{x}{trait values must be equal to the length of y and tips on the tree}
 
 \item{y}{trait values}
 
-\item{model}{either "predictor_BM" or "predictor_geometricBM"}
+\item{model}{either "predictor_BM", "predictor_geometricBM" or "residual_rate"}
 
 \item{Beta}{starting values for the a nad b parameters}
 }
