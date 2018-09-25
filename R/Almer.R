@@ -6,7 +6,8 @@
 #' phylogenetic mixed models and animal models. The function is based on the \code{\link{lme4}} package and is very similar to \code{\link{lmer}},
 #' apart from the A argument.
 #' 
-#' @param A an optional named list of sparce matrices. The names must correspond to the names of the random effects in the formula argument. All levels of the random effect should appear as row and column names for the matrices (SAME ORDER? or is names sufficient?)
+#' @param A an optional named list of sparce matrices. The names must correspond to the names of the random effects in the formula argument. 
+#' All levels of the random effect should appear as row and column names for the matrices.
 #' @param formula as in \code{\link{lmer}}.
 #' @param data as in \code{\link{lmer}}.
 #' @param REML as in \code{\link{lmer}}.
@@ -29,7 +30,7 @@
 #' @examples
 #' 
 #' @importFrom lme4 lFormula lmerControl mkLmerDevfun optimizeLmer mkMerMod
-#' @importFrom Matrix Matrix t
+#' @importFrom Matrix Matrix t chol
 #' 
 #' @export
 
@@ -44,7 +45,8 @@ Almer <- function(formula, data = NULL, REML = TRUE, A = list(),
   for(i in seq_along(cholA)){
     j <- match(names(cholA)[i], names(mod$reTrms$cnms))
     if(length(j)>1) stop("an A matrix can only be associated with one random effect term")
-    mod$reTrms$Ztlist[[j]] <- cholA[[i]] %*% mod$reTrms$Ztlist[[j]]
+    ranef_order <- match(rownames(mod$reTrms$Ztlist[[j]]), rownames(cholA[[i]]))
+    mod$reTrms$Ztlist[[j]] <- cholA[[i]][ranef_order,ranef_order] %*% mod$reTrms$Ztlist[[j]]
   }
   mod$reTrms$Zt <- do.call(rbind, mod$reTrms$Ztlist)
   devfun <- do.call(mkLmerDevfun, mod)
