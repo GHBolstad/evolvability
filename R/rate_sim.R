@@ -26,9 +26,7 @@
 # include the residual rate model
 
 rate_sim <- function(tree, startv_x, sigma_x, a, b, model = "predictor_BM"){
-  
-  if(a <= 0) stop("a must be positive")
-  
+
   EDGE <- cbind(tree$edge, round(tree$edge.length, 3))
   EDGE[,3][EDGE[,3]==0] <- 0.001 #adding one timestep to the edges that was rounded down to zero
   # !!! NB !!! Some trees have negative edge lengths. What is this? Include error message

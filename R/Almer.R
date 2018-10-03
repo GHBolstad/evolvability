@@ -53,3 +53,4 @@ Almer <- function(formula, data = NULL, REML = TRUE, A = list(),
   opt <- optimizeLmer(devfun, optimizer = "Nelder_Mead", ...)
   mkMerMod(environment(devfun), opt = opt, reTrms = mod$reTrms, fr = mod$fr)
 }
+

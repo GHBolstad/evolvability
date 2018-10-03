@@ -12,7 +12,7 @@
 
 <meta name="author" content="Geir Bolstad" />
 
-<meta name="date" content="2018-09-18" />
+<meta name="date" content="2018-10-03" />
 
 <title>Rate models</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Rate models</h1>
 <h4 class="author"><em>Geir Bolstad</em></h4>
-<h4 class="date"><em>2018-09-18</em></h4>
+<h4 class="date"><em>2018-10-03</em></h4>
 
 
 
@@ -81,10 +81,11 @@ tree<span class="op">$</span>edge.length &lt;-<span class="st"> </span>tree<span
 
 mod &lt;-<span class="st"> </span><span class="kw">rate_sim</span>(tree, <span class="dt">startv_x=</span><span class="dv">3</span>, <span class="dt">sigma_x=</span><span class="dv">1</span>, <span class="dt">a=</span> <span class="fl">0.001</span>, <span class="dt">b=</span><span class="dv">1</span>)
 
-mod<span class="op">$</span>x <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="kw">length</span>(mod<span class="op">$</span>x))
+<span class="co">#mod$y &lt;- mod$y + rnorm(length(mod$y))</span>
 
 
-<span class="kw">rate_gls</span>(<span class="dt">x=</span>mod<span class="op">$</span>x, <span class="dt">y=</span>mod<span class="op">$</span>y, tree, <span class="dt">model =</span> <span class="st">&quot;residual_rate&quot;</span>, <span class="dt">Beta =</span> <span class="kw">as.matrix</span>(<span class="kw">c</span>(<span class="kw">mean</span>(y<span class="op">^</span><span class="dv">2</span>), <span class="dv">0</span>)), <span class="dt">sigma_y =</span> <span class="ot">NULL</span>, <span class="dt">maxiter =</span> <span class="dv">100</span>, <span class="dt">silent =</span> <span class="ot">FALSE</span>){
+
+<span class="kw">rate_gls</span>(<span class="dt">x=</span>mod<span class="op">$</span>x, <span class="dt">y=</span>mod<span class="op">$</span>y, <span class="dt">species=</span>tree<span class="op">$</span>tip.label, tree, <span class="dt">model =</span> <span class="st">&quot;residual_rate&quot;</span>, <span class="dt">Beta =</span> <span class="kw">as.matrix</span>(<span class="kw">c</span>(<span class="kw">mean</span>(y<span class="op">^</span><span class="dv">2</span>), <span class="dv">0</span>)), <span class="dt">maxiter =</span> <span class="dv">100</span>, <span class="dt">silent =</span> <span class="ot">FALSE</span>)
 
 
 
@@ -107,7 +108,33 @@ x4 &lt;-<span class="st"> </span>A<span class="op">%*%</span><span class="kw">so
   
 <span class="kw">plot</span>(<span class="kw">solve</span>(C)<span class="op">%*%</span>mod<span class="op">$</span>x, <span class="kw">solve</span>(Rinv<span class="op">+</span><span class="kw">solve</span>(<span class="kw">c</span>(sigma_x)<span class="op">*</span>A))<span class="op">%*%</span>Rinv<span class="op">%*%</span>(mod<span class="op">$</span>x<span class="op">-</span><span class="kw">mean</span>(mod<span class="op">$</span>x)))
 
-<span class="kw">plot</span>(<span class="kw">solve</span>(C)<span class="op">%*%</span>mod<span class="op">$</span>x, (A<span class="op">-</span><span class="kw">solve</span>(<span class="kw">diag</span>(<span class="dt">x =</span> <span class="kw">diag</span>(Ainv))))<span class="op">%*%</span>Ainv<span class="op">%*%</span>(mod<span class="op">$</span>x<span class="op">-</span><span class="kw">mean</span>(mod<span class="op">$</span>x)))</code></pre></div>
+<span class="kw">plot</span>(<span class="kw">solve</span>(C)<span class="op">%*%</span>mod<span class="op">$</span>x, (A<span class="op">-</span><span class="kw">solve</span>(<span class="kw">diag</span>(<span class="dt">x =</span> <span class="kw">diag</span>(Ainv))))<span class="op">%*%</span>Ainv<span class="op">%*%</span>(mod<span class="op">$</span>x<span class="op">-</span><span class="kw">mean</span>(mod<span class="op">$</span>x)))
+
+
+#### testing almer
+tree &lt;-<span class="st"> </span>geiger<span class="op">::</span><span class="kw">sim.bdtree</span>(<span class="dt">b =</span> <span class="dv">1</span>, <span class="dt">d =</span> <span class="dv">0</span>, <span class="dt">n =</span> <span class="dv">100</span>, <span class="dt">t =</span> <span class="dv">4</span>)
+tree<span class="op">$</span>edge.length &lt;-<span class="st"> </span>tree<span class="op">$</span>edge.length<span class="op">/</span><span class="kw">diag</span>(ape<span class="op">::</span><span class="kw">vcv</span>(tree))[<span class="dv">1</span>]
+mod &lt;-<span class="st"> </span><span class="kw">rate_sim</span>(tree, <span class="dt">startv_x=</span><span class="dv">3</span>, <span class="dt">sigma_x=</span><span class="dv">1</span>, <span class="dt">a=</span> <span class="fl">0.001</span>, <span class="dt">b=</span><span class="dv">1</span>)
+A &lt;-<span class="st"> </span>Matrix<span class="op">::</span><span class="kw">Matrix</span>(ape<span class="op">::</span><span class="kw">vcv</span>(tree), <span class="dt">sparse =</span> <span class="ot">TRUE</span>)
+<span class="co">#A &lt;- as(A, &quot;dgCMatrix&quot;)</span>
+<span class="co"># colnames(A) &lt;- paste(&quot;q&quot;, 1:100)</span>
+<span class="co"># rownames(A) &lt;- paste(&quot;q&quot;, 1:100)</span>
+dt &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">species =</span> <span class="kw">paste</span>(<span class="st">&quot;s&quot;</span>, mod<span class="op">$</span>species, <span class="dt">sep =</span> <span class="st">&quot;&quot;</span>),
+                 <span class="dt">x =</span> mod<span class="op">$</span>x)
+
+<span class="kw">Almer</span>(<span class="dt">formula =</span> x <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">A =</span> <span class="kw">list</span>(<span class="dt">species =</span> A))
+A &lt;-<span class="st"> </span>A[<span class="dv">100</span><span class="op">-</span><span class="dv">0</span><span class="op">:</span><span class="dv">99</span>, <span class="dv">100</span><span class="op">-</span><span class="dv">0</span><span class="op">:</span><span class="dv">99</span>]
+<span class="kw">Almer</span>(<span class="dt">formula =</span> x <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">A =</span> <span class="kw">list</span>(<span class="dt">species =</span> A))
+
+mod &lt;-<span class="st"> </span><span class="kw">Almer</span>(<span class="dt">formula =</span> x <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">A =</span> <span class="kw">list</span>(<span class="dt">species =</span> A))
+<span class="kw">VarCorr</span>(mod)
+
+lme4<span class="op">::</span><span class="kw">ranef</span>(mod)
+
+
+
+
+<span class="kw">rownames</span>(A)</code></pre></div>
 
 
 
