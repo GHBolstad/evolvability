@@ -23,6 +23,7 @@
 #' @examples
 #' 
 #' @importFrom ape vcv
+#' @importFrom lme4 VarCorr
 #' 
 #' @export
 
