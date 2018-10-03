@@ -17,7 +17,8 @@ Almer(formula, data = NULL, REML = TRUE, A = list(),
 
 \item{REML}{as in \code{\link{lmer}}.}
 
-\item{A}{an optional named list of sparce matrices. The names must correspond to the names of the random effects in the formula argument. All levels of the random effect should appear as row and column names for the matrices (SAME ORDER? or is names sufficient?)}
+\item{A}{an optional named list of sparce matrices. The names must correspond to the names of the random effects in the formula argument. 
+All levels of the random effect should appear as row and column names for the matrices.}
 
 \item{control}{as in \code{\link{lmer}}.}
 

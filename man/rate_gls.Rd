@@ -4,17 +4,22 @@
 \alias{rate_gls}
 \title{Generalized least squares rate model}
 \usage{
-rate_gls(x, y, tree, model = "predictor_BM", Beta = as.matrix(c(mean(y^2),
-  0)), sigma_y = NULL, maxiter = 100, silent = FALSE)
+rate_gls(x, y, species, tree, model = "predictor_BM", startv = c(var(y), 0),
+  maxiter = 100, silent = FALSE)
 }
 \arguments{
-\item{x}{trait values must be equal to the length of y and tips on the tree}
+\item{x}{trait values must be equal to the length of y and tips on the tree. NB! x is mean centred in the analysis}
 
 \item{y}{trait values}
 
+\item{species}{names of the species, must be equal in length and in the same order as x and y}
+
+\item{tree}{object of class \code{\link{phylo}}, needs to be ultrametric and with total length of unit,
+tips must have the same names as in \code{species}}
+
 \item{model}{either "predictor_BM", "predictor_geometricBM" or "residual_rate"}
 
-\item{Beta}{starting values for the a nad b parameters}
+\item{startv}{vector of starting values for the a and b parameters}
 }
 \value{
 \code{rate_gls}
@@ -24,8 +29,10 @@ rate_gls(x, y, tree, model = "predictor_BM", Beta = as.matrix(c(mean(y^2),
 }
 \details{
 \code{rate_gls} Fits a generalized least squares model to estimate parameters of the evolutoinary model of two traits x and y, 
-where the rate of y depends on the value of x. x evolves eiter accoriding to a Brownian motion model of evolution or a geometric 
-Brownian motion  model of evolution.
+where the rate of y depends on the value of x. Three models are implmented. In the two first, "predictor_BM" and
+"predictor_geometricBM", the evolution of y follows a Brownian motion with variance linear in x, while the evolution of x either
+follows a Brownian motion or a geometric brownian motion, respectively. In the third model, the residuals of the macroveoluitonary
+predictions of y have variance linear in x.
 }
 \examples{
 
