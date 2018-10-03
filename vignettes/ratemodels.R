@@ -10,13 +10,12 @@ knitr::opts_chunk$set(
 #  tree <- geiger::sim.bdtree(b = 1, d = 0, n = 100, t = 4)
 #  tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
 #  
-#  mod <- rate_sim(tree, startv_x=3, sigma_x=1, a= 0.001, b=1)
+#  mod <- rate_sim(tree, startv_x=3, sigma_x=1, a= 0.001, b=1, model = "predictor_geometricBM")
 #  
 #  #mod$y <- mod$y + rnorm(length(mod$y))
 #  
 #  
-#  
-#  rate_gls(x=mod$x, y=mod$y, species=tree$tip.label, tree, model = "residual_rate", Beta = as.matrix(c(mean(y^2), 0)), maxiter = 100, silent = FALSE)
+#  rate_gls(x=mod$x, y=mod$y, species=tree$tip.label, tree, model = "predictor_geometricBM", maxiter = 100, silent = FALSE)
 #  
 #  
 #  

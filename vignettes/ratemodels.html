@@ -79,13 +79,12 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 tree &lt;-<span class="st"> </span>geiger<span class="op">::</span><span class="kw">sim.bdtree</span>(<span class="dt">b =</span> <span class="dv">1</span>, <span class="dt">d =</span> <span class="dv">0</span>, <span class="dt">n =</span> <span class="dv">100</span>, <span class="dt">t =</span> <span class="dv">4</span>)
 tree<span class="op">$</span>edge.length &lt;-<span class="st"> </span>tree<span class="op">$</span>edge.length<span class="op">/</span><span class="kw">diag</span>(ape<span class="op">::</span><span class="kw">vcv</span>(tree))[<span class="dv">1</span>]
 
-mod &lt;-<span class="st"> </span><span class="kw">rate_sim</span>(tree, <span class="dt">startv_x=</span><span class="dv">3</span>, <span class="dt">sigma_x=</span><span class="dv">1</span>, <span class="dt">a=</span> <span class="fl">0.001</span>, <span class="dt">b=</span><span class="dv">1</span>)
+mod &lt;-<span class="st"> </span><span class="kw">rate_sim</span>(tree, <span class="dt">startv_x=</span><span class="dv">3</span>, <span class="dt">sigma_x=</span><span class="dv">1</span>, <span class="dt">a=</span> <span class="fl">0.001</span>, <span class="dt">b=</span><span class="dv">1</span>, <span class="dt">model =</span> <span class="st">&quot;predictor_geometricBM&quot;</span>)
 
 <span class="co">#mod$y &lt;- mod$y + rnorm(length(mod$y))</span>
 
 
-
-<span class="kw">rate_gls</span>(<span class="dt">x=</span>mod<span class="op">$</span>x, <span class="dt">y=</span>mod<span class="op">$</span>y, <span class="dt">species=</span>tree<span class="op">$</span>tip.label, tree, <span class="dt">model =</span> <span class="st">&quot;residual_rate&quot;</span>, <span class="dt">Beta =</span> <span class="kw">as.matrix</span>(<span class="kw">c</span>(<span class="kw">mean</span>(y<span class="op">^</span><span class="dv">2</span>), <span class="dv">0</span>)), <span class="dt">maxiter =</span> <span class="dv">100</span>, <span class="dt">silent =</span> <span class="ot">FALSE</span>)
+<span class="kw">rate_gls</span>(<span class="dt">x=</span>mod<span class="op">$</span>x, <span class="dt">y=</span>mod<span class="op">$</span>y, <span class="dt">species=</span>tree<span class="op">$</span>tip.label, tree, <span class="dt">model =</span> <span class="st">&quot;predictor_geometricBM&quot;</span>, <span class="dt">maxiter =</span> <span class="dv">100</span>, <span class="dt">silent =</span> <span class="ot">FALSE</span>)
 
 
 

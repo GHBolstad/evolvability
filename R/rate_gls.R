@@ -49,6 +49,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = c(var
   if(model == "predictor_BM")          sigma2 <- var(solve(C)%*%x) 
   if(model == "predictor_geometricBM") sigma2 <- var(solve(C)%*%log(x))
   if(model == "residual_rate")         sigma2 <- var(x)
+  sigma2 <- c(sigma2)
   sigma2_SE <- sqrt(2*sigma2^2/(length(x)+2)) # from Lynch and Walsh 1998 eq A1.10c
   
   # phylogenetic weighted mean
@@ -103,7 +104,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = c(var
   t_a <- as.vector(A[!lower.tri(A)])              # age of common ancestor        
   a   <- startv[1]                                # parameter of the process
   b   <- startv[2]                                # parameter of the process
-  x <- x-mean_x                                   # NB! x is mean centred in the analysis
+  x <- x-c(mean_x)                               # NB! x is mean centred in the analysis
   if(model == "predictor_BM") Beta <- matrix(c(a, b/2))
   if(model == "predictor_geometricBM") Beta <- matrix(c(a+2*b*(exp(sigma2/2)-1)/sigma2, 2*b*f(sigma2)/(3*sigma2))) #can be simplified due to mean centring of x
   if(model == "residual_rate") Beta <- matrix(c(a + b*mean_x, (a + b*mean_x)*mean_x/sigma2 + b)) #can be simplified due to mean centring of x
@@ -144,7 +145,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = c(var
       R[lower.tri(R)] <- t(R)[lower.tri(R)]
     }
     if(model == "residual_rate") {
-      E <- a*diag(length(x))+diag(x = b*x)
+      E <- c(a)*diag(length(x))+diag(x = c(b)*x)
       V <- sigma2_y*A + E
       R <- R_func(a, b, sigma2, t_a, V)
     }
