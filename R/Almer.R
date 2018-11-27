@@ -40,8 +40,9 @@ Almer <- function(formula, data = NULL, REML = TRUE, A = list(),
                                         check.nobs.vs.nRE   = "ignore"),
                   start = NULL, verbose = 0L, subset, weights, na.action,
                   offset, contrasts = NULL, devFunOnly = FALSE, ...){
+  mc <- match.call()
   cholA <- lapply(A, chol)
-  mod <- lFormula(formula, data, control=control) # have to check how to include the additional arguments
+  mod <- lFormula(formula, data, control=control, ...) # have to check how to include the additional arguments
   for(i in seq_along(cholA)){
     j <- match(names(cholA)[i], names(mod$reTrms$cnms))
     if(length(j)>1) stop("an A matrix can only be associated with one random effect term")
@@ -51,6 +52,8 @@ Almer <- function(formula, data = NULL, REML = TRUE, A = list(),
   mod$reTrms$Zt <- do.call(rbind, mod$reTrms$Ztlist)
   devfun <- do.call(mkLmerDevfun, mod)
   opt <- optimizeLmer(devfun, optimizer = "Nelder_Mead", ...)
-  mkMerMod(environment(devfun), opt = opt, reTrms = mod$reTrms, fr = mod$fr)
+  mod_obj <- mkMerMod(environment(devfun), opt = opt, reTrms = mod$reTrms, fr = mod$fr, mc)
+  mod_obj@call <- evalq(mc)
+  return(mod_obj)
 }
 

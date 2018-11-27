@@ -57,15 +57,44 @@ knitr::opts_chunk$set(
 #  Almer(formula = x ~ 1 + (1|species), data = dt, A = list(species = A))
 #  
 #  mod <- Almer(formula = x ~ 1 + (1|species), data = dt, A = list(species = A))
-#  VarCorr(mod)
-#  
-#  lme4::ranef(mod)
 #  
 #  
+#  ##### phylogenetic heritability #####
+#  
+#  VarCorr(mod)["Residual",]
 #  
 #  
-#  rownames(A)
+
+## ---- eval = FALSE-------------------------------------------------------
+#  ## making a dataset
+#  n_species <- 10
+#  tree <- geiger::sim.bdtree(b = 1, d = 0, n = n_species, t = 4)
+#  tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
+#  mod <- rate_sim(tree, startv_x=3, sigma_x=1, a= 0.001, b=1) # simulating a BM process stored in mod$x
+#  mod$x <- mod$x + rnorm(n_species, 0, 0.2) # adding some residual variation
+#  
+#  A <- Matrix::Matrix(ape::vcv(tree), sparse = TRUE)
+#  #A <- as(A, "dgCMatrix")
+#  # colnames(A) <- paste("q", 1:100)
+#  # rownames(A) <- paste("q", 1:100)
+#  dt <- data.frame(species = paste("s", mod$species, sep = ""),
+#                   x = mod$x)
+#  
+#  # running model
+#  mod1 <- Almer(x ~ 1 + (1|species), data = dt, A = list(species = A))
+
+## ---- eval = FALSE-------------------------------------------------------
+#  # Vector of SE
+#  dt$SE <- exp(rnorm(n_species))
+#  dt$x <- rnorm(10, mod$x, dt$SE)
+#  
+#  requre(lme4) #for some reason the function does not manage to find the VarCorr function in the lme4 package
+#  
+#  mod_Almer <- Almer_SE(x ~ 1 + (1|species), data = dt, A = list(species = A), SE = SE)
 #  
 #  
+#  mod_lmer <- lmer(x ~ 1 + (1|species), data = dt, control = lmerControl(check.nobs.vs.nlev  = "ignore",
+#                                          check.nobs.vs.rankZ = "ignore",
+#                                          check.nobs.vs.nRE   = "ignore"))
 #  
 

@@ -8,7 +8,7 @@
 #' follows a Brownian motion or a geometric brownian motion, respectively. In the third model, the residuals of the macroveoluitonary
 #' predictions of y have variance linear in x. 
 #'
-#' @param x trait values must be equal to the length of y and tips on the tree. NB! x is mean centred in the analysis
+#' @param x trait values must be equal to the length of y and tips on the tree. Note that x is mean centred in the analysis
 #' @param y trait values
 #' @param species names of the species, must be equal in length and in the same order as x and y
 #' @param tree object of class \code{\link{phylo}}, needs to be ultrametric and with total length of unit,
@@ -28,9 +28,9 @@
 #' @export
 
 # TODO:
-# The next thing todo is to go through the function line for line for the model residual_rate
+# Check if the startvalue of a should be changed for the residual rate model
 
-rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = c(var(y), 0), maxiter = 100, silent = FALSE){
+rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = c(a = var(y), b = 0), maxiter = 100, silent = FALSE){
   ### phylogenetic relatedness matrix ###
   # A <- Matrix::Matrix(ape::vcv(tree), sparse = TRUE)
   # Ainv <- Matrix::solve(A)
@@ -69,6 +69,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = c(var
     a_SE_func <- function(Beta_vcov, sigma2) sqrt(Beta_vcov[1,1])
     b_SE_func <- function(Beta_vcov, sigma2) sqrt(4*Beta_vcov[2,2])
   }
+  
   if(model == "predictor_geometricBM"){
     f <- function(sigma2, t_a = 1){
       X <- try((exp(sigma2*t_a)+2*exp(-0.5*sigma2*t_a)-3)/(exp(sigma2*t_a)-1))
@@ -88,6 +89,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = c(var
     a_SE_func <- function(Beta_vcov, sigma2) sqrt(Beta_vcov[1,1] + 9*f(sigma2)^2*(exp(sigma2/2)-1)^2*Beta_vcov[2,2] - 3*f(sigma2)*(exp(sigma2/2-1)*Beta_vcov[1,2]))
     b_SE_func <- function(Beta_vcov, sigma2) sqrt(9*sigma2^2*Beta_vcov[2,2]/(4*f(sigma2)^2))
   }
+  
   if(model == "residual_rate"){
     a_func <- function(Beta, sigma2, mean_x) (1+mean_x^2/sigma2)*Beta[1,1] - Beta[2,1]*mean_x  #can be simplified due to mean centring of x
     b_func <- function(Beta, sigma2, mean_x) Beta[2,1] - Beta[1,1]*mean_x/sigma2               #can be simplified due to mean centring of x
@@ -105,7 +107,9 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = c(var
   t_a <- as.vector(A[!lower.tri(A)])              # age of common ancestor        
   a   <- startv[1]                                # parameter of the process
   b   <- startv[2]                                # parameter of the process
-  x <- x-c(mean_x)                               # NB! x is mean centred in the analysis
+  x <- x-c(mean_x)                                # NB! x is mean centred in the analysis
+  mean_x_original <- mean_x
+  mean_x <- 0
   if(model == "predictor_BM") Beta <- matrix(c(a, b/2))
   if(model == "predictor_geometricBM") Beta <- matrix(c(a+2*b*(exp(sigma2/2)-1)/sigma2, 2*b*f(sigma2)/(3*sigma2))) #can be simplified due to mean centring of x
   if(model == "residual_rate") Beta <- matrix(c(a + b*mean_x, (a + b*mean_x)*mean_x/sigma2 + b)) #can be simplified due to mean centring of x
