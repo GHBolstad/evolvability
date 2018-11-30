@@ -102,6 +102,9 @@ dt <- data.frame(species = paste("s", mod$species, sep = ""),
 
 # running model
 mod1 <- Almer(x ~ 1 + (1|species), data = dt, A = list(species = A))
+
+phylH(mod1, numerator = "species")
+
 ```
 
 # Almer_SE function
