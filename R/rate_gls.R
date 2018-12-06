@@ -169,7 +169,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = c(a =
   param <- cbind(rbind(Beta, a, b, sigma2), rbind(cbind(Beta_SE), a_SE_func(Beta_vcov, sigma2), b_SE_func(Beta_vcov, sigma2), sigma2_SE))
   colnames(param) <- c("Estimate", "SE")
   rownames(param) <- c("Intercept", "Slope", "a", "b", "Sigma^2")
-  # TODO: include Sigma2_y and phylo_heritability of y in the parameter output? and maybe also mean x. Make an param_y and a param_x output
+  # TODO: include Sigma2_y and phylo_heritability of y in the parameter output? and maybe also mean x. Make a param_y and a param_x output
 
   TSS <- t(y2)%*%Rinv%*%(y2) # (generalized) total sum of squares
   Rsquared <- 1-(RSS[i]/TSS)
