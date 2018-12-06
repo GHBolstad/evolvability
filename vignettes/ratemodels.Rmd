@@ -74,58 +74,24 @@ Almer(formula = x ~ 1 + (1|species), data = dt, A = list(species = A))
 mod <- Almer(formula = x ~ 1 + (1|species), data = dt, A = list(species = A))
 
 
-##### phylogenetic heritability #####
+##### residual rate simulation #####
+b_true <- (1:100)/20
+b_est <- NA
+for(i in 1:length(b_true)){
+  n <- 200
+  tree <- geiger::sim.bdtree(b = 1, d = 0, n = n, t = 4)
+  tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
+  
+  x <- exp(rnorm(n))
+  
+  dt <- try(rate_sim(tree, a = 1, b = b_true[i], x = x, model = "residual_rate"), TRUE)
+  mod <- try(rate_gls(x=dt$x, y=dt$y, species=dt$species, tree, model = "residual_rate", maxiter = 100, silent = FALSE), silent = TRUE)
+  b_est[i] <- mod$param["b", 1]
+}
 
-VarCorr(mod)["Residual",]
-
-
-```
-
-
-# Almer function
-This function is a hack of the lmer function in the lme4 package. The difference to the lmer funciton is that it allows correlated random effects structure and can be used to fit phylogentic mixed models. It includes a residual term, however, so it cannot be used to fit a brownian motion model of evolution. 
-
-```{r, eval = FALSE}
-## making a dataset
-n_species <- 10
-tree <- geiger::sim.bdtree(b = 1, d = 0, n = n_species, t = 4)
-tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
-mod <- rate_sim(tree, startv_x=3, sigma_x=1, a= 0.001, b=1) # simulating a BM process stored in mod$x
-mod$x <- mod$x + rnorm(n_species, 0, 0.2) # adding some residual variation
-
-A <- Matrix::Matrix(ape::vcv(tree), sparse = TRUE)
-#A <- as(A, "dgCMatrix")
-# colnames(A) <- paste("q", 1:100)
-# rownames(A) <- paste("q", 1:100)
-dt <- data.frame(species = paste("s", mod$species, sep = ""),
-                 x = mod$x)
-
-# running model
-mod1 <- Almer(x ~ 1 + (1|species), data = dt, A = list(species = A))
-
-phylH(mod1, numerator = "species")
+plot(b_true[1:length(b_est)], b_est)
+abline(0,1)
 
 ```
-
-# Almer_SE function
-This function extends the Almer function by allowing the inclusion of uncertainty of the species means. To do this, we take advantage of how weights are included in the lmer function: the diagonal of the residual covariance matrix is the residual variance parameter $\sigma^2$ times the vector of inverse weights. By using weights equal to $1/(1+SE^2/\sigma^2)$ where SE is a vector of standard errors. We have that the diagonal of the residual covariance matrix is $\sigma^2 + SE^2$. Because the weights includes the residual variance parameter, the function uses an itarative approach.
-
-```{r, eval = FALSE}
-# Vector of SE
-dt$SE <- exp(rnorm(n_species))
-dt$x <- rnorm(10, mod$x, dt$SE)
-
-requre(lme4) #for some reason the function does not manage to find the VarCorr function in the lme4 package
-
-mod_Almer <- Almer_SE(x ~ 1 + (1|species), data = dt, A = list(species = A), SE = SE)
-
-
-mod_lmer <- lmer(x ~ 1 + (1|species), data = dt, control = lmerControl(check.nobs.vs.nlev  = "ignore", 
-                                        check.nobs.vs.rankZ = "ignore", 
-                                        check.nobs.vs.nRE   = "ignore"))
-
-```
-
-# Phylogenetic heritability
 
 

@@ -4,7 +4,8 @@
 \alias{rate_sim}
 \title{Simulating evolutionary rate model}
 \usage{
-rate_sim(tree, startv_x, sigma_x, a, b, model = "predictor_BM")
+rate_sim(tree, startv_x = NULL, sigma_x = NULL, a, b, x = NULL,
+  model = "predictor_BM")
 }
 \arguments{
 \item{tree}{a \code{\link{phylo}} object. Must be ultrametric and scaled to unit length.}
@@ -15,7 +16,11 @@ rate_sim(tree, startv_x, sigma_x, a, b, model = "predictor_BM")
 
 \item{b}{parameter of the evolutionary rate of y (see details)}
 
-\item{model}{either Brownaian motion model of x "predictor_BM", or geometric Brownian motion model of x "predictor_geometricBM"}
+\item{x}{fixed values of x (only for the "residual_rate" model), 
+must equal number of tips in the pylogeny, must be the same order as the tip labels}
+
+\item{model}{either Brownaian motion model of x "predictor_BM", 
+geometric Brownian motion model of x "predictor_geometricBM", or "residual_rate".}
 
 \item{starv_x}{star value for x}
 }

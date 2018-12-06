@@ -1,0 +1,84 @@
+---
+title: "Phylogenetic mixed model"
+author: "Geir Bolstad"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+# The Almer function
+
+The Almer function can be used to fit phylogenetic mixed models. It does not fit pure Brownian motion models as it does not allow for correlated residual effects.   
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+We first need a phylogeny of unit depth. To do this, the we use the function sim.bdtree in the geiger package.
+```{r}
+n_species <- 100
+tree <- geiger::sim.bdtree(b = 1, d = 0, n = n_species, t = 4)
+tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1] 
+```
+
+From this we can make the phylogenetic relatedness matrix A.
+```{r}
+A <- Matrix::Matrix(ape::vcv(tree), sparse = TRUE)
+```
+
+The columnames of A must be the species identifier.
+```{r}
+colnames(A) <- rownames(A) <- paste("species", 1:n_species, sep = "_")
+```
+
+From this we can simulate a Browninan motion process and add some residual noise.
+```{r}
+y <- 5 + t(chol(A))%*%rnorm(n_species, 0, 2) + # BM process with mean 5 and s.d. 2
+     rnorm(n_species, 0, 1)             # residual variation with s.d. 1
+```
+
+For Almer to work, the data must also have the spcies identifier.
+```{r}
+dt <- data.frame(species = colnames(A),
+                 y = as.vector(y))
+```
+
+Almer can then estimate the means and variances of the process.
+```{r}
+mod <- Almer(y ~ 1 + (1|species), data = dt, A = list(species = A))
+mod
+```
+
+The Almer function is flexible as it is based on the lmer function... blah blah
+
+# The Almer_SE function
+This function extends the Almer function by allowing the inclusion of uncertainty of the species means. To do this, we take advantage of how weights are included in the lmer function: the diagonal of the residual covariance matrix is the residual variance parameter $\sigma^2$ times the vector of inverse weights. By using weights equal to $1/(1+SE^2/\sigma^2)$, where SE is a vector of standard errors, the diagonal of the residual covariance matrix is $\sigma^2 + SE^2$. Because the weights includes the residual variance parameter, the function uses an itarative approach.   
+
+...
+
+```{r}
+
+```
+
+# Simulating data from the fitted model
+The simulate_Almer function can be used to simulate the responses, in our case species means, of the fitted model. This can be further used to do parametric bootstrapping.
+```{r}
+sim_y <- simulate_Almer(mod, nsim = 3)
+head(sim_y)
+```
+
+# Phylogenetic heritability
+The phylH function can be used to estimate the phylogenetic heritability of a object fitted by Almer. The 95% confidence interval is estiamted by bootstrapping. The name of the numerator of the heritability, and unless the phylogenetic residual is estiamted as residuals in the model fit, the name of the phylogenetic residuals also needs to be given.  
+
+```{r}
+phylH(mod, numerator = "species", nsim = 10)
+```
+
+

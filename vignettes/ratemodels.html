@@ -12,7 +12,7 @@
 
 <meta name="author" content="Geir Bolstad" />
 
-<meta name="date" content="2018-11-27" />
+<meta name="date" content="2018-12-06" />
 
 <title>Rate models</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Rate models</h1>
 <h4 class="author"><em>Geir Bolstad</em></h4>
-<h4 class="date"><em>2018-11-27</em></h4>
+<h4 class="date"><em>2018-12-06</em></h4>
 
 
 
@@ -128,48 +128,16 @@ A &lt;-<span class="st"> </span>A[<span class="dv">100</span><span class="op">-<
 mod &lt;-<span class="st"> </span><span class="kw">Almer</span>(<span class="dt">formula =</span> x <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">A =</span> <span class="kw">list</span>(<span class="dt">species =</span> A))
 
 
-##### phylogenetic heritability #####
+##### residual rate simulation #####
 
-<span class="kw">VarCorr</span>(mod)[<span class="st">&quot;Residual&quot;</span>,]</code></pre></div>
-<div id="almer-function" class="section level1">
-<h1>Almer function</h1>
-<p>This function is a hack of the lmer function in the lme4 package. The difference to the lmer funciton is that it allows correlated random effects structure and can be used to fit phylogentic mixed models. It includes a residual term, however, so it cannot be used to fit a brownian motion model of evolution.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## making a dataset
-n_species &lt;-<span class="st"> </span><span class="dv">10</span>
-tree &lt;-<span class="st"> </span>geiger<span class="op">::</span><span class="kw">sim.bdtree</span>(<span class="dt">b =</span> <span class="dv">1</span>, <span class="dt">d =</span> <span class="dv">0</span>, <span class="dt">n =</span> n_species, <span class="dt">t =</span> <span class="dv">4</span>)
+tree &lt;-<span class="st"> </span>geiger<span class="op">::</span><span class="kw">sim.bdtree</span>(<span class="dt">b =</span> <span class="dv">1</span>, <span class="dt">d =</span> <span class="dv">0</span>, <span class="dt">n =</span> <span class="dv">200</span>, <span class="dt">t =</span> <span class="dv">4</span>)
 tree<span class="op">$</span>edge.length &lt;-<span class="st"> </span>tree<span class="op">$</span>edge.length<span class="op">/</span><span class="kw">diag</span>(ape<span class="op">::</span><span class="kw">vcv</span>(tree))[<span class="dv">1</span>]
-mod &lt;-<span class="st"> </span><span class="kw">rate_sim</span>(tree, <span class="dt">startv_x=</span><span class="dv">3</span>, <span class="dt">sigma_x=</span><span class="dv">1</span>, <span class="dt">a=</span> <span class="fl">0.001</span>, <span class="dt">b=</span><span class="dv">1</span>) <span class="co"># simulating a BM process stored in mod$x</span>
-mod<span class="op">$</span>x &lt;-<span class="st"> </span>mod<span class="op">$</span>x <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(n_species, <span class="dv">0</span>, <span class="fl">0.2</span>) <span class="co"># adding some residual variation</span>
 
-A &lt;-<span class="st"> </span>Matrix<span class="op">::</span><span class="kw">Matrix</span>(ape<span class="op">::</span><span class="kw">vcv</span>(tree), <span class="dt">sparse =</span> <span class="ot">TRUE</span>)
-<span class="co">#A &lt;- as(A, &quot;dgCMatrix&quot;)</span>
-<span class="co"># colnames(A) &lt;- paste(&quot;q&quot;, 1:100)</span>
-<span class="co"># rownames(A) &lt;- paste(&quot;q&quot;, 1:100)</span>
-dt &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">species =</span> <span class="kw">paste</span>(<span class="st">&quot;s&quot;</span>, mod<span class="op">$</span>species, <span class="dt">sep =</span> <span class="st">&quot;&quot;</span>),
-                 <span class="dt">x =</span> mod<span class="op">$</span>x)
+x &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="kw">rnorm</span>(<span class="dv">100</span>))
 
-<span class="co"># running model</span>
-mod1 &lt;-<span class="st"> </span><span class="kw">Almer</span>(x <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">A =</span> <span class="kw">list</span>(<span class="dt">species =</span> A))</code></pre></div>
-</div>
-<div id="almer_se-function" class="section level1">
-<h1>Almer_SE function</h1>
-<p>This function extends the Almer function by allowing the inclusion of uncertainty of the species means. To do this, we take advantage of how weights are included in the lmer function: the diagonal of the residual covariance matrix is the residual variance parameter <span class="math inline">\(\sigma^2\)</span> times the vector of inverse weights. By using weights equal to <span class="math inline">\(1/(1+SE^2/\sigma^2)\)</span> where SE is a vector of standard errors. We have that the diagonal of the residual covariance matrix is <span class="math inline">\(\sigma^2 + SE^2\)</span>. Because the weights includes the residual variance parameter, the function uses an itarative approach.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Vector of SE</span>
-dt<span class="op">$</span>SE &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="kw">rnorm</span>(n_species))
-dt<span class="op">$</span>x &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">10</span>, mod<span class="op">$</span>x, dt<span class="op">$</span>SE)
-
-<span class="kw">requre</span>(lme4) <span class="co">#for some reason the function does not manage to find the VarCorr function in the lme4 package</span>
-
-mod_Almer &lt;-<span class="st"> </span><span class="kw">Almer_SE</span>(x <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">A =</span> <span class="kw">list</span>(<span class="dt">species =</span> A), <span class="dt">SE =</span> SE)
-
-
-mod_lmer &lt;-<span class="st"> </span><span class="kw">lmer</span>(x <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">control =</span> <span class="kw">lmerControl</span>(<span class="dt">check.nobs.vs.nlev  =</span> <span class="st">&quot;ignore&quot;</span>, 
-                                        <span class="dt">check.nobs.vs.rankZ =</span> <span class="st">&quot;ignore&quot;</span>, 
-                                        <span class="dt">check.nobs.vs.nRE   =</span> <span class="st">&quot;ignore&quot;</span>))</code></pre></div>
-</div>
-<div id="phylogenetic-heritability" class="section level1">
-<h1>Phylogenetic heritability</h1>
-</div>
+dt &lt;-<span class="st"> </span><span class="kw">rate_sim</span>(tree, <span class="dt">a =</span> <span class="dv">1</span>, <span class="dt">b =</span> <span class="dv">2</span>, <span class="dt">x =</span> x, <span class="dt">model =</span> <span class="st">&quot;residual_rate&quot;</span>)
+mod &lt;-<span class="st"> </span><span class="kw">rate_gls</span>(<span class="dt">x=</span>dt<span class="op">$</span>x, <span class="dt">y=</span>dt<span class="op">$</span>y, <span class="dt">species=</span>dt<span class="op">$</span>species, tree, <span class="dt">model =</span> <span class="st">&quot;residual_rate&quot;</span>, <span class="dt">maxiter =</span> <span class="dv">100</span>, <span class="dt">silent =</span> <span class="ot">FALSE</span>)
+mod<span class="op">$</span>param</code></pre></div>
 
 
 

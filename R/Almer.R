@@ -40,14 +40,17 @@ Almer <- function(formula, data = NULL, REML = TRUE, A = list(),
                                         check.nobs.vs.nRE   = "ignore"),
                   start = NULL, verbose = 0L, subset, weights, na.action,
                   offset, contrasts = NULL, devFunOnly = FALSE, ...){
+  # combine this with function with Almer_SE
+  # add a phylogeny argument
+  # add a pedigree argument
   mc <- match.call()
-  cholA <- lapply(A, chol)
+  cholA <- lapply(A, function(x) chol(x))
   mod <- lFormula(formula, data, control=control, ...) # have to check how to include the additional arguments
   for(i in seq_along(cholA)){
     j <- match(names(cholA)[i], names(mod$reTrms$cnms))
     if(length(j)>1) stop("an A matrix can only be associated with one random effect term")
     ranef_order <- match(rownames(mod$reTrms$Ztlist[[j]]), rownames(cholA[[i]]))
-    mod$reTrms$Ztlist[[j]] <- cholA[[i]][ranef_order,ranef_order] %*% mod$reTrms$Ztlist[[j]]
+    mod$reTrms$Ztlist[[j]] <- cholA[[i]][ranef_order,ranef_order]%*%mod$reTrms$Ztlist[[j]]
   }
   mod$reTrms$Zt <- do.call(rbind, mod$reTrms$Ztlist)
   devfun <- do.call(mkLmerDevfun, mod)
