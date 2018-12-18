@@ -97,15 +97,15 @@ mod
 <span class="co">#&gt; Linear mixed model fit by REML ['lmerMod']</span>
 <span class="co">#&gt; Formula: y ~ 1 + (1 | species)</span>
 <span class="co">#&gt;    Data: dt</span>
-<span class="co">#&gt; REML criterion at convergence: 368.4959</span>
+<span class="co">#&gt; REML criterion at convergence: 401.2156</span>
 <span class="co">#&gt; Random effects:</span>
 <span class="co">#&gt;  Groups   Name        Std.Dev.</span>
-<span class="co">#&gt;  species  (Intercept) 2.0053  </span>
-<span class="co">#&gt;  Residual             0.9598  </span>
+<span class="co">#&gt;  species  (Intercept) 2.152   </span>
+<span class="co">#&gt;  Residual             1.148   </span>
 <span class="co">#&gt; Number of obs: 100, groups:  species, 100</span>
 <span class="co">#&gt; Fixed Effects:</span>
 <span class="co">#&gt; (Intercept)  </span>
-<span class="co">#&gt;       3.733</span></code></pre></div>
+<span class="co">#&gt;       4.143</span></code></pre></div>
 <p>The Almer function is flexible as it is based on the lmer function… blah blah</p>
 </div>
 <div id="the-almer_se-function" class="section level1">
@@ -118,7 +118,7 @@ mod
 <p>The simulate_Almer function can be used to simulate the responses, in our case species means, of the fitted model. This can be further used to do parametric bootstrapping.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_y &lt;-<span class="st"> </span><span class="kw">simulate_Almer</span>(mod, <span class="dt">nsim =</span> <span class="dv">3</span>)
 <span class="kw">head</span>(sim_y)
-<span class="co">#&gt; [1] 4.838485 2.512690 2.652204 1.058419 0.118249 1.744315</span></code></pre></div>
+<span class="co">#&gt; [1] 3.581116 2.683375 2.332280 3.132614 4.979091 7.078106</span></code></pre></div>
 </div>
 <div id="phylogenetic-heritability" class="section level1">
 <h1>Phylogenetic heritability</h1>
@@ -126,13 +126,13 @@ mod
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">phylH</span>(mod, <span class="dt">numerator =</span> <span class="st">&quot;species&quot;</span>, <span class="dt">nsim =</span> <span class="dv">10</span>)
 <span class="co">#&gt; $phylH</span>
 <span class="co">#&gt; Phylo Heritability               2.5%              97.5% </span>
-<span class="co">#&gt;          0.8136052          0.6375324          0.8737543 </span>
+<span class="co">#&gt;          0.7782843          0.5637669          0.9507545 </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; $bootstrap</span>
 <span class="co">#&gt;     Sim_1     Sim_2     Sim_3     Sim_4     Sim_5     Sim_6     Sim_7 </span>
-<span class="co">#&gt; 0.8516475 0.7547902 0.8520382 0.6297160 0.8176917 0.8135060 0.7881965 </span>
+<span class="co">#&gt; 0.9783721 0.7590503 0.8556272 0.8102334 0.8372769 0.8138446 0.5365806 </span>
 <span class="co">#&gt;     Sim_8     Sim_9    Sim_10 </span>
-<span class="co">#&gt; 0.8800590 0.7127359 0.6644556</span></code></pre></div>
+<span class="co">#&gt; 0.7664627 0.7397383 0.6574085</span></code></pre></div>
 </div>
 
 

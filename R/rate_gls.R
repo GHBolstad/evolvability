@@ -14,7 +14,8 @@
 #' @param tree object of class \code{\link{phylo}}, needs to be ultrametric and with total length of unit,
 #' tips must have the same names as in \code{species}
 #' @param model either "predictor_BM", "predictor_geometricBM" or "residual_rate"
-#' @param startv vector of starting values for the a and b parameters 
+#' @param startv vector of starting values for the a and b parameters. ----- NB! for "residual
+#' rate" model, the starting value of a is not used. -----
 #'  
 #' @return \code{rate_gls} 
 #' 
@@ -24,13 +25,14 @@
 #' 
 #' @importFrom ape vcv
 #' @importFrom lme4 VarCorr
+#' @importFrom Matrix Matrix
 #' 
 #' @export
 
 # TODO:
 # Check if the startvalue of a should be changed for the residual rate model
 
-rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = c(a = var(y), b = 0), maxiter = 100, silent = FALSE){
+rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(a = NULL, b = NULL), maxiter = 100, silent = FALSE){
   ### phylogenetic relatedness matrix ###
   # A <- Matrix::Matrix(ape::vcv(tree), sparse = TRUE)
   # Ainv <- Matrix::solve(A)
@@ -69,7 +71,6 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = c(a =
     a_SE_func <- function(Beta_vcov, sigma2) sqrt(Beta_vcov[1,1])
     b_SE_func <- function(Beta_vcov, sigma2) sqrt(4*Beta_vcov[2,2])
   }
-  
   if(model == "predictor_geometricBM"){
     f <- function(sigma2, t_a = 1){
       X <- try((exp(sigma2*t_a)+2*exp(-0.5*sigma2*t_a)-3)/(exp(sigma2*t_a)-1))
@@ -89,14 +90,13 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = c(a =
     a_SE_func <- function(Beta_vcov, sigma2) sqrt(Beta_vcov[1,1] + 9*f(sigma2)^2*(exp(sigma2/2)-1)^2*Beta_vcov[2,2] - 3*f(sigma2)*(exp(sigma2/2-1)*Beta_vcov[1,2]))
     b_SE_func <- function(Beta_vcov, sigma2) sqrt(9*sigma2^2*Beta_vcov[2,2]/(4*f(sigma2)^2))
   }
-  
   if(model == "residual_rate"){
     a_func <- function(Beta, sigma2, mean_x) (1+mean_x^2/sigma2)*Beta[1,1] - Beta[2,1]*mean_x  #can be simplified due to mean centring of x
     b_func <- function(Beta, sigma2, mean_x) Beta[2,1] - Beta[1,1]*mean_x/sigma2               #can be simplified due to mean centring of x
     R_func <- function(a, b, sigma2, t_a, V){
       Vinv <- solve(V)
       dVmin2 <- diag(x = diag(Vinv)^-2)
-      return(2*dVmin2%*%Vinv*dVmin2%*%Vinv+diag(dVmin2%*%Vinv)%*%t(diag(dVmin2%*%Vinv)))
+      return(2* (dVmin2%*%Vinv) * (dVmin2%*%Vinv))
     }
     a_SE_func <- function(Beta_vcov, sigma2) sqrt(Beta_vcov[1,1]) # NB! x must be mean centred for this to be true
     b_SE_func <- function(Beta_vcov, sigma2) sqrt(Beta_vcov[2,2]) # NB! x must be mean centred for this to be true
@@ -105,60 +105,100 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = c(a =
   # initial values
   RSS <- NA                                       # residual sum of squares
   t_a <- as.vector(A[!lower.tri(A)])              # age of common ancestor        
-  a   <- startv[1]                                # parameter of the process
-  b   <- startv[2]                                # parameter of the process
+  a   <- startv$a                                 # parameter of the process
+  b   <- startv$b                                 # parameter of the process
   x <- x-c(mean_x)                                # NB! x is mean centred in the analysis
   mean_x_original <- mean_x
   mean_x <- 0
-  if(model == "predictor_BM") Beta <- matrix(c(a, b/2))
-  if(model == "predictor_geometricBM") Beta <- matrix(c(a+2*b*(exp(sigma2/2)-1)/sigma2, 2*b*f(sigma2)/(3*sigma2))) #can be simplified due to mean centring of x
-  if(model == "residual_rate") Beta <- matrix(c(a + b*mean_x, (a + b*mean_x)*mean_x/sigma2 + b)) #can be simplified due to mean centring of x
-    
-  # residual covariance matrix
+  
+  # response variabe and residual covariance matrix
   if(model != "residual_rate") {
+    # response variable
+    y2 <- y^2
+    
+    # finding starting values when not specified
+    if(is.null(a) | is.null(b)){ 
+      coef_lm <- coef(lm(y2~x))
+      if(is.null(a)) a <- coef_lm[1]
+      if(is.null(b)) b <- coef_lm[2]
+    }
     R <- A                                          
     R[!lower.tri(R)] <- R_func(a, b, sigma2, t_a, V)
     R[lower.tri(R)] <- t(R)[lower.tri(R)]
   }
+  
   if(model == "residual_rate") {
-    sigma2_y <- VarCorr(Almer(y~1+(1|species)))$species[1]
-    E <- a*diag(length(x))+diag(x = b*x)
-    V <- sigma2_y*A + E
-    R <- R_func(a, b, sigma2, t_a, V)
+    mod_Almer <- Almer(y ~ 1 + (1|species), A = list(species = Matrix::Matrix(A, sparse = TRUE)))
+    sigma2_y <- VarCorr(mod_Almer)$species[1]
+    residvar <- attr(VarCorr(mod_Almer), "sc")^2
+    V <- sigma2_y*A + residvar*diag(length(x))
+    Vinv <- solve(V)
+    y_mean <- as.matrix(apply(cbind(y), 1, function(x) (sum(y)-x)/(length(y)-1)))
+    y_predicted <- y_mean + (V - solve(diag(x = diag(Vinv))))%*%Vinv%*%(y-y_mean)
+    y2 <- (y-y_predicted)^2
+    
+    if(is.null(a) | is.null(b)){ # finding starting values
+      coef_lm <- coef(lm(y2~x))
+      if(is.null(a)) a <- coef_lm[1]
+      if(is.null(b)) b <- coef_lm[2]
+      E <- c(a)*diag(length(x)) + diag(x = c(b*x))
+      V <- sigma2_y*A + E
+      R <- R_func(a, b, sigma2, t_a, V)
+      
+      # Making sure that the correlations in the residuals are below 1 
+      while(max(cov2cor(R)[upper.tri(R)])>=1){
+        b <- b*0.95
+        E <- c(a)*diag(length(x)) + diag(x = c(b*x))
+        V <- sigma2_y*A + E
+        R <- R_func(a, b, sigma2, t_a, V)
+      }
+    }
+    else{ # when starting values are specified
+      E <- c(a)*diag(length(x)) + diag(x = c(b*x))
+      V <- sigma2_y*A + E
+      R <- R_func(a, b, sigma2, t_a, V)
+    }
   }
+  
+  # inverse of residual covariance matrix
   Rinv <- solve(R)
   
-  # response variable
-  if(model == "residual_rate") {
-    y_mean <- as.matrix(apply(cbind(y), 1, function(x) (sum(y)-x)/(length(y)-1)))
-    y_predicted <- y_mean + (R - solve(diag(x = diag(Rinv))))%*%Rinv%*%(y-y_mean)
-    y2 <- (y-y_predicted)^2
-  }
-  else y2 <- y^2
-  
-
-  # design matrix  
+  # gls design matrix  
   X <- as.matrix(cbind(rep(1, length(x)), x))
   
-  # updating values
+  # updating values using gls
   for(i in 1:maxiter){
+    
+    if(model == "residual_rate") {
+      # updating response variable updating response variable according to new V
+      Vinv <- solve(V)
+      y_predicted <- y_mean + (V - solve(diag(x = diag(Vinv))))%*%Vinv%*%(y-y_mean)
+      y2 <- (y-y_predicted)^2
+    }
+    
+    # gls estimates
     Beta <- solve(t(X)%*%Rinv%*%X)%*%t(X)%*%Rinv%*%y2
     a <- a_func(Beta, sigma2, mean_x)
     b <- b_func(Beta, sigma2, mean_x)
+    
+    # updating residual covariance matrix using gls estimates
     if(model != "residual_rate") {
       R[!lower.tri(R)] <- R_func(a, b, sigma2, t_a)
       R[lower.tri(R)] <- t(R)[lower.tri(R)]
     }
+    
     if(model == "residual_rate") {
-      E <- c(a)*diag(length(x))+diag(x = c(b)*x)
+      E <- c(a)*diag(length(x)) + diag(x = c(b*x))
       V <- sigma2_y*A + E
       R <- R_func(a, b, sigma2, t_a, V)
+      
     }
+    
     Rinv <- solve(R)
     
     # residual sum of squares
     RSS[i] <- t(y2-X%*%Beta)%*%Rinv%*%(y2-X%*%Beta)
-    if(!silent) print(paste("Residual sum of squares:", RSS[i]))
+    if(!silent) print(paste("Generalized residual sum of squares:", RSS[i]))
     if(i>1){
       if(RSS[i]<=RSS[i-1] & RSS[i-1]-RSS[i]<1e-8) break()
     }
@@ -179,7 +219,11 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = c(a =
   # C_inv <- solve(C)
   # resid_var <- sum((C_inv%*%(y2-X%*%Beta))^2)/(length(y2)-nrow(Beta))
   
-  if(i == maxiter) warning("Model reached maximum number of iterations without convergence")
+  if(i == maxiter){
+    warning("Model reached maximum number of iterations without convergence")
+    convergence <- "No convergence"
+  }
+  else  convergence <- "Convergence"
   
-  return(list(param = param, RSS = RSS, Rsquared = Rsquared, R=R, tree = tree, model = model))
+  return(list(param = param, RSS = RSS, Rsquared = Rsquared, R=R, tree = tree, model = model, convergence = convergence))
 }

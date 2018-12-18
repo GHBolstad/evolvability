@@ -5,10 +5,10 @@
 \title{Linear mixed model with correlated random effects structure}
 \usage{
 Almer(formula, data = NULL, REML = TRUE, A = list(),
-  control = lmerControl(check.nobs.vs.nlev = "ignore", check.nobs.vs.rankZ =
-  "ignore", check.nobs.vs.nRE = "ignore"), start = NULL, verbose = 0L,
-  subset, weights, na.action, offset, contrasts = NULL, devFunOnly = FALSE,
-  ...)
+  control = lmerControl(check.nobs.vs.nlev = "ignore",
+  check.nobs.vs.rankZ = "ignore", check.nobs.vs.nRE = "ignore"),
+  start = NULL, verbose = 0L, subset, weights, na.action, offset,
+  contrasts = NULL, devFunOnly = FALSE, ...)
 }
 \arguments{
 \item{formula}{as in \code{\link{lmer}}.}

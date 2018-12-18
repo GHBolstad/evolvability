@@ -60,14 +60,28 @@ knitr::opts_chunk$set(
 #  
 #  
 #  ##### residual rate simulation #####
+#  b_true <- (1:100)/20
+#  b_est <- NA
+#  for(i in 1:length(b_true)){
+#    n <- 200
+#    tree <- geiger::sim.bdtree(b = 1, d = 0, n = n, t = 4)
+#    tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
 #  
-#  tree <- geiger::sim.bdtree(b = 1, d = 0, n = 200, t = 4)
-#  tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
+#    x <- exp(rnorm(n))
 #  
-#  x <- exp(rnorm(100))
+#    dt <- rate_sim(tree, a = 1, b = b_true[i], x = x, model = "residual_rate")
+#    mod <- rate_gls(x=dt$x, y=dt$y, species=dt$species, tree, model = "residual_rate", maxiter = 100, silent = FALSE,
+#                        startv = list(a=NULL, b=NULL))
+#    if(mod$convergence == "Convergence") b_est[i] <- mod$param["b", 1]
+#    else b_est[i] <- NA
 #  
-#  dt <- rate_sim(tree, a = 1, b = 2, x = x, model = "residual_rate")
-#  mod <- rate_gls(x=dt$x, y=dt$y, species=dt$species, tree, model = "residual_rate", maxiter = 100, silent = FALSE)
-#  mod$param
+#  }
+#  
+#  plot(b_true, b_est)
+#  abline(0,1)
+#  abline(lm(b_est~b_true[1:length(b_est)]))
+#  
+#  warnings()
+#  
 #  
 

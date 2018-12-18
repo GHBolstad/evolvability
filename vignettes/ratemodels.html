@@ -12,14 +12,14 @@
 
 <meta name="author" content="Geir Bolstad" />
 
-<meta name="date" content="2018-12-06" />
+<meta name="date" content="2018-12-18" />
 
 <title>Rate models</title>
 
 
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
+<style type="text/css" data-origin="pandoc">
 div.sourceCode { overflow-x: auto; }
 table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
   margin: 0; padding: 0; vertical-align: baseline; border: none; }
@@ -55,7 +55,29 @@ code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
 code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
 code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
 code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+
 </style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
 
 
 
@@ -70,7 +92,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Rate models</h1>
 <h4 class="author"><em>Geir Bolstad</em></h4>
-<h4 class="date"><em>2018-12-06</em></h4>
+<h4 class="date"><em>2018-12-18</em></h4>
 
 
 
@@ -129,15 +151,28 @@ mod &lt;-<span class="st"> </span><span class="kw">Almer</span>(<span class="dt"
 
 
 ##### residual rate simulation #####
+b_true &lt;-<span class="st"> </span>(<span class="dv">1</span><span class="op">:</span><span class="dv">100</span>)<span class="op">/</span><span class="dv">20</span>
+b_est &lt;-<span class="st"> </span><span class="ot">NA</span>
+<span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(b_true)){
+  n &lt;-<span class="st"> </span><span class="dv">200</span>
+  tree &lt;-<span class="st"> </span>geiger<span class="op">::</span><span class="kw">sim.bdtree</span>(<span class="dt">b =</span> <span class="dv">1</span>, <span class="dt">d =</span> <span class="dv">0</span>, <span class="dt">n =</span> n, <span class="dt">t =</span> <span class="dv">4</span>)
+  tree<span class="op">$</span>edge.length &lt;-<span class="st"> </span>tree<span class="op">$</span>edge.length<span class="op">/</span><span class="kw">diag</span>(ape<span class="op">::</span><span class="kw">vcv</span>(tree))[<span class="dv">1</span>]
+  
+  x &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="kw">rnorm</span>(n))
+  
+  dt &lt;-<span class="st"> </span><span class="kw">rate_sim</span>(tree, <span class="dt">a =</span> <span class="dv">1</span>, <span class="dt">b =</span> b_true[i], <span class="dt">x =</span> x, <span class="dt">model =</span> <span class="st">&quot;residual_rate&quot;</span>)
+  mod &lt;-<span class="st"> </span><span class="kw">rate_gls</span>(<span class="dt">x=</span>dt<span class="op">$</span>x, <span class="dt">y=</span>dt<span class="op">$</span>y, <span class="dt">species=</span>dt<span class="op">$</span>species, tree, <span class="dt">model =</span> <span class="st">&quot;residual_rate&quot;</span>, <span class="dt">maxiter =</span> <span class="dv">100</span>, <span class="dt">silent =</span> <span class="ot">FALSE</span>, 
+                      <span class="dt">startv =</span> <span class="kw">list</span>(<span class="dt">a=</span><span class="ot">NULL</span>, <span class="dt">b=</span><span class="ot">NULL</span>))
+  <span class="cf">if</span>(mod<span class="op">$</span>convergence <span class="op">==</span><span class="st"> &quot;Convergence&quot;</span>) b_est[i] &lt;-<span class="st"> </span>mod<span class="op">$</span>param[<span class="st">&quot;b&quot;</span>, <span class="dv">1</span>]
+  <span class="cf">else</span> b_est[i] &lt;-<span class="st"> </span><span class="ot">NA</span>
+  
+}
 
-tree &lt;-<span class="st"> </span>geiger<span class="op">::</span><span class="kw">sim.bdtree</span>(<span class="dt">b =</span> <span class="dv">1</span>, <span class="dt">d =</span> <span class="dv">0</span>, <span class="dt">n =</span> <span class="dv">200</span>, <span class="dt">t =</span> <span class="dv">4</span>)
-tree<span class="op">$</span>edge.length &lt;-<span class="st"> </span>tree<span class="op">$</span>edge.length<span class="op">/</span><span class="kw">diag</span>(ape<span class="op">::</span><span class="kw">vcv</span>(tree))[<span class="dv">1</span>]
+<span class="kw">plot</span>(b_true, b_est)
+<span class="kw">abline</span>(<span class="dv">0</span>,<span class="dv">1</span>)
+<span class="kw">abline</span>(<span class="kw">lm</span>(b_est<span class="op">~</span>b_true[<span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(b_est)]))
 
-x &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="kw">rnorm</span>(<span class="dv">100</span>))
-
-dt &lt;-<span class="st"> </span><span class="kw">rate_sim</span>(tree, <span class="dt">a =</span> <span class="dv">1</span>, <span class="dt">b =</span> <span class="dv">2</span>, <span class="dt">x =</span> x, <span class="dt">model =</span> <span class="st">&quot;residual_rate&quot;</span>)
-mod &lt;-<span class="st"> </span><span class="kw">rate_gls</span>(<span class="dt">x=</span>dt<span class="op">$</span>x, <span class="dt">y=</span>dt<span class="op">$</span>y, <span class="dt">species=</span>dt<span class="op">$</span>species, tree, <span class="dt">model =</span> <span class="st">&quot;residual_rate&quot;</span>, <span class="dt">maxiter =</span> <span class="dv">100</span>, <span class="dt">silent =</span> <span class="ot">FALSE</span>)
-mod<span class="op">$</span>param</code></pre></div>
+<span class="kw">warnings</span>()</code></pre></div>
 
 
 

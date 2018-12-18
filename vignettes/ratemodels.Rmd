@@ -84,13 +84,20 @@ for(i in 1:length(b_true)){
   
   x <- exp(rnorm(n))
   
-  dt <- try(rate_sim(tree, a = 1, b = b_true[i], x = x, model = "residual_rate"), TRUE)
-  mod <- try(rate_gls(x=dt$x, y=dt$y, species=dt$species, tree, model = "residual_rate", maxiter = 100, silent = FALSE), silent = TRUE)
-  b_est[i] <- mod$param["b", 1]
+  dt <- rate_sim(tree, a = 1, b = b_true[i], x = x, model = "residual_rate")
+  mod <- rate_gls(x=dt$x, y=dt$y, species=dt$species, tree, model = "residual_rate", maxiter = 100, silent = FALSE, 
+                      startv = list(a=NULL, b=NULL))
+  if(mod$convergence == "Convergence") b_est[i] <- mod$param["b", 1]
+  else b_est[i] <- NA
+  
 }
 
-plot(b_true[1:length(b_est)], b_est)
+plot(b_true, b_est)
 abline(0,1)
+abline(lm(b_est~b_true[1:length(b_est)]))
+
+warnings()
+
 
 ```
 

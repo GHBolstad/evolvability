@@ -4,8 +4,8 @@
 \alias{rate_gls}
 \title{Generalized least squares rate model}
 \usage{
-rate_gls(x, y, species, tree, model = "predictor_BM", startv = c(a = var(y),
-  b = 0), maxiter = 100, silent = FALSE)
+rate_gls(x, y, species, tree, model = "predictor_BM", startv = list(a =
+  NULL, b = NULL), maxiter = 100, silent = FALSE)
 }
 \arguments{
 \item{x}{trait values must be equal to the length of y and tips on the tree. Note that x is mean centred in the analysis}
@@ -19,7 +19,8 @@ tips must have the same names as in \code{species}}
 
 \item{model}{either "predictor_BM", "predictor_geometricBM" or "residual_rate"}
 
-\item{startv}{vector of starting values for the a and b parameters}
+\item{startv}{vector of starting values for the a and b parameters. ----- NB! for "residual
+rate" model, the starting value of a is not used. -----}
 }
 \value{
 \code{rate_gls}
