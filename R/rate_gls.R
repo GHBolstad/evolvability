@@ -3,19 +3,25 @@
 #' \code{rate_gls} Generalized least squares rate model
 #' 
 #' \code{rate_gls} Fits a generalized least squares model to estimate parameters of the evolutoinary model of two traits x and y, 
-#' where the rate of y depends on the value of x. Three models are implmented. In the two first, "predictor_BM" and
+#' where the evoluitonary rate of y depends on the value of x. Three models are implmented. In the two first, "predictor_BM" and
 #' "predictor_geometricBM", the evolution of y follows a Brownian motion with variance linear in x, while the evolution of x either
 #' follows a Brownian motion or a geometric brownian motion, respectively. In the third model, the residuals of the macroveoluitonary
 #' predictions of y have variance linear in x. 
 #'
 #' @param x trait values must be equal to the length of y and tips on the tree. Note that x is mean centred in the analysis
-#' @param y trait values
+#' @param y trait values of response variable
 #' @param species names of the species, must be equal in length and in the same order as x and y
 #' @param tree object of class \code{\link{phylo}}, needs to be ultrametric and with total length of unit,
 #' tips must have the same names as in \code{species}
 #' @param model either "predictor_BM", "predictor_geometricBM" or "residual_rate"
-#' @param startv vector of starting values for the a and b parameters. ----- NB! for "residual
-#' rate" model, the starting value of a is not used. -----
+#' @param startv vector of starting values for the a and b parameters. 
+#' 
+#' @details the generalized least squares (GLS) model fit a regression where explanatory variable is x (mean centred) and the
+#' response variable is vector of squared y values for the "predictor_BM" and "predictor_geometricBM" models and squared deviation from
+#' the evolutionary predictions (squared residuals) in the "residual_rate" model. From the intercept and slope of the GLS fit
+#' the following evolutionary paramters (a and b) are estimated. 
+#' 
+#' <the evolutionary models>
 #'  
 #' @return \code{rate_gls} 
 #' 
@@ -196,9 +202,9 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     
     Rinv <- solve(R)
     
-    # residual sum of squares
+    # Objective function
     RSS[i] <- t(y2-X%*%Beta)%*%Rinv%*%(y2-X%*%Beta)
-    if(!silent) print(paste("Generalized residual sum of squares:", RSS[i]))
+    if(!silent) print(paste("GLS objective function values:", RSS[i]))
     if(i>1){
       if(RSS[i]<=RSS[i-1] & RSS[i-1]-RSS[i]<1e-8) break()
     }
@@ -208,11 +214,14 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
   Beta_SE <- sqrt(diag(Beta_vcov))
   param <- cbind(rbind(Beta, a, b, sigma2), rbind(cbind(Beta_SE), a_SE_func(Beta_vcov, sigma2), b_SE_func(Beta_vcov, sigma2), sigma2_SE))
   colnames(param) <- c("Estimate", "SE")
-  rownames(param) <- c("Intercept", "Slope", "a", "b", "Sigma^2")
+  rownames(param) <- c("Intercept", "Slope", "a", "b", "Sigma2_x")
   # TODO: include Sigma2_y and phylo_heritability of y in the parameter output? and maybe also mean x. Make a param_y and a param_x output
-
-  TSS <- t(y2)%*%Rinv%*%(y2) # (generalized) total sum of squares
-  Rsquared <- 1-(RSS[i]/TSS)
+  
+  # R squared 
+  e <- y2-X%*%Beta
+  Rsquared <- 1-var(e)/var(y2)
+  # TSS <- t(y2-mean(y2))%*%Rinv%*%(y2-mean(y2)) # (generalized) total sum of squares
+  # Rsquared <- 1-(RSS[i]/TSS)
   
   # V_scaled <- R/diag(R)[1]
   # C <- t(chol(V_scaled))
@@ -225,5 +234,46 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
   }
   else  convergence <- "Convergence"
   
-  return(list(param = param, RSS = RSS, Rsquared = Rsquared, R=R, tree = tree, model = model, convergence = convergence))
+  report <-  list(param = param, RSS = RSS, Rsquared = Rsquared, R=R, tree = tree, data = list(y2 = y2, x = x, y = y), model = model, convergence = convergence)
+  class(report) = "rate_gls"
+  report$call <- match.call()
+  report
 }
+
+
+#' Plot of gls_rate object
+#' 
+#' \code{plot} Plots the gls rate regression 
+#' 
+#' \code{plot} ... 
+#'
+#' @param object a gls_rate object
+#' @param scale either the variance scale ("VAR") or the standard deviation scale ("SD").
+#' @param main as in \code{\link{plot}}.
+#' @param xlab as in \code{\link{plot}}.
+#' @param ylab as in \code{\link{plot}}.
+#' @param col as in \code{\link{plot}}.
+#' @param ... additional arguments passed to \code{\link{plot}}.
+#' 
+#' @details Plots the gls rate regression from a gls_rate object obtained from the gls_rate function. The regression line 
+#' gives the expected variance or standard deviation (depending on scale).The regression is linear on the variance scale.
+#'  
+#' @return \code{plot} returns a plot of the gls rate regression
+#' 
+#' @author Geir H. Bolstad
+#' 
+#' @export
+
+plot.rate_gls = function(object, scale = "SD", main = "GLS regression", xlab = "x (mean centred)", ylab = "Response", col = "grey", ...){
+  # maybe allow choosing between variance scale and 
+  x <- seq(min(object$data$x), max(object$data$x), length.out = 100)
+  y <- object$param["Intercept",1] + object$param["Slope",1]*x
+  if(scale == "SD")  y <- try(sqrt(y))
+  if(scale == "VAR") plot(object$data$x, object$data$y2, main=main, xlab=xlab, ylab=ylab, col=col, ...)
+  if(scale == "SD")  plot(object$data$x, sqrt(object$data$y2), main=main, xlab=xlab, ylab=ylab, col=col, ...)
+  lines(x, y)
+}
+
+
+
+

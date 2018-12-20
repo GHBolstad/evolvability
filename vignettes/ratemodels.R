@@ -84,4 +84,7 @@ knitr::opts_chunk$set(
 #  warnings()
 #  
 #  
+#  plot(mod)
+#  
+#  
 

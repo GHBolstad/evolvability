@@ -10,7 +10,7 @@ rate_gls(x, y, species, tree, model = "predictor_BM", startv = list(a =
 \arguments{
 \item{x}{trait values must be equal to the length of y and tips on the tree. Note that x is mean centred in the analysis}
 
-\item{y}{trait values}
+\item{y}{trait values of response variable}
 
 \item{species}{names of the species, must be equal in length and in the same order as x and y}
 
@@ -19,8 +19,7 @@ tips must have the same names as in \code{species}}
 
 \item{model}{either "predictor_BM", "predictor_geometricBM" or "residual_rate"}
 
-\item{startv}{vector of starting values for the a and b parameters. ----- NB! for "residual
-rate" model, the starting value of a is not used. -----}
+\item{startv}{vector of starting values for the a and b parameters.}
 }
 \value{
 \code{rate_gls}
@@ -30,10 +29,17 @@ rate" model, the starting value of a is not used. -----}
 }
 \details{
 \code{rate_gls} Fits a generalized least squares model to estimate parameters of the evolutoinary model of two traits x and y, 
-where the rate of y depends on the value of x. Three models are implmented. In the two first, "predictor_BM" and
+where the evoluitonary rate of y depends on the value of x. Three models are implmented. In the two first, "predictor_BM" and
 "predictor_geometricBM", the evolution of y follows a Brownian motion with variance linear in x, while the evolution of x either
 follows a Brownian motion or a geometric brownian motion, respectively. In the third model, the residuals of the macroveoluitonary
 predictions of y have variance linear in x.
+
+the generalized least squares (GLS) model fit a regression where explanatory variable is x (mean centred) and the
+response variable is vector of squared y values for the "predictor_BM" and "predictor_geometricBM" models and squared deviation from
+the evolutionary predictions (squared residuals) in the "residual_rate" model. From the intercept and slope of the GLS fit
+the following evolutionary paramters (a and b) are estimated. 
+
+<the evolutionary models>
 }
 \examples{
 

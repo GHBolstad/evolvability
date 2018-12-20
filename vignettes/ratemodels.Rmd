@@ -99,6 +99,11 @@ abline(lm(b_est~b_true[1:length(b_est)]))
 warnings()
 
 
+plot(mod, scale = "VAR")
+
+
+mod$Rsquared
+
 ```
 
 
