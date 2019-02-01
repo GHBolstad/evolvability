@@ -57,30 +57,42 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
   
   
   #### Response (y variable) ####
-  
-  
-  #### Predictor (x variable) ####
-  x <- as.matrix(x)
-  
-  # phylogenetic weighted means
   X <- matrix(rep(1, length(x)), ncol = 1) # design matrix
-  if(model == "predictor_BM")          mean_x <- solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%x            # check if equivalent to mean(solve(C)%*%x)
-  if(model == "predictor_geometricBM") mean_x <- exp(solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%log(x))  # check if equivalent to exp(mean(solve(C)%*%log(x))
+  
+  # means (weighted assuming BM process and the phylogeny)
+  mean_y <- solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%y
+
+  # mean centring
+  y <- y - mean_y # note that for the residual rate model, this does not have any effect as the squared deviation from the predictons are used
+  
+ 
+   
+  #### Predictor (x variable) ####
+  # means
+  if(model == "predictor_BM")          mean_x <-     solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%x            
+  if(model == "predictor_geometricBM") mean_x <- exp(solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%log(x))      
   if(model == "residual_rate")         mean_x <- mean(x)
 
-  # evolutionary rate
+  # mean centring x or standardizing x
+  if(model == "predictor_BM") x <- x - mean_x
+  if(model == "predictor_geometricBM") x <- x/c(mean_x)
+  if(model == "residual_rate") x <- x - mean_x 
+    
+  # Variance of x
   C <- t(chol(A)) #left cholesky factor
-  if(model == "predictor_BM")          sigma2 <- var(solve(C)%*%(x-X%*%mean_x)) 
-  if(model == "predictor_geometricBM") sigma2 <- var(solve(C)%*%(log(x)-X%*%log(mean_x)))
+  if(model == "predictor_BM")          sigma2 <- var(solve(C)%*%x) 
+  if(model == "predictor_geometricBM") sigma2 <- var(solve(C)%*%(log(x)-mean(log(x))))
   if(model == "residual_rate")         sigma2 <- var(x)
   sigma2 <- c(sigma2)
   sigma2_SE <- sqrt(2*sigma2^2/(length(x)+2)) # from Lynch and Walsh 1998 eq A1.10c
   
-  ### gls model
-  # functions for the different models (to compute a, b, and R)
+  
+  
+  
+  #### Internal functions ####
   if(model == "predictor_BM"){
-    a_func <- function(Beta, sigma2, mean_x) Beta[1,1]
-    b_func <- function(Beta, sigma2, mean_x) 2*Beta[2,1]
+    a_func <- function(Beta, sigma2) Beta[1,1]
+    b_func <- function(Beta, sigma2) 2*Beta[2,1]
     R_func <- function(a, b, sigma2, t_a, V=NULL) 2*a^2*t_a^2 + c(sigma2*(b/2)^2) * t_a*(1 - 2*t_a + 4*t_a^2)
     a_SE_func <- function(Beta_vcov, sigma2) sqrt(Beta_vcov[1,1])
     b_SE_func <- function(Beta_vcov, sigma2) sqrt(4*Beta_vcov[2,2])
@@ -91,8 +103,8 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
       X[is.na(X)] <- 0
       return(X)
     }
-    a_func <- function(Beta, sigma2, mean_x) Beta[1,1]-3*Beta[2,1]*f(sigma2)*(exp(sigma2/2)-1)
-    b_func <- function(Beta, sigma2, mean_x) 3*sigma2*Beta[2,1]/(2*f(sigma2))
+    a_func <- function(Beta, sigma2) Beta[1,1]-3*Beta[2,1]*f(sigma2)*(exp(sigma2/2)-1)
+    b_func <- function(Beta, sigma2) 3*sigma2*Beta[2,1]/(2*f(sigma2))
     R_func <- function(a, b, sigma2, t_a, V=NULL){
       2*a^2*t_a^2 + 8*a*b*t_a/sigma2*(exp(0.5*sigma2*t_a)-1)+
         2*b^2/sigma2^2*(exp(sigma2*t_a)-1)*(exp(sigma2*t_a)-1+2*(exp(0.5*sigma2*t_a)-exp(0.5*sigma2))^2+
@@ -105,26 +117,26 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     b_SE_func <- function(Beta_vcov, sigma2) sqrt(9*sigma2^2*Beta_vcov[2,2]/(4*f(sigma2)^2))
   }
   if(model == "residual_rate"){
-    a_func <- function(Beta, sigma2, mean_x) (1+mean_x^2/sigma2)*Beta[1,1] - Beta[2,1]*mean_x  #can be simplified due to mean centring of x
-    b_func <- function(Beta, sigma2, mean_x) Beta[2,1] - Beta[1,1]*mean_x/sigma2               #can be simplified due to mean centring of x
+    a_func <- function(Beta, sigma2) Beta[1,1]  
+    b_func <- function(Beta, sigma2) Beta[2,1]
     R_func <- function(a, b, sigma2, t_a, V){
       Vinv <- solve(V)
       dVmin2 <- diag(x = diag(Vinv)^-2)
       return(2* (dVmin2%*%Vinv) * (dVmin2%*%Vinv))
     }
-    a_SE_func <- function(Beta_vcov, sigma2) sqrt(Beta_vcov[1,1]) # NB! x must be mean centred for this to be true
-    b_SE_func <- function(Beta_vcov, sigma2) sqrt(Beta_vcov[2,2]) # NB! x must be mean centred for this to be true
+    a_SE_func <- function(Beta_vcov, sigma2) sqrt(Beta_vcov[1,1]) 
+    b_SE_func <- function(Beta_vcov, sigma2) sqrt(Beta_vcov[2,2]) 
   }
 
+  
+  #### The GLS model ####
+  
   # initial values
   obj <- NULL                                     # objective function scoes
   t_a <- as.vector(A[!lower.tri(A)])              # age of common ancestor        
   a   <- startv$a                                 # parameter of the process
   b   <- startv$b                                 # parameter of the process
-  x <- x-c(mean_x)                                # NB! x is mean centred in the analysis, NB! is this sensible for the geometric BM???
-  mean_x_original <- mean_x
-  mean_x <- 0
-  
+
   # response variabe and residual covariance matrix
   if(model != "residual_rate") {
     # response variable
@@ -147,7 +159,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     residvar <- attr(VarCorr(mod_Almer), "sc")^2
     V <- sigma2_y*A + residvar*diag(length(x))
     Vinv <- solve(V)
-    y_mean <- as.matrix(apply(cbind(y), 1, function(x){
+    y_mean <- as.matrix(apply(cbind(y), 1, function(x){ # mean values vector, with the focal species excluded in the estimation
       i <- which(y==x)
       new_y <- y[-i]
       new_X <- matrix(rep(1, length(new_y)), ncol = 1) # design matrix
@@ -157,7 +169,8 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     y_predicted <- y_mean + (V - solve(diag(x = diag(Vinv))))%*%Vinv%*%(y-y_mean)
     y2 <- (y-y_predicted)^2
     
-    if(is.null(a) | is.null(b)){ # finding starting values
+    # finding starting values when not specified
+    if(is.null(a) | is.null(b)){ 
       coef_lm <- coef(lm(y2~x))
       if(is.null(a)) a <- coef_lm[1]
       if(is.null(b)) b <- coef_lm[2]
@@ -205,22 +218,19 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     
     # gls estimates
     Beta <- solve(t(X)%*%Rinv%*%X)%*%t(X)%*%Rinv%*%y2
-    a <- a_func(Beta, sigma2, mean_x)
-    b <- b_func(Beta, sigma2, mean_x)
+    a <- a_func(Beta, sigma2)
+    b <- b_func(Beta, sigma2)
     
     # updating residual covariance matrix using gls estimates
     if(model != "residual_rate") {
       R[!lower.tri(R)] <- R_func(a, b, sigma2, t_a)
       R[lower.tri(R)] <- t(R)[lower.tri(R)]
     }
-    
     if(model == "residual_rate") {
       E <- c(a)*diag(length(x)) + diag(x = c(b*x))
       V <- sigma2_y*A + E
       R <- R_func(a, b, sigma2, t_a, V)
-      
     }
-    
     Rinv <- solve(R)
     
     # Objective function
@@ -236,8 +246,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
   param <- cbind(rbind(Beta, a, b, sigma2), rbind(cbind(Beta_SE), a_SE_func(Beta_vcov, sigma2), b_SE_func(Beta_vcov, sigma2), sigma2_SE))
   colnames(param) <- c("Estimate", "SE")
   rownames(param) <- c("Intercept", "Slope", "a", "b", "Sigma2_x")
-  # TODO: include Sigma2_y and phylo_heritability of y in the parameter output? and maybe also mean x. Make a param_y and a param_x output
-  
+
   # R squared
   G <- matrix(rep(1, length(y2)), ncol = 1) # design matrix
   y_mean <- solve(t(G)%*%Rinv%*%G)%*%t(G)%*%Rinv%*%y2
