@@ -15,8 +15,12 @@ knitr::opts_chunk$set(
 #  #mod$y <- mod$y + rnorm(length(mod$y))
 #  
 #  
-#  rate_gls(x=mod$x, y=mod$y, species=tree$tip.label, tree, model = "predictor_geometricBM", maxiter = 100, silent = FALSE)
+#  gls_mod <- rate_gls(x=mod$x, y=mod$y, species=tree$tip.label, tree, model = "predictor_geometricBM", maxiter = 100, silent = FALSE)
 #  
+#  
+#  gls_mod$param["a",1]
+#  
+#  rate_sim()
 #  
 #  
 #  A <-ape::vcv(tree)
@@ -81,10 +85,9 @@ knitr::opts_chunk$set(
 #  abline(0,1)
 #  abline(lm(b_est~b_true[1:length(b_est)]))
 #  
-#  warnings()
 #  
+#  mod$param
 #  
-#  plot(mod)
-#  
+#  boot.rate_gls(mod)
 #  
 

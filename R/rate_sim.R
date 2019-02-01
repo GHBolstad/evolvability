@@ -24,7 +24,6 @@
 #' 
 #' @export
 
-
 rate_sim <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, x = NULL, model = "predictor_BM"){
   
   if(model == "predictor_BM" | model == "predictor_geometricBM"){
@@ -46,7 +45,7 @@ rate_sim <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, x = NULL, mode
     # percentage negative square roots
     if(model == "predictor_BM"){ 
       percent_negative <- length(which((a + b*unlist(x_evo))<0))/length(unlist(x_evo))*100
-      if(percent_negative>0) warning(paste("Number of negative a + bx is ", round(percent_negative, 0), "%. The term a + bx is forced to be 0 for negative values", sep = ""))
+      if(percent_negative>0) warning(paste("Number of negative a + bx is ", round(percent_negative, 0), "%. The term a + bx is set to zero for these iterations", sep = ""))
     }
       
     # Simulating y-values

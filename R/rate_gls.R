@@ -8,7 +8,8 @@
 #' follows a Brownian motion or a geometric brownian motion, respectively. In the third model, the residuals of the macroveoluitonary
 #' predictions of y have variance linear in x. 
 #'
-#' @param x trait values must be equal to the length of y and tips on the tree. Note that x is mean centred in the analysis
+#' @param x trait values must be equal to the length of y and tips on the tree. Note that x is mean centred in the "predictor_BM" and 
+#' "residual rate" analyses, while it is mean stadardized (divided by the mean) in the "predictor_geometricBM"
 #' @param y trait values of response variable
 #' @param species names of the species, must be equal in length and in the same order as x and y
 #' @param tree object of class \code{\link{phylo}}, needs to be ultrametric and with total length of unit,
@@ -36,13 +37,17 @@
 #' @export
 
 # TODO:
-# Check if the startvalue of a should be changed for the residual rate model
+# Neet to fix the boot.rate_gls function
+# Should probably also make a simulate.rate_gls function and a print.rate_gls function
 
 rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(a = NULL, b = NULL), maxiter = 100, silent = FALSE){
-  ### phylogenetic relatedness matrix ###
+  
+  #### Phylogenetic relatedness matrix ####
+  
   # A <- Matrix::Matrix(ape::vcv(tree), sparse = TRUE)
   # Ainv <- Matrix::solve(A)
   # check out repeated-entry sparce matrix class (by Steve Walker???, is this the "dgTMatrix" class)
+  
   A <- ape::vcv(tree)
   A <- A[match(species, colnames(A)),match(species, colnames(A))] #ordering A according to species
   Ainv <- solve(A)
@@ -50,23 +55,26 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
   # if(length(unique(diag(A)) != 1)) stop("The tree is not ultrametric with unit depth")
   # if(unique(diag(A)) == 1)         stop("The tree is not ultrametric with unit depth")
   
-  ### predictor (x variable)
+  
+  #### Response (y variable) ####
+  
+  
+  #### Predictor (x variable) ####
   x <- as.matrix(x)
   
+  # phylogenetic weighted means
+  X <- matrix(rep(1, length(x)), ncol = 1) # design matrix
+  if(model == "predictor_BM")          mean_x <- solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%x            # check if equivalent to mean(solve(C)%*%x)
+  if(model == "predictor_geometricBM") mean_x <- exp(solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%log(x))  # check if equivalent to exp(mean(solve(C)%*%log(x))
+  if(model == "residual_rate")         mean_x <- mean(x)
+
   # evolutionary rate
   C <- t(chol(A)) #left cholesky factor
-  if(model == "predictor_BM")          sigma2 <- var(solve(C)%*%x) 
-  if(model == "predictor_geometricBM") sigma2 <- var(solve(C)%*%log(x))
+  if(model == "predictor_BM")          sigma2 <- var(solve(C)%*%(x-X%*%mean_x)) 
+  if(model == "predictor_geometricBM") sigma2 <- var(solve(C)%*%(log(x)-X%*%log(mean_x)))
   if(model == "residual_rate")         sigma2 <- var(x)
   sigma2 <- c(sigma2)
   sigma2_SE <- sqrt(2*sigma2^2/(length(x)+2)) # from Lynch and Walsh 1998 eq A1.10c
-  
-  # phylogenetic weighted mean
-  X <- matrix(rep(1, length(x)), ncol = 1) # design matrix
-  if(model == "predictor_BM")          mean_x <- solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%x
-  if(model == "predictor_geometricBM") mean_x <- exp(solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%log(x))
-  if(model == "residual_rate")         mean_x <- mean(x)
-  
   
   ### gls model
   # functions for the different models (to compute a, b, and R)
@@ -109,11 +117,11 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
   }
 
   # initial values
-  RSS <- NA                                       # residual sum of squares
+  obj <- NULL                                     # objective function scoes
   t_a <- as.vector(A[!lower.tri(A)])              # age of common ancestor        
   a   <- startv$a                                 # parameter of the process
   b   <- startv$b                                 # parameter of the process
-  x <- x-c(mean_x)                                # NB! x is mean centred in the analysis
+  x <- x-c(mean_x)                                # NB! x is mean centred in the analysis, NB! is this sensible for the geometric BM???
   mean_x_original <- mean_x
   mean_x <- 0
   
@@ -139,7 +147,13 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     residvar <- attr(VarCorr(mod_Almer), "sc")^2
     V <- sigma2_y*A + residvar*diag(length(x))
     Vinv <- solve(V)
-    y_mean <- as.matrix(apply(cbind(y), 1, function(x) (sum(y)-x)/(length(y)-1)))
+    y_mean <- as.matrix(apply(cbind(y), 1, function(x){
+      i <- which(y==x)
+      new_y <- y[-i]
+      new_X <- matrix(rep(1, length(new_y)), ncol = 1) # design matrix
+      new_Vinv <- Vinv[-i,-i]
+      solve(t(new_X)%*%new_Vinv%*%new_X)%*%t(new_X)%*%new_Vinv%*%new_y
+    }))
     y_predicted <- y_mean + (V - solve(diag(x = diag(Vinv))))%*%Vinv%*%(y-y_mean)
     y2 <- (y-y_predicted)^2
     
@@ -178,6 +192,13 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     if(model == "residual_rate") {
       # updating response variable updating response variable according to new V
       Vinv <- solve(V)
+      y_mean <- as.matrix(apply(cbind(y), 1, function(x){
+        i <- which(y==x)
+        new_y <- y[-i]
+        new_X <- matrix(rep(1, length(new_y)), ncol = 1) # design matrix
+        new_Vinv <- Vinv[-i,-i]
+        solve(t(new_X)%*%new_Vinv%*%new_X)%*%t(new_X)%*%new_Vinv%*%new_y
+      }))
       y_predicted <- y_mean + (V - solve(diag(x = diag(Vinv))))%*%Vinv%*%(y-y_mean)
       y2 <- (y-y_predicted)^2
     }
@@ -203,10 +224,10 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     Rinv <- solve(R)
     
     # Objective function
-    RSS[i] <- t(y2-X%*%Beta)%*%Rinv%*%(y2-X%*%Beta)
-    if(!silent) print(paste("GLS objective function values:", RSS[i]))
+    obj[i] <- t(y2-X%*%Beta)%*%Rinv%*%(y2-X%*%Beta)
+    if(!silent) print(paste("Generalized sum of squares:", obj[i]))
     if(i>1){
-      if(RSS[i]<=RSS[i-1] & RSS[i-1]-RSS[i]<1e-8) break()
+      if(obj[i]<=obj[i-1] & obj[i-1]-obj[i]<1e-8) break()
     }
   }
   
@@ -217,24 +238,20 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
   rownames(param) <- c("Intercept", "Slope", "a", "b", "Sigma2_x")
   # TODO: include Sigma2_y and phylo_heritability of y in the parameter output? and maybe also mean x. Make a param_y and a param_x output
   
-  # R squared 
-  e <- y2-X%*%Beta
-  Rsquared <- 1-var(e)/var(y2)
-  # TSS <- t(y2-mean(y2))%*%Rinv%*%(y2-mean(y2)) # (generalized) total sum of squares
-  # Rsquared <- 1-(RSS[i]/TSS)
-  
-  # V_scaled <- R/diag(R)[1]
-  # C <- t(chol(V_scaled))
-  # C_inv <- solve(C)
-  # resid_var <- sum((C_inv%*%(y2-X%*%Beta))^2)/(length(y2)-nrow(Beta))
-  
+  # R squared
+  G <- matrix(rep(1, length(y2)), ncol = 1) # design matrix
+  y_mean <- solve(t(G)%*%Rinv%*%G)%*%t(G)%*%Rinv%*%y2
+  TSS <- t(y2-G%*%y_mean)%*%Rinv%*%(y2-G%*%y_mean)
+  Rsquared <- 1-obj[length(obj)]/TSS
+
   if(i == maxiter){
     warning("Model reached maximum number of iterations without convergence")
     convergence <- "No convergence"
   }
   else  convergence <- "Convergence"
   
-  report <-  list(param = param, RSS = RSS, Rsquared = Rsquared, R=R, tree = tree, data = list(y2 = y2, x = x, y = y), model = model, convergence = convergence)
+  report <-  list(model = model, param = param, Rsquared = Rsquared, GLS_objective_scores = obj,
+                  R=R, tree = tree, data = list(y2 = y2, x = x, y = y), convergence = convergence)
   class(report) = "rate_gls"
   report$call <- match.call()
   report
@@ -275,5 +292,47 @@ plot.rate_gls = function(object, scale = "SD", main = "GLS regression", xlab = "
 }
 
 
+#' Boostrap of the rate gls model fit
+#' 
+#' \code{boot.rate_gls} Boostrap of the rate gls model fit
+#' 
+#' \code{boot.rate_gls} Provides a parametric boostrap of the generalized least squares rate model fit, using \code{\link{rate_sim}}  
+#' 
+#' @param mod output from \code{\link{rate_gls}}.
+#' @param n number of bootsrap samples
+#' 
+#' @return \code{boot.rate_gls} 
+#' 
+#' @author Geir H. Bolstad
+#' 
+#' @examples
+#' 
+#' @export
 
+boot.rate_gls <- function(object, n = 10){
+  boot_distribution <- matrix(NA, ncol = 6, nrow = n)
+  colnames(boot_distribution) <- c("Intercept", "Slope", "a", "b", "Sigma2_x", "Rsquared")
+  
+  if(object$model == "residual_rate") x <- c(object$data$x)
+  else x <- NULL
+    
+  for(i in 1:n){
+    Data <- rate_sim(tree=object$tree, 
+                     startv_x = 0, 
+                     sigma_x = sqrt(object$param["Sigma2_x", ]),
+                     a = object$param["a",],
+                     b = object$param["b",],
+                     model = object$model)
+    mod <- rate_gls(x=Data$x, y=Data$y, tree=object$tree, Beta = as.matrix(object$param[1:2,]), model = object$model, silent = TRUE)
+    boot_distribution[i,] <- c(mod$param[,1], mod$Rsquared)
+    print(paste("Bootstrap sample", i))
+  }
+  
+  return(cbind(rbind(object$param, Rsquared = c(object$Rsquared, NA)), t(apply(boot_distribution, 2, function(x) quantile(x, probs = c(0.025, 0.975))))))
+  
+}
 
+# I think using the following code R would recognize the root of the boot.rate_gls function i.e. I can use boot()
+# boot <- function(object, ...){
+#   UseMethod("boot")
+# }

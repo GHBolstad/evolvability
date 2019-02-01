@@ -8,7 +8,8 @@ rate_gls(x, y, species, tree, model = "predictor_BM", startv = list(a =
   NULL, b = NULL), maxiter = 100, silent = FALSE)
 }
 \arguments{
-\item{x}{trait values must be equal to the length of y and tips on the tree. Note that x is mean centred in the analysis}
+\item{x}{trait values must be equal to the length of y and tips on the tree. Note that x is mean centred in the "predictor_BM" and 
+"residual rate" analyses, while it is mean stadardized (divided by the mean) in the "predictor_geometricBM"}
 
 \item{y}{trait values of response variable}
 

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Geir Bolstad" />
 
-<meta name="date" content="2018-12-20" />
+<meta name="date" content="2018-12-21" />
 
 <title>Rate models</title>
 
@@ -92,7 +92,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Rate models</h1>
 <h4 class="author"><em>Geir Bolstad</em></h4>
-<h4 class="date"><em>2018-12-20</em></h4>
+<h4 class="date"><em>2018-12-21</em></h4>
 
 
 
@@ -106,8 +106,12 @@ mod &lt;-<span class="st"> </span><span class="kw">rate_sim</span>(tree, <span c
 <span class="co">#mod$y &lt;- mod$y + rnorm(length(mod$y))</span>
 
 
-<span class="kw">rate_gls</span>(<span class="dt">x=</span>mod<span class="op">$</span>x, <span class="dt">y=</span>mod<span class="op">$</span>y, <span class="dt">species=</span>tree<span class="op">$</span>tip.label, tree, <span class="dt">model =</span> <span class="st">&quot;predictor_geometricBM&quot;</span>, <span class="dt">maxiter =</span> <span class="dv">100</span>, <span class="dt">silent =</span> <span class="ot">FALSE</span>)
+gls_mod &lt;-<span class="st"> </span><span class="kw">rate_gls</span>(<span class="dt">x=</span>mod<span class="op">$</span>x, <span class="dt">y=</span>mod<span class="op">$</span>y, <span class="dt">species=</span>tree<span class="op">$</span>tip.label, tree, <span class="dt">model =</span> <span class="st">&quot;predictor_geometricBM&quot;</span>, <span class="dt">maxiter =</span> <span class="dv">100</span>, <span class="dt">silent =</span> <span class="ot">FALSE</span>)
 
+
+gls_mod<span class="op">$</span>param[<span class="st">&quot;a&quot;</span>,<span class="dv">1</span>]
+
+<span class="kw">rate_sim</span>()
 
 
 A &lt;-ape<span class="op">::</span><span class="kw">vcv</span>(tree)
@@ -172,10 +176,10 @@ b_est &lt;-<span class="st"> </span><span class="ot">NA</span>
 <span class="kw">abline</span>(<span class="dv">0</span>,<span class="dv">1</span>)
 <span class="kw">abline</span>(<span class="kw">lm</span>(b_est<span class="op">~</span>b_true[<span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(b_est)]))
 
-<span class="kw">warnings</span>()
 
+mod<span class="op">$</span>param
 
-<span class="kw">plot</span>(mod)</code></pre></div>
+<span class="kw">boot.rate_gls</span>(mod)</code></pre></div>
 
 
 

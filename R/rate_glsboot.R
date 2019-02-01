@@ -19,6 +19,7 @@ rate_glsboot <- function(mod, n = 10){
   boot_distribution <- matrix(NA, ncol = 6, nrow = n)
   colnames(boot_distribution) <- c("Intercept", "Slope", "a", "b", "mean_x", "Sigma^2")
   
+  
   for(i in 1:n){
     Data <- rate_sim(tree=mod$tree, 
                     startv_x = mod$param["mean_x", ], 
