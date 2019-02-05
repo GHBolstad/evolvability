@@ -63,7 +63,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
   mean_y <- solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%y
 
   # mean centring
-  y <- y - mean_y # note that for the residual rate model, this does not have any effect as the squared deviation from the predictons are used
+  y <- y - c(mean_y) # note that for the residual rate model, this does not have any effect as the squared deviation from the predictons are used
   
  
    
@@ -74,9 +74,9 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
   if(model == "residual_rate")         mean_x <- mean(x)
 
   # mean centring x or standardizing x
-  if(model == "predictor_BM") x <- x - mean_x
+  if(model == "predictor_BM") x <- x - c(mean_x)
   if(model == "predictor_geometricBM") x <- x/c(mean_x)
-  if(model == "residual_rate") x <- x - mean_x 
+  if(model == "residual_rate") x <- x - c(mean_x) 
     
   # Variance of x
   C <- t(chol(A)) #left cholesky factor
@@ -275,6 +275,10 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
 #'
 #' @param object a gls_rate object
 #' @param scale either the variance scale ("VAR") or the standard deviation scale ("SD").
+#' @param print_param logical if parameter estimates should be printed.
+#' @param digits_param number of digits passed to \code{round}.
+#' @param digits_rsquared number of digits passed to \code{round}.
+#' @param mtext_cex printed size of paramteres
 #' @param main as in \code{\link{plot}}.
 #' @param xlab as in \code{\link{plot}}.
 #' @param ylab as in \code{\link{plot}}.
@@ -290,14 +294,16 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
 #' 
 #' @export
 
-plot.rate_gls = function(object, scale = "SD", main = "GLS regression", xlab = "x (mean centred)", ylab = "Response", col = "grey", ...){
-  # maybe allow choosing between variance scale and 
+plot.rate_gls = function(object, scale = "SD", print_param = TRUE, digits_param = 2, digits_rsquared = 2, mtext_cex = 1, main = "GLS regression", xlab = "x", ylab = "Response", col = "grey",  ...){
   x <- seq(min(object$data$x), max(object$data$x), length.out = 100)
   y <- object$param["Intercept",1] + object$param["Slope",1]*x
   if(scale == "SD")  y <- try(sqrt(y))
   if(scale == "VAR") plot(object$data$x, object$data$y2, main=main, xlab=xlab, ylab=ylab, col=col, ...)
   if(scale == "SD")  plot(object$data$x, sqrt(object$data$y2), main=main, xlab=xlab, ylab=ylab, col=col, ...)
   lines(x, y)
+  if(print_param) mtext(bquote(italic(a) == .(round(object$param["a", 1], digits_param)) ~ "\u00B1" ~ .(round(object$param["a", 2], digits_param)) ~ ", " ~
+                               italic(b) == .(round(object$param["b", 1], digits_param)) ~ "\u00B1" ~ .(round(object$param["b", 2], digits_param)) ~ ", " ~
+                               italic(R)^2 == .(round(100*object$Rsquared, digits_rsquared)) ~ "%"), cex = mtext_cex)
 }
 
 

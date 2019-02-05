@@ -4,13 +4,23 @@
 \alias{plot.rate_gls}
 \title{Plot of gls_rate object}
 \usage{
-\method{plot}{rate_gls}(object, scale = "SD", main = "GLS regression",
-  xlab = "x (mean centred)", ylab = "Response", col = "grey", ...)
+\method{plot}{rate_gls}(object, scale = "SD", print_param = TRUE,
+  digits_param = 2, digits_rsquared = 2, mtext_cex = 1,
+  main = "GLS regression", xlab = "x", ylab = "Response",
+  col = "grey", ...)
 }
 \arguments{
 \item{object}{a gls_rate object}
 
 \item{scale}{either the variance scale ("VAR") or the standard deviation scale ("SD").}
+
+\item{print_param}{logical if parameter estimates should be printed.}
+
+\item{digits_param}{number of digits passed to \code{round}.}
+
+\item{digits_rsquared}{number of digits passed to \code{round}.}
+
+\item{mtext_cex}{printed size of paramteres}
 
 \item{main}{as in \code{\link{plot}}.}
 
