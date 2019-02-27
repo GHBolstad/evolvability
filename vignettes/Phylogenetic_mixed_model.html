@@ -12,14 +12,14 @@
 
 <meta name="author" content="Geir Bolstad" />
 
-<meta name="date" content="2018-12-06" />
+<meta name="date" content="2019-02-27" />
 
 <title>Phylogenetic mixed model</title>
 
 
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
+<style type="text/css" data-origin="pandoc">
 div.sourceCode { overflow-x: auto; }
 table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
   margin: 0; padding: 0; vertical-align: baseline; border: none; }
@@ -55,7 +55,29 @@ code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
 code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
 code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
 code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+
 </style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
 
 
 
@@ -70,7 +92,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Phylogenetic mixed model</h1>
 <h4 class="author"><em>Geir Bolstad</em></h4>
-<h4 class="date"><em>2018-12-06</em></h4>
+<h4 class="date"><em>2019-02-27</em></h4>
 
 
 
@@ -97,28 +119,45 @@ mod
 <span class="co">#&gt; Linear mixed model fit by REML ['lmerMod']</span>
 <span class="co">#&gt; Formula: y ~ 1 + (1 | species)</span>
 <span class="co">#&gt;    Data: dt</span>
-<span class="co">#&gt; REML criterion at convergence: 401.2156</span>
+<span class="co">#&gt; REML criterion at convergence: 365.4292</span>
 <span class="co">#&gt; Random effects:</span>
 <span class="co">#&gt;  Groups   Name        Std.Dev.</span>
-<span class="co">#&gt;  species  (Intercept) 2.152   </span>
-<span class="co">#&gt;  Residual             1.148   </span>
+<span class="co">#&gt;  species  (Intercept) 1.604   </span>
+<span class="co">#&gt;  Residual             1.144   </span>
 <span class="co">#&gt; Number of obs: 100, groups:  species, 100</span>
 <span class="co">#&gt; Fixed Effects:</span>
 <span class="co">#&gt; (Intercept)  </span>
-<span class="co">#&gt;       4.143</span></code></pre></div>
+<span class="co">#&gt;       5.604</span></code></pre></div>
 <p>The Almer function is flexible as it is based on the lmer function… blah blah</p>
 </div>
 <div id="the-almer_se-function" class="section level1">
 <h1>The Almer_SE function</h1>
 <p>This function extends the Almer function by allowing the inclusion of uncertainty of the species means. To do this, we take advantage of how weights are included in the lmer function: the diagonal of the residual covariance matrix is the residual variance parameter <span class="math inline">\(\sigma^2\)</span> times the vector of inverse weights. By using weights equal to <span class="math inline">\(1/(1+SE^2/\sigma^2)\)</span>, where SE is a vector of standard errors, the diagonal of the residual covariance matrix is <span class="math inline">\(\sigma^2 + SE^2\)</span>. Because the weights includes the residual variance parameter, the function uses an itarative approach.</p>
 <p>…</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dt<span class="op">$</span>SE &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="kw">nrow</span>(dt), <span class="dt">min =</span> <span class="fl">0.5</span>, <span class="dt">max =</span> <span class="dv">1</span>)
+
+mod_SE &lt;-<span class="st"> </span><span class="kw">Almer_SE</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">SE =</span> dt<span class="op">$</span>SE, <span class="dt">A =</span> <span class="kw">list</span>(<span class="dt">species =</span> A))
+mod_SE
+<span class="co">#&gt; Linear mixed model fit by REML ['lmerMod']</span>
+<span class="co">#&gt; Formula: formula</span>
+<span class="co">#&gt;    Data: ..1</span>
+<span class="co">#&gt; Weights: wgth</span>
+<span class="co">#&gt; REML criterion at convergence: 365.3921</span>
+<span class="co">#&gt; Random effects:</span>
+<span class="co">#&gt;  Groups   Name        Std.Dev.</span>
+<span class="co">#&gt;  species  (Intercept) 1.6181  </span>
+<span class="co">#&gt;  Residual             0.8478  </span>
+<span class="co">#&gt; Number of obs: 100, groups:  species, 100</span>
+<span class="co">#&gt; Fixed Effects:</span>
+<span class="co">#&gt; (Intercept)  </span>
+<span class="co">#&gt;       5.586</span></code></pre></div>
 </div>
 <div id="simulating-data-from-the-fitted-model" class="section level1">
 <h1>Simulating data from the fitted model</h1>
 <p>The simulate_Almer function can be used to simulate the responses, in our case species means, of the fitted model. This can be further used to do parametric bootstrapping.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_y &lt;-<span class="st"> </span><span class="kw">simulate_Almer</span>(mod, <span class="dt">nsim =</span> <span class="dv">3</span>)
 <span class="kw">head</span>(sim_y)
-<span class="co">#&gt; [1] 3.581116 2.683375 2.332280 3.132614 4.979091 7.078106</span></code></pre></div>
+<span class="co">#&gt; [1] 6.527777 7.822946 8.072726 4.115685 4.091981 6.442145</span></code></pre></div>
 </div>
 <div id="phylogenetic-heritability" class="section level1">
 <h1>Phylogenetic heritability</h1>
@@ -126,13 +165,13 @@ mod
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">phylH</span>(mod, <span class="dt">numerator =</span> <span class="st">&quot;species&quot;</span>, <span class="dt">nsim =</span> <span class="dv">10</span>)
 <span class="co">#&gt; $phylH</span>
 <span class="co">#&gt; Phylo Heritability               2.5%              97.5% </span>
-<span class="co">#&gt;          0.7782843          0.5637669          0.9507545 </span>
+<span class="co">#&gt;          0.6628043          0.4006634          0.8172208 </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; $bootstrap</span>
 <span class="co">#&gt;     Sim_1     Sim_2     Sim_3     Sim_4     Sim_5     Sim_6     Sim_7 </span>
-<span class="co">#&gt; 0.9783721 0.7590503 0.8556272 0.8102334 0.8372769 0.8138446 0.5365806 </span>
+<span class="co">#&gt; 0.7223436 0.5478763 0.5239812 0.7631075 0.3911439 0.5789732 0.8264782 </span>
 <span class="co">#&gt;     Sim_8     Sim_9    Sim_10 </span>
-<span class="co">#&gt; 0.7664627 0.7397383 0.6574085</span></code></pre></div>
+<span class="co">#&gt; 0.5678230 0.4334529 0.7853342</span></code></pre></div>
 </div>
 
 

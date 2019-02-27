@@ -13,7 +13,7 @@
 #' 
 #' @examples
 #' 
-#' @importFrom lme4 VarCorr
+#' @importFrom lme4 VarCorr lmerControl
 #' 
 #' @export
 
@@ -29,6 +29,10 @@ Almer_SE <- function(formula, SE=NULL, maxiter = 100, ...){
     mod <- Almer(formula, weights = wgth, ...)
     if(abs(rvariance-attr(lme4::VarCorr(mod), "sc")^2)<1e-8) break()
   }
+  if(i == maxiter){
+    warning("Optimization of weights reached maximum number of iterations.")
+  }
+  
   return(mod)
 }
 

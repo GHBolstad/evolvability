@@ -2,7 +2,7 @@
 % Please edit documentation in R/Almer_SE.R
 \name{Almer_SE}
 \alias{Almer_SE}
-\title{!!! NEED TO FIX !!! Linear mixed model with correlated random effects structure}
+\title{Linear mixed model for responsvariables with uncertainty}
 \usage{
 Almer_SE(formula, SE = NULL, maxiter = 100, ...)
 }
@@ -11,37 +11,15 @@ Almer_SE(formula, SE = NULL, maxiter = 100, ...)
 
 \item{SE}{a vector of standard errors associated with the response variable.}
 
-\item{...}{as in \code{\link{lmer}}.}
+\item{maxiter}{maximum number of iterations.}
 
-\item{A}{as in \code{\link{Almer}}.}
-
-\item{data}{as in \code{\link{lmer}}.}
-
-\item{REML}{as in \code{\link{lmer}}.}
-
-\item{control}{as in \code{\link{lmer}}.}
-
-\item{start}{as in \code{\link{lmer}}.}
-
-\item{verbose}{as in \code{\link{lmer}}.}
-
-\item{subset}{as in \code{\link{lmer}}.}
-
-\item{weights}{as in \code{\link{lmer}}.}
-
-\item{na.action}{as in \code{\link{lmer}}.}
-
-\item{offset}{as in \code{\link{lmer}}.}
-
-\item{contrasts}{as in \code{\link{lmer}}.}
-
-\item{devFunOnly}{as in \code{\link{lmer}}.}
+\item{...}{optional arguments, see \code{\link{Almer}}.}
 }
 \value{
 \code{Almer_SE} an object of class \code{\link{merMod}}.
 }
 \description{
-\code{Almer_SE} !!! NEED TO FIX !!! Linear mixed model with correlated random effects structure
+\code{Almer_SE} Linear mixed model for responsvariables with uncertainty
 }
 \examples{
 

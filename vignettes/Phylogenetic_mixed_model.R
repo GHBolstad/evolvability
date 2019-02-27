@@ -28,7 +28,10 @@ mod <- Almer(y ~ 1 + (1|species), data = dt, A = list(species = A))
 mod
 
 ## ------------------------------------------------------------------------
+dt$SE <- runif(nrow(dt), min = 0.5, max = 1)
 
+mod_SE <- Almer_SE(y ~ 1 + (1|species), data = dt, SE = dt$SE, A = list(species = A))
+mod_SE
 
 ## ------------------------------------------------------------------------
 sim_y <- simulate_Almer(mod, nsim = 3)
