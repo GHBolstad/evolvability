@@ -31,16 +31,30 @@ knitr::opts_chunk$set(
 #  gls_mod$Rsquared
 #  summary(lm(gls_mod$data$y2~gls_mod$data$x))$r.squared
 #  
-#  
 #  # R2 in ideal situation:
-#  tree <- phytools::starTree(1:1000, rep(1, 1000))
-#  x <- rep(c(0,1), each = 500)
-#  y <- c(rnorm(500, 0, 1), rnorm(500, 0, 2))
+#  n <- 100000  #total sample size
+#  x <- rep(c(0,1), each = n/2)
+#  y <- c(rnorm(n/2, 0, 1), rnorm(n/2, 0, sqrt(2)))
+#  summary(lm(y^2 ~ x))$r.squared
+#  
+#  plot(x, y^2)
+#  
+#  tree <- phytools::starTree(1:n, rep(1, n))
 #  gls_mod <- rate_gls(x=x, y=y, species=tree$tip.label, tree, model = "predictor_BM", maxiter = 100, silent = FALSE)
 #  gls_mod$Rsquared
 #  summary(lm(gls_mod$data$y2~gls_mod$data$x))$r.squared
 #  # NB this is half of what Thomas derived analytically
 #  
+#  # analytic derivation:
+#  # within group var for y^2 is 2*var(y)^2 (derivated from results in Bohrnstedt and Goldberger 1969 + fourth moment of normal = 3*var[y]^2)
+#  # avarage within group variation is
+#  mean(c(2*1, 2*(2^2))) # = 5
+#  # mean of the two grups are 1 and sqrt(2)
+#  # the between group mean square is
+#  ((2-1)/2)^2 # = 0.25
+#  # R2 is
+#  1 - 5/(5+0.25)
+#  1/21
 #  
 
 ## ---- eval = FALSE-------------------------------------------------------

@@ -1,23 +1,11 @@
-#' !!! NEED TO FIX !!! Linear mixed model with correlated random effects structure
+#' Linear mixed model for responsvariables with uncertainty
 #' 
-#' \code{Almer_SE} !!! NEED TO FIX !!! Linear mixed model with correlated random effects structure
+#' \code{Almer_SE} Linear mixed model for responsvariables with uncertainty
 #' 
-#' @param SE a vector of standard errors associated with the response variable.
-#' @param A as in \code{\link{Almer}}.
 #' @param formula as in \code{\link{lmer}}.
-#' @param data as in \code{\link{lmer}}.
-#' @param REML as in \code{\link{lmer}}.
-#' @param control as in \code{\link{lmer}}.
-#' @param start as in \code{\link{lmer}}.
-#' @param verbose as in \code{\link{lmer}}.
-#' @param subset as in \code{\link{lmer}}.
-#' @param weights as in \code{\link{lmer}}.
-#' @param na.action as in \code{\link{lmer}}.
-#' @param offset as in \code{\link{lmer}}.
-#' @param contrasts as in \code{\link{lmer}}.
-#' @param devFunOnly as in \code{\link{lmer}}.
-#' @param ... as in \code{\link{lmer}}.
-#'  
+#' @param SE a vector of standard errors associated with the response variable.
+#' @param maxiter maximum number of iterations.
+#' @param ... optional arguments, see \code{\link{Almer}}.
 #' 
 #' @return \code{Almer_SE} an object of class \code{\link{merMod}}.
 #' 
@@ -28,8 +16,6 @@
 #' @importFrom lme4 VarCorr
 #' 
 #' @export
-
-#### need to check if this is working ###
 
 Almer_SE <- function(formula, SE=NULL, maxiter = 100, ...){
   

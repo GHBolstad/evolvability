@@ -4,29 +4,28 @@
 \alias{Almer}
 \title{Linear mixed model with correlated random effects structure}
 \usage{
-Almer(formula, data = NULL, REML = TRUE, A = list(),
+Almer(formula, data = NULL, A = list(), REML = TRUE,
   control = lmerControl(check.nobs.vs.nlev = "ignore",
   check.nobs.vs.rankZ = "ignore", check.nobs.vs.nRE = "ignore"),
-  start = NULL, verbose = 0L, subset, weights, na.action, offset,
-  contrasts = NULL, devFunOnly = FALSE, ...)
+  start = NULL, verbose = 0L, weights = NULL,
+  na.action = "na.omit", offset = NULL, contrasts = NULL,
+  devFunOnly = FALSE, ...)
 }
 \arguments{
 \item{formula}{as in \code{\link{lmer}}.}
 
 \item{data}{as in \code{\link{lmer}}.}
 
-\item{REML}{as in \code{\link{lmer}}.}
-
 \item{A}{an optional named list of sparce matrices. The names must correspond to the names of the random effects in the formula argument. 
 All levels of the random effect should appear as row and column names for the matrices.}
+
+\item{REML}{as in \code{\link{lmer}}.}
 
 \item{control}{as in \code{\link{lmer}}.}
 
 \item{start}{as in \code{\link{lmer}}.}
 
 \item{verbose}{as in \code{\link{lmer}}.}
-
-\item{subset}{as in \code{\link{lmer}}.}
 
 \item{weights}{as in \code{\link{lmer}}.}
 

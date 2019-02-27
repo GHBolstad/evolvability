@@ -14,7 +14,6 @@
 #' @param control as in \code{\link{lmer}}.
 #' @param start as in \code{\link{lmer}}.
 #' @param verbose as in \code{\link{lmer}}.
-#' @param subset as in \code{\link{lmer}}.
 #' @param weights as in \code{\link{lmer}}.
 #' @param na.action as in \code{\link{lmer}}.
 #' @param offset as in \code{\link{lmer}}.
@@ -34,18 +33,19 @@
 #' 
 #' @export
 
-Almer <- function(formula, data = NULL, REML = TRUE, A = list(), 
+Almer <- function(formula, data = NULL, A = list(), REML = TRUE, 
                   control = lmerControl(check.nobs.vs.nlev  = "ignore", 
                                         check.nobs.vs.rankZ = "ignore", 
                                         check.nobs.vs.nRE   = "ignore"),
-                  start = NULL, verbose = 0L, subset, weights, na.action,
-                  offset, contrasts = NULL, devFunOnly = FALSE, ...){
+                  start = NULL, verbose = 0L, weights = NULL, na.action = "na.omit",
+                  offset = NULL, contrasts = NULL, devFunOnly = FALSE, ...){
   # combine this with function with Almer_SE
   # add a phylogeny argument
   # add a pedigree argument
   mc <- match.call()
   cholA <- lapply(A, function(x) chol(x))
-  mod <- lFormula(formula, data, control=control, ...) # have to check how to include the additional arguments
+  mod <- lFormula(formula, data, REML=REML, weights=weights, na.action=na.action, 
+                  offset=offset, contrasts = contrasts, control=control, ...) 
   for(i in seq_along(cholA)){
     j <- match(names(cholA)[i], names(mod$reTrms$cnms))
     if(length(j)>1) stop("an A matrix can only be associated with one random effect term")
