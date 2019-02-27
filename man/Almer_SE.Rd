@@ -4,7 +4,9 @@
 \alias{Almer_SE}
 \title{Linear mixed model for responsvariables with uncertainty}
 \usage{
-Almer_SE(formula, SE = NULL, maxiter = 100, ...)
+Almer_SE(formula, SE = NULL, maxiter = 100,
+  control = lme4::lmerControl(check.nobs.vs.nlev = "ignore",
+  check.nobs.vs.rankZ = "ignore", check.nobs.vs.nRE = "ignore"), ...)
 }
 \arguments{
 \item{formula}{as in \code{\link{lmer}}.}
@@ -12,6 +14,8 @@ Almer_SE(formula, SE = NULL, maxiter = 100, ...)
 \item{SE}{a vector of standard errors associated with the response variable.}
 
 \item{maxiter}{maximum number of iterations.}
+
+\item{control}{as in \code{\link{lmer}}.}
 
 \item{...}{optional arguments, see \code{\link{Almer}}.}
 }

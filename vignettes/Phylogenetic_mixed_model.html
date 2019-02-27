@@ -119,15 +119,15 @@ mod
 <span class="co">#&gt; Linear mixed model fit by REML ['lmerMod']</span>
 <span class="co">#&gt; Formula: y ~ 1 + (1 | species)</span>
 <span class="co">#&gt;    Data: dt</span>
-<span class="co">#&gt; REML criterion at convergence: 365.4292</span>
+<span class="co">#&gt; REML criterion at convergence: 361.6448</span>
 <span class="co">#&gt; Random effects:</span>
 <span class="co">#&gt;  Groups   Name        Std.Dev.</span>
-<span class="co">#&gt;  species  (Intercept) 1.604   </span>
-<span class="co">#&gt;  Residual             1.144   </span>
+<span class="co">#&gt;  species  (Intercept) 2.601   </span>
+<span class="co">#&gt;  Residual             0.621   </span>
 <span class="co">#&gt; Number of obs: 100, groups:  species, 100</span>
 <span class="co">#&gt; Fixed Effects:</span>
 <span class="co">#&gt; (Intercept)  </span>
-<span class="co">#&gt;       5.604</span></code></pre></div>
+<span class="co">#&gt;       4.339</span></code></pre></div>
 <p>The Almer function is flexible as it is based on the lmer function… blah blah</p>
 </div>
 <div id="the-almer_se-function" class="section level1">
@@ -137,27 +137,14 @@ mod
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dt<span class="op">$</span>SE &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="kw">nrow</span>(dt), <span class="dt">min =</span> <span class="fl">0.5</span>, <span class="dt">max =</span> <span class="dv">1</span>)
 
 mod_SE &lt;-<span class="st"> </span><span class="kw">Almer_SE</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">SE =</span> dt<span class="op">$</span>SE, <span class="dt">A =</span> <span class="kw">list</span>(<span class="dt">species =</span> A))
-mod_SE
-<span class="co">#&gt; Linear mixed model fit by REML ['lmerMod']</span>
-<span class="co">#&gt; Formula: formula</span>
-<span class="co">#&gt;    Data: ..1</span>
-<span class="co">#&gt; Weights: wgth</span>
-<span class="co">#&gt; REML criterion at convergence: 365.3921</span>
-<span class="co">#&gt; Random effects:</span>
-<span class="co">#&gt;  Groups   Name        Std.Dev.</span>
-<span class="co">#&gt;  species  (Intercept) 1.6181  </span>
-<span class="co">#&gt;  Residual             0.8478  </span>
-<span class="co">#&gt; Number of obs: 100, groups:  species, 100</span>
-<span class="co">#&gt; Fixed Effects:</span>
-<span class="co">#&gt; (Intercept)  </span>
-<span class="co">#&gt;       5.586</span></code></pre></div>
+mod_SE</code></pre></div>
 </div>
 <div id="simulating-data-from-the-fitted-model" class="section level1">
 <h1>Simulating data from the fitted model</h1>
 <p>The simulate_Almer function can be used to simulate the responses, in our case species means, of the fitted model. This can be further used to do parametric bootstrapping.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_y &lt;-<span class="st"> </span><span class="kw">simulate_Almer</span>(mod, <span class="dt">nsim =</span> <span class="dv">3</span>)
 <span class="kw">head</span>(sim_y)
-<span class="co">#&gt; [1] 6.527777 7.822946 8.072726 4.115685 4.091981 6.442145</span></code></pre></div>
+<span class="co">#&gt; [1] 5.8281909 4.8215573 1.8467263 2.2419080 3.0780602 0.9732829</span></code></pre></div>
 </div>
 <div id="phylogenetic-heritability" class="section level1">
 <h1>Phylogenetic heritability</h1>
@@ -165,13 +152,13 @@ mod_SE
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">phylH</span>(mod, <span class="dt">numerator =</span> <span class="st">&quot;species&quot;</span>, <span class="dt">nsim =</span> <span class="dv">10</span>)
 <span class="co">#&gt; $phylH</span>
 <span class="co">#&gt; Phylo Heritability               2.5%              97.5% </span>
-<span class="co">#&gt;          0.6628043          0.4006634          0.8172208 </span>
+<span class="co">#&gt;          0.9460873          0.8993703          0.9773282 </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; $bootstrap</span>
 <span class="co">#&gt;     Sim_1     Sim_2     Sim_3     Sim_4     Sim_5     Sim_6     Sim_7 </span>
-<span class="co">#&gt; 0.7223436 0.5478763 0.5239812 0.7631075 0.3911439 0.5789732 0.8264782 </span>
+<span class="co">#&gt; 0.9447469 0.9315381 0.9667161 0.9143976 0.9389318 0.8982437 0.9690796 </span>
 <span class="co">#&gt;     Sim_8     Sim_9    Sim_10 </span>
-<span class="co">#&gt; 0.5678230 0.4334529 0.7853342</span></code></pre></div>
+<span class="co">#&gt; 0.9032509 0.9797230 0.9545464</span></code></pre></div>
 </div>
 
 

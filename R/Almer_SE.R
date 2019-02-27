@@ -5,6 +5,7 @@
 #' @param formula as in \code{\link{lmer}}.
 #' @param SE a vector of standard errors associated with the response variable.
 #' @param maxiter maximum number of iterations.
+#' @param control as in \code{\link{lmer}}.
 #' @param ... optional arguments, see \code{\link{Almer}}.
 #' 
 #' @return \code{Almer_SE} an object of class \code{\link{merMod}}.
@@ -17,11 +18,15 @@
 #' 
 #' @export
 
-Almer_SE <- function(formula, SE=NULL, maxiter = 100, ...){
+Almer_SE <- function(formula, SE=NULL, maxiter = 100, 
+                     control = lme4::lmerControl(check.nobs.vs.nlev  = "ignore", 
+                                           check.nobs.vs.rankZ = "ignore", 
+                                           check.nobs.vs.nRE   = "ignore"),
+                     ...){
   
-  if(is.null(SE)) stop("Use Almer instead")
+  if(is.null(SE)) stop("No SE. Use Almer instead")
   wgth <- 1/(1+SE^2)
-  mod <- Almer(formula, weights = wgth, ...)
+  mod <- Almer(formula, weights = wgth, control = control, ...)
 
   for(i in 1:maxiter){
     rvariance <- attr(lme4::VarCorr(mod), "sc")^2

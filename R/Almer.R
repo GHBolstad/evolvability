@@ -34,7 +34,7 @@
 #' @export
 
 Almer <- function(formula, data = NULL, A = list(), REML = TRUE, 
-                  control = lmerControl(check.nobs.vs.nlev  = "ignore", 
+                  control = lme4::lmerControl(check.nobs.vs.nlev  = "ignore", 
                                         check.nobs.vs.rankZ = "ignore", 
                                         check.nobs.vs.nRE   = "ignore"),
                   start = NULL, verbose = 0L, weights = NULL, na.action = "na.omit",
