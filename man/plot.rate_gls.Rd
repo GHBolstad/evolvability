@@ -5,9 +5,8 @@
 \title{Plot of gls_rate object}
 \usage{
 \method{plot}{rate_gls}(object, scale = "SD", print_param = TRUE,
-  digits_param = 2, digits_rsquared = 2, mtext_cex = 1,
-  main = "GLS regression", xlab = "x", ylab = "Response",
-  col = "grey", ...)
+  digits_param = 2, digits_rsquared = 2, main = "GLS regression",
+  xlab = "x", ylab = "Response", col = "grey", ...)
 }
 \arguments{
 \item{object}{a gls_rate object}
@@ -19,8 +18,6 @@
 \item{digits_param}{number of digits passed to \code{round}.}
 
 \item{digits_rsquared}{number of digits passed to \code{round}.}
-
-\item{mtext_cex}{printed size of paramteres}
 
 \item{main}{as in \code{\link{plot}}.}
 

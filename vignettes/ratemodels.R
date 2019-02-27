@@ -5,6 +5,45 @@ knitr::opts_chunk$set(
 )
 
 ## ---- eval = FALSE-------------------------------------------------------
+#  # testing the R2 values
+#  
+#  # star phylogeny:
+#  tree <- phytools::starTree(1:100, rep(1, 100))
+#  
+#  # predictor_BM model
+#  mod <- rate_sim(tree, startv_x=0, sigma_x=1, a=2, b=1, model = "predictor_BM")
+#  gls_mod <- rate_gls(x=mod$x, y=mod$y, species=tree$tip.label, tree, model = "predictor_BM", maxiter = 100, silent = FALSE)
+#  gls_mod$Rsquared
+#  summary(lm(gls_mod$data$y2~gls_mod$data$x))$r.squared
+#  
+#  plot(gls_mod)
+#  
+#  # predictor_geometricBM model
+#  mod <- rate_sim(tree, startv_x=1, sigma_x=1, a=2, b=1, model = "predictor_geometricBM")
+#  gls_mod <- rate_gls(x=mod$x, y=mod$y, species=tree$tip.label, tree, model = "predictor_geometricBM", maxiter = 100, silent = FALSE)
+#  gls_mod$Rsquared
+#  summary(lm(gls_mod$data$y2~gls_mod$data$x))$r.squared
+#  
+#  # residual_rate model
+#  # This one should not be exactly equal
+#  mod <- rate_sim(tree, startv_x=0, sigma_x=1, a=2, b=1, model = "residual_rate")
+#  gls_mod <- rate_gls(x=mod$x, y=mod$y, species=tree$tip.label, tree, model = "residual_rate", maxiter = 100, silent = FALSE)
+#  gls_mod$Rsquared
+#  summary(lm(gls_mod$data$y2~gls_mod$data$x))$r.squared
+#  
+#  
+#  # R2 in ideal situation:
+#  tree <- phytools::starTree(1:1000, rep(1, 1000))
+#  x <- rep(c(0,1), each = 500)
+#  y <- c(rnorm(500, 0, 1), rnorm(500, 0, 2))
+#  gls_mod <- rate_gls(x=x, y=y, species=tree$tip.label, tree, model = "predictor_BM", maxiter = 100, silent = FALSE)
+#  gls_mod$Rsquared
+#  summary(lm(gls_mod$data$y2~gls_mod$data$x))$r.squared
+#  # NB this is half of what Thomas derived analytically
+#  
+#  
+
+## ---- eval = FALSE-------------------------------------------------------
 #  
 #  # testing:
 #  tree <- geiger::sim.bdtree(b = 1, d = 0, n = 100, t = 4)

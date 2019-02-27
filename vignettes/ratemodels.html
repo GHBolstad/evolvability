@@ -12,7 +12,7 @@
 
 <meta name="author" content="Geir Bolstad" />
 
-<meta name="date" content="2018-12-21" />
+<meta name="date" content="2019-02-05" />
 
 <title>Rate models</title>
 
@@ -92,10 +92,45 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Rate models</h1>
 <h4 class="author"><em>Geir Bolstad</em></h4>
-<h4 class="date"><em>2018-12-21</em></h4>
+<h4 class="date"><em>2019-02-05</em></h4>
 
 
 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># testing the R2 values</span>
+
+<span class="co"># star phylogeny:</span>
+tree &lt;-<span class="st"> </span>phytools<span class="op">::</span><span class="kw">starTree</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">100</span>, <span class="kw">rep</span>(<span class="dv">1</span>, <span class="dv">100</span>))
+
+<span class="co"># predictor_BM model</span>
+mod &lt;-<span class="st"> </span><span class="kw">rate_sim</span>(tree, <span class="dt">startv_x=</span><span class="dv">0</span>, <span class="dt">sigma_x=</span><span class="dv">1</span>, <span class="dt">a=</span><span class="dv">2</span>, <span class="dt">b=</span><span class="dv">1</span>, <span class="dt">model =</span> <span class="st">&quot;predictor_BM&quot;</span>)
+gls_mod &lt;-<span class="st"> </span><span class="kw">rate_gls</span>(<span class="dt">x=</span>mod<span class="op">$</span>x, <span class="dt">y=</span>mod<span class="op">$</span>y, <span class="dt">species=</span>tree<span class="op">$</span>tip.label, tree, <span class="dt">model =</span> <span class="st">&quot;predictor_BM&quot;</span>, <span class="dt">maxiter =</span> <span class="dv">100</span>, <span class="dt">silent =</span> <span class="ot">FALSE</span>)
+gls_mod<span class="op">$</span>Rsquared
+<span class="kw">summary</span>(<span class="kw">lm</span>(gls_mod<span class="op">$</span>data<span class="op">$</span>y2<span class="op">~</span>gls_mod<span class="op">$</span>data<span class="op">$</span>x))<span class="op">$</span>r.squared
+
+<span class="kw">plot</span>(gls_mod)
+
+<span class="co"># predictor_geometricBM model</span>
+mod &lt;-<span class="st"> </span><span class="kw">rate_sim</span>(tree, <span class="dt">startv_x=</span><span class="dv">1</span>, <span class="dt">sigma_x=</span><span class="dv">1</span>, <span class="dt">a=</span><span class="dv">2</span>, <span class="dt">b=</span><span class="dv">1</span>, <span class="dt">model =</span> <span class="st">&quot;predictor_geometricBM&quot;</span>)
+gls_mod &lt;-<span class="st"> </span><span class="kw">rate_gls</span>(<span class="dt">x=</span>mod<span class="op">$</span>x, <span class="dt">y=</span>mod<span class="op">$</span>y, <span class="dt">species=</span>tree<span class="op">$</span>tip.label, tree, <span class="dt">model =</span> <span class="st">&quot;predictor_geometricBM&quot;</span>, <span class="dt">maxiter =</span> <span class="dv">100</span>, <span class="dt">silent =</span> <span class="ot">FALSE</span>)
+gls_mod<span class="op">$</span>Rsquared
+<span class="kw">summary</span>(<span class="kw">lm</span>(gls_mod<span class="op">$</span>data<span class="op">$</span>y2<span class="op">~</span>gls_mod<span class="op">$</span>data<span class="op">$</span>x))<span class="op">$</span>r.squared
+
+<span class="co"># residual_rate model</span>
+<span class="co"># This one should not be exactly equal</span>
+mod &lt;-<span class="st"> </span><span class="kw">rate_sim</span>(tree, <span class="dt">startv_x=</span><span class="dv">0</span>, <span class="dt">sigma_x=</span><span class="dv">1</span>, <span class="dt">a=</span><span class="dv">2</span>, <span class="dt">b=</span><span class="dv">1</span>, <span class="dt">model =</span> <span class="st">&quot;residual_rate&quot;</span>)
+gls_mod &lt;-<span class="st"> </span><span class="kw">rate_gls</span>(<span class="dt">x=</span>mod<span class="op">$</span>x, <span class="dt">y=</span>mod<span class="op">$</span>y, <span class="dt">species=</span>tree<span class="op">$</span>tip.label, tree, <span class="dt">model =</span> <span class="st">&quot;residual_rate&quot;</span>, <span class="dt">maxiter =</span> <span class="dv">100</span>, <span class="dt">silent =</span> <span class="ot">FALSE</span>)
+gls_mod<span class="op">$</span>Rsquared
+<span class="kw">summary</span>(<span class="kw">lm</span>(gls_mod<span class="op">$</span>data<span class="op">$</span>y2<span class="op">~</span>gls_mod<span class="op">$</span>data<span class="op">$</span>x))<span class="op">$</span>r.squared
+
+
+<span class="co"># R2 in ideal situation:</span>
+tree &lt;-<span class="st"> </span>phytools<span class="op">::</span><span class="kw">starTree</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">1000</span>, <span class="kw">rep</span>(<span class="dv">1</span>, <span class="dv">1000</span>))
+x &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="dt">each =</span> <span class="dv">500</span>)
+y &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">rnorm</span>(<span class="dv">500</span>, <span class="dv">0</span>, <span class="dv">1</span>), <span class="kw">rnorm</span>(<span class="dv">500</span>, <span class="dv">0</span>, <span class="dv">2</span>))
+gls_mod &lt;-<span class="st"> </span><span class="kw">rate_gls</span>(<span class="dt">x=</span>x, <span class="dt">y=</span>y, <span class="dt">species=</span>tree<span class="op">$</span>tip.label, tree, <span class="dt">model =</span> <span class="st">&quot;predictor_BM&quot;</span>, <span class="dt">maxiter =</span> <span class="dv">100</span>, <span class="dt">silent =</span> <span class="ot">FALSE</span>)
+gls_mod<span class="op">$</span>Rsquared
+<span class="kw">summary</span>(<span class="kw">lm</span>(gls_mod<span class="op">$</span>data<span class="op">$</span>y2<span class="op">~</span>gls_mod<span class="op">$</span>data<span class="op">$</span>x))<span class="op">$</span>r.squared
+<span class="co"># NB this is half of what Thomas derived analytically</span></code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
 <span class="co"># testing:</span>
 tree &lt;-<span class="st"> </span>geiger<span class="op">::</span><span class="kw">sim.bdtree</span>(<span class="dt">b =</span> <span class="dv">1</span>, <span class="dt">d =</span> <span class="dv">0</span>, <span class="dt">n =</span> <span class="dv">100</span>, <span class="dt">t =</span> <span class="dv">4</span>)
