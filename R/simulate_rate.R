@@ -30,6 +30,7 @@ simulate_rate <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, x = NULL,
   # Trees with negative edge lengths
   # start_x is negative for model == "predictor_geomtricBM"
   
+  #### predictor_BM or predictor_geometricBM ####
   if(model == "predictor_BM" | model == "predictor_geometricBM"){
     EDGE <- cbind(tree$edge, round(tree$edge.length, 3))
     EDGE[,3][EDGE[,3]==0] <- 0.001 #adding one timestep to the edges that was rounded down to zero
@@ -45,24 +46,21 @@ simulate_rate <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, x = NULL,
         if(model == "predictor_geometricBM") x0 <- log(startv_x)
       }
       x_evo[[i]] <- x0 + cumsum(rnorm(n = EDGE[i,3]*1000, mean = 0, sd = sqrt(1/1000)*sigma_x))
-    }
-  
+
     # percentage negative square roots
-    if(model == "predictor_BM"){
-      percent_negative <- length(which((a + b*unlist(x_evo))<0))/length(unlist(x_evo))*100
-      if(percent_negative>0) warning(paste("Number of negative a + bx is ", round(percent_negative, 0), "%. The term a + bx is set to zero for these iterations", sep = ""))
+    if(model == "predictor_BM")          percent_negative <- length(which((a + b*unlist(x_evo))<0))/length(unlist(x_evo))*100
+    if(model == "predictor_geometricBM") percent_negative <- length(which((a + b*exp(unlist(x_evo)))<0))/length(exp(unlist(x_evo)))*100
+    if(percent_negative>0) warning(paste("Number of negative a + bx is ", round(percent_negative, 0), "%. The term a + bx is set to zero for these iterations", sep = ""))
     }
       
     # Simulating y-values
     for(i in 1:nrow(EDGE)){
       if(EDGE[i,1] %in% EDGE[1:i,2]) y0 <- rev(y_evo[[which(EDGE[1:i,2] == EDGE[i,1])]])[1] # If the ancestor already has a starting value
       else y0 <- 0
-      if(model == "predictor_BM"){
-        r <- a + b*x_evo[[i]]
-        r[r<0] <- 0
-        y_evo[[i]] <- y0 + cumsum(sqrt(r) * rnorm(n = EDGE[i,3]*1000, mean = 0, sd = 1/sqrt(1000))) 
-      }   
-      if(model == "predictor_geometricBM")  y_evo[[i]] <- y0 + cumsum(sqrt(a + b*exp(x_evo[[i]])) * rnorm(n = EDGE[i,3]*1000, mean = 0, sd = 1/sqrt(1000))) 
+      if(model == "predictor_BM")  r <- a + b*x_evo[[i]]
+      if(model == "predictor_geometricBM") r <- a + b*exp(x_evo[[i]])
+      r[r<0] <- 0
+      y_evo[[i]] <- y0 + cumsum(sqrt(r) * rnorm(n = EDGE[i,3]*1000, mean = 0, sd = 1/sqrt(1000))) 
     }
     
     EDGE <- cbind(EDGE, sapply(x_evo, function(x) rev(x)[1]), sapply(y_evo, function(x) rev(x)[1]))
@@ -74,6 +72,8 @@ simulate_rate <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, x = NULL,
     if(model == "predictor_geometricBM") DATA$x <- exp(DATA$x)
   }
   
+  
+  #### residual_rate ####
   if(model == "residual_rate"){
     n <- length(tree$tip.label)
     A <-ape::vcv(tree)
