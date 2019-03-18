@@ -18,6 +18,46 @@ knitr::opts_chunk$set(
 )
 ```
 
+This vignette shows how to use the rate_gls function. We first need data. We start with the phylogeny that needs to be ultrametric. 
+```{r}
+tree <- geiger::sim.bdtree(b = 1, d = 0, n = 100, t = 4)
+ape::is.ultrametric(tree)
+```
+
+We scale the tree to unit length between root and tips. (This makes the parameters easier to interpret)
+```{r}
+tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
+```
+
+# Predictor_BM
+Simulating data for the evolutionary model ...
+```{r}
+sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=2, b=1, model = "predictor_BM")
+```
+In this simulation often gives a warning message because the rate parameter a + bx in the model. In these instances, the rate parameter is assignd the value 0 in the simulaiton. As long as the number of these instances is low, this should not be a problem.   
+We can now fit the gls model to these data
+```{r}
+gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "predictor_BM", maxiter = 100, silent = FALSE)
+gls_mod$param
+```
+This gives the parameters of the model. The parameters "Intercept" and "Slope" gives the gls estimates of the regression of y^2 on x. The a, b and Sigma2_x are the parameters of the evolutonary model. The standard error of the estimates does not take into account the error in Sigma2_x. Parametric boostrapping can be used to get 95% confidence intervals taking into account error in the entire process (assuming that the phylogenetic tree true).
+
+```{r}
+boot_rate_gls(gls_mod, n = 5)
+```
+
+Plotting the the generalized least squares regression. 
+```{r}
+plot(gls_mod) # with the default scale == "SD"
+```
+ 
+```{r}
+plot(gls_mod, scale = "VAR")
+```
+
+
+
+# old stuff
 
 ```{r, eval = FALSE}
 # testing the R2 values
@@ -26,12 +66,15 @@ knitr::opts_chunk$set(
 tree <- phytools::starTree(1:100, rep(1, 100))
 
 # predictor_BM model
-mod <- rate_sim(tree, startv_x=0, sigma_x=1, a=2, b=1, model = "predictor_BM")
+mod <- simulate_rate(tree, startv_x=0, sigma_x=1, a=2, b=1, model = "predictor_BM")
 gls_mod <- rate_gls(x=mod$x, y=mod$y, species=tree$tip.label, tree, model = "predictor_BM", maxiter = 100, silent = FALSE)
 gls_mod$Rsquared
 summary(lm(gls_mod$data$y2~gls_mod$data$x))$r.squared
 
 plot(gls_mod)
+
+X <- simulate(gls_mod, nsim = 10)
+
 
 # predictor_geometricBM model
 mod <- rate_sim(tree, startv_x=1, sigma_x=1, a=2, b=1, model = "predictor_geometricBM")

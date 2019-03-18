@@ -28,7 +28,7 @@ mod <- Almer(y ~ 1 + (1|species), data = dt, A = list(species = A))
 mod
 
 ## ---- eval = FALSE-------------------------------------------------------
-#  dt$SE <- runif(nrow(dt), min = 0.5, max = 1)
+#  dt$SE <- runif(nrow(dt), min = 0.5, max = 1) # adding some arbitrary SE values
 #  
 #  mod_SE <- Almer_SE(y ~ 1 + (1|species), data = dt, SE = dt$SE, A = list(species = A))
 #  mod_SE

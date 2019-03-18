@@ -38,7 +38,7 @@
 
 # TODO:
 # Neet to fix the boot.rate_gls function
-# Should probably also make a simulate.rate_gls function and a print.rate_gls function
+# Should probably also make a print.rate_gls function
 
 rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(a = NULL, b = NULL), maxiter = 100, silent = FALSE){
   
@@ -65,8 +65,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
   # mean centring
   y <- y - c(mean_y) # note that for the residual rate model, this does not have any effect as the squared deviation from the predictons are used
   
- 
-   
+
   #### Predictor (x variable) ####
   # means
   if(model == "predictor_BM")          mean_x <-     solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%x            
@@ -86,8 +85,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
   sigma2 <- c(sigma2)
   sigma2_SE <- sqrt(2*sigma2^2/(length(x)+2)) # from Lynch and Walsh 1998 eq A1.10c
   
-  
-  
+
   
   #### Internal functions ####
   if(model == "predictor_BM"){
@@ -307,16 +305,17 @@ plot.rate_gls = function(object, scale = "SD", print_param = TRUE, digits_param 
 }
 
 
-#' Boostrap of the rate gls model fit
+
+
+#' Simulate responses from \code{\link{rate_gls}} fit
 #' 
-#' \code{boot.rate_gls} Boostrap of the rate gls model fit
+#' \code{simulate.rate_gls} Simulate responses from \code{\link{rate_gls}} fit
 #' 
-#' \code{boot.rate_gls} Provides a parametric boostrap of the generalized least squares rate model fit, using \code{\link{rate_sim}}  
+#' \code{simulate.rate_gls} ... 
 #' 
-#' @param mod output from \code{\link{rate_gls}}.
-#' @param n number of bootsrap samples
-#' 
-#' @return \code{boot.rate_gls} 
+#' @param object fitted object from \code{\link{rate_gls}}
+#' @param nsim numder of simulations.
+#' @return \code{simulate.rate_gls} returns a list where each slot is an interation. 
 #' 
 #' @author Geir H. Bolstad
 #' 
@@ -324,30 +323,56 @@ plot.rate_gls = function(object, scale = "SD", print_param = TRUE, digits_param 
 #' 
 #' @export
 
-boot.rate_gls <- function(object, n = 10){
-  boot_distribution <- matrix(NA, ncol = 6, nrow = n)
-  colnames(boot_distribution) <- c("Intercept", "Slope", "a", "b", "Sigma2_x", "Rsquared")
-  
-  if(object$model == "residual_rate") x <- c(object$data$x)
-  else x <- NULL
-    
-  for(i in 1:n){
-    Data <- rate_sim(tree=object$tree, 
-                     startv_x = 0, 
-                     sigma_x = sqrt(object$param["Sigma2_x", ]),
-                     a = object$param["a",],
-                     b = object$param["b",],
-                     model = object$model)
-    mod <- rate_gls(x=Data$x, y=Data$y, tree=object$tree, Beta = as.matrix(object$param[1:2,]), model = object$model, silent = TRUE)
-    boot_distribution[i,] <- c(mod$param[,1], mod$Rsquared)
-    print(paste("Bootstrap sample", i))
+
+simulate.rate_gls <- function(object, nsim = 10){
+  sim_out <- list()
+  for(i in 1:nsim){
+    sim_out[[i]] <-
+      simulate_rate(tree=object$tree, 
+                    startv_x = ifelse(object$model == "predictor_geometricBM", 1, 0),
+                    sigma_x = sqrt(object$param["Sigma2_x", 1]),
+                    a = object$param["a",1],
+                    b = object$param["b",1],
+                    if(object$model == "residual_rate") x <- object$data$x,
+                    model = object$model)
   }
   
-  return(cbind(rbind(object$param, Rsquared = c(object$Rsquared, NA)), t(apply(boot_distribution, 2, function(x) quantile(x, probs = c(0.025, 0.975))))))
-  
+  return(sim_out)
+}
+
+#' Boostrap of the rate gls model fit
+#' 
+#' \code{boot_rate_gls} Boostrap of the rate gls model fit
+#' 
+#' \code{boot_rate_gls} Provides a parametric boostrap of the generalized least squares rate model fit 
+#' using \code{\link{simulate.rate_gls}}  
+#' 
+#' @param mod output from \code{\link{rate_gls}}.
+#' @param n number of bootsrap samples
+#' 
+#' @return \code{boot_rate_gls} 
+#' 
+#' @author Geir H. Bolstad
+#' 
+#' @examples
+#' 
+#' @export
+
+boot_rate_gls <- function(object, n = 10){
+  boot_distribution <- matrix(NA, ncol = 6, nrow = n)
+  colnames(boot_distribution) <- c("Intercept", "Slope", "a", "b", "Sigma2_x", "Rsquared")
+  sim_out <- simulate(object, nsim = n)
+  for(i in 1:n){
+     mod <- rate_gls(x=sim_out[[i]][,"x"], y=sim_out[[i]][,"y"], species = sim_out[[i]][,"species"], tree=object$tree, 
+                     startv = list(object$param["a",1], object$param["b",1]), model = object$model, silent = TRUE)
+    boot_distribution[i,] <- c(mod$param[,1], mod$Rsquared)
+    print(paste("Bootstrap iteration", i))
+  }
+  return(cbind(rbind(object$param, Rsquared = c(object$Rsquared, NA)), 
+               t(apply(boot_distribution, 2, function(x) quantile(x, probs = c(0.025, 0.5, 0.975))))))
 }
 
 # I think using the following code R would recognize the root of the boot.rate_gls function i.e. I can use boot()
-# boot <- function(object, ...){
-#   UseMethod("boot")
-# }
+boot <- function(object, ...){
+  UseMethod("boot")
+}

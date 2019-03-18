@@ -1,22 +1,22 @@
 #' Simulating evolutionary rate model
 #' 
-#' \code{rate_sim} Simulating evolutionary rate model
+#' \code{simulate_rate} Simulating evolutionary rate model
 #' 
-#' \code{rate_sim} Simulates different evolutionary rates models where a trait x evolves according to a Brownian motion or geometric Bronian motion 
+#' \code{simulate_rate} Simulates different evolutionary rates models where a trait x evolves according to a Brownian motion or geometric Bronian motion 
 #' process (constant evolutionary rate) while the rate of a second trait, y, is a linear function of x.  
 #' 
 #' @param tree a \code{\link{phylo}} object. Must be ultrametric and scaled to unit length.
-#' @param starv_x star value for x
+#' @param starv_x starting value for x
 #' @param sigma_x evolutionary rate of x  
 #' @param a parameter of the evolutionary rate of y (see details)
 #' @param b parameter of the evolutionary rate of y (see details)
-#' @param x fixed values of x (only for the "residual_rate" model), 
+#' @param x optional fixed values of x (only for the "residual_rate" model), 
 #' must equal number of tips in the pylogeny, must be the same order as the tip labels
 #' @param model either Brownaian motion model of x "predictor_BM", 
 #' geometric Brownian motion model of x "predictor_geometricBM", or "residual_rate".
 #' 
 #' 
-#' @return \code{ratesim} returns a dataset of x and y values at the tips.
+#' @return \code{simulate_rate} returns a dataset of x and y values at the tips.
 #' 
 #' @author Geir H. Bolstad
 #' 
@@ -24,7 +24,7 @@
 #' 
 #' @export
 
-rate_sim <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, x = NULL, model = "predictor_BM"){
+simulate_rate <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, x = NULL, model = "predictor_BM"){
   
   if(model == "predictor_BM" | model == "predictor_geometricBM"){
     EDGE <- cbind(tree$edge, round(tree$edge.length, 3))
@@ -43,7 +43,7 @@ rate_sim <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, x = NULL, mode
     }
   
     # percentage negative square roots
-    if(model == "predictor_BM"){ 
+    if(model == "predictor_BM"){
       percent_negative <- length(which((a + b*unlist(x_evo))<0))/length(unlist(x_evo))*100
       if(percent_negative>0) warning(paste("Number of negative a + bx is ", round(percent_negative, 0), "%. The term a + bx is set to zero for these iterations", sep = ""))
     }
@@ -65,6 +65,7 @@ rate_sim <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, x = NULL, mode
     DATA <- DATA[order(DATA[,1]),]
     DATA <- as.data.frame(DATA)
     colnames(DATA) <- c("species", "x", "y")
+    DATA$species <- tree$tip.label[DATA$species]
     if(model == "predictor_geometricBM") DATA$x <- exp(DATA$x)
   }
   
@@ -81,6 +82,3 @@ rate_sim <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, x = NULL, mode
   return(DATA)
 }
 
-
-  
-  

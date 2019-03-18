@@ -4,6 +4,29 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
+## ------------------------------------------------------------------------
+tree <- geiger::sim.bdtree(b = 1, d = 0, n = 100, t = 4)
+ape::is.ultrametric(tree)
+
+## ------------------------------------------------------------------------
+tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
+
+## ------------------------------------------------------------------------
+sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=2, b=1, model = "predictor_BM")
+
+## ------------------------------------------------------------------------
+gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "predictor_BM", maxiter = 100, silent = FALSE)
+gls_mod$param
+
+## ------------------------------------------------------------------------
+boot_rate_gls(gls_mod, n = 5)
+
+## ------------------------------------------------------------------------
+plot(gls_mod) # with the default scale == "SD"
+
+## ------------------------------------------------------------------------
+plot(gls_mod, scale = "VAR")
+
 ## ---- eval = FALSE-------------------------------------------------------
 #  # testing the R2 values
 #  
@@ -11,12 +34,15 @@ knitr::opts_chunk$set(
 #  tree <- phytools::starTree(1:100, rep(1, 100))
 #  
 #  # predictor_BM model
-#  mod <- rate_sim(tree, startv_x=0, sigma_x=1, a=2, b=1, model = "predictor_BM")
+#  mod <- simulate_rate(tree, startv_x=0, sigma_x=1, a=2, b=1, model = "predictor_BM")
 #  gls_mod <- rate_gls(x=mod$x, y=mod$y, species=tree$tip.label, tree, model = "predictor_BM", maxiter = 100, silent = FALSE)
 #  gls_mod$Rsquared
 #  summary(lm(gls_mod$data$y2~gls_mod$data$x))$r.squared
 #  
 #  plot(gls_mod)
+#  
+#  X <- simulate(gls_mod, nsim = 10)
+#  
 #  
 #  # predictor_geometricBM model
 #  mod <- rate_sim(tree, startv_x=1, sigma_x=1, a=2, b=1, model = "predictor_geometricBM")

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Geir Bolstad" />
 
-<meta name="date" content="2019-02-27" />
+<meta name="date" content="2019-03-06" />
 
 <title>Phylogenetic mixed model</title>
 
@@ -92,7 +92,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Phylogenetic mixed model</h1>
 <h4 class="author"><em>Geir Bolstad</em></h4>
-<h4 class="date"><em>2019-02-27</em></h4>
+<h4 class="date"><em>2019-03-06</em></h4>
 
 
 
@@ -119,22 +119,22 @@ mod
 <span class="co">#&gt; Linear mixed model fit by REML ['lmerMod']</span>
 <span class="co">#&gt; Formula: y ~ 1 + (1 | species)</span>
 <span class="co">#&gt;    Data: dt</span>
-<span class="co">#&gt; REML criterion at convergence: 361.6448</span>
+<span class="co">#&gt; REML criterion at convergence: 376.6737</span>
 <span class="co">#&gt; Random effects:</span>
 <span class="co">#&gt;  Groups   Name        Std.Dev.</span>
-<span class="co">#&gt;  species  (Intercept) 2.601   </span>
-<span class="co">#&gt;  Residual             0.621   </span>
+<span class="co">#&gt;  species  (Intercept) 2.5044  </span>
+<span class="co">#&gt;  Residual             0.7812  </span>
 <span class="co">#&gt; Number of obs: 100, groups:  species, 100</span>
 <span class="co">#&gt; Fixed Effects:</span>
 <span class="co">#&gt; (Intercept)  </span>
-<span class="co">#&gt;       4.339</span></code></pre></div>
+<span class="co">#&gt;       6.472</span></code></pre></div>
 <p>The Almer function is flexible as it is based on the lmer function… blah blah</p>
 </div>
 <div id="the-almer_se-function" class="section level1">
 <h1>The Almer_SE function</h1>
 <p>This function extends the Almer function by allowing the inclusion of uncertainty of the species means. To do this, we take advantage of how weights are included in the lmer function: the diagonal of the residual covariance matrix is the residual variance parameter <span class="math inline">\(\sigma^2\)</span> times the vector of inverse weights. By using weights equal to <span class="math inline">\(1/(1+SE^2/\sigma^2)\)</span>, where SE is a vector of standard errors, the diagonal of the residual covariance matrix is <span class="math inline">\(\sigma^2 + SE^2\)</span>. Because the weights includes the residual variance parameter, the function uses an itarative approach.</p>
 <p>…</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dt<span class="op">$</span>SE &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="kw">nrow</span>(dt), <span class="dt">min =</span> <span class="fl">0.5</span>, <span class="dt">max =</span> <span class="dv">1</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dt<span class="op">$</span>SE &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="kw">nrow</span>(dt), <span class="dt">min =</span> <span class="fl">0.5</span>, <span class="dt">max =</span> <span class="dv">1</span>) <span class="co"># adding some arbitrary SE values</span>
 
 mod_SE &lt;-<span class="st"> </span><span class="kw">Almer_SE</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">SE =</span> dt<span class="op">$</span>SE, <span class="dt">A =</span> <span class="kw">list</span>(<span class="dt">species =</span> A))
 mod_SE</code></pre></div>
@@ -144,21 +144,21 @@ mod_SE</code></pre></div>
 <p>The simulate_Almer function can be used to simulate the responses, in our case species means, of the fitted model. This can be further used to do parametric bootstrapping.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_y &lt;-<span class="st"> </span><span class="kw">simulate_Almer</span>(mod, <span class="dt">nsim =</span> <span class="dv">3</span>)
 <span class="kw">head</span>(sim_y)
-<span class="co">#&gt; [1] 5.8281909 4.8215573 1.8467263 2.2419080 3.0780602 0.9732829</span></code></pre></div>
+<span class="co">#&gt; [1] 7.628149 5.654977 6.516906 6.343948 6.125932 6.147352</span></code></pre></div>
 </div>
 <div id="phylogenetic-heritability" class="section level1">
 <h1>Phylogenetic heritability</h1>
-<p>The phylH function can be used to estimate the phylogenetic heritability of a object fitted by Almer. The 95% confidence interval is estiamted by bootstrapping. The name of the numerator of the heritability, and unless the phylogenetic residual is estiamted as residuals in the model fit, the name of the phylogenetic residuals also needs to be given.</p>
+<p>The phylH function can be used to estimate the phylogenetic heritability of a object fitted by Almer. The 95% confidence interval is estimated by bootstrapping. The name of the numerator of the heritability, and unless the phylogenetic residual is estiamted as residuals in the model fit, the name of the phylogenetic residuals also needs to be given.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">phylH</span>(mod, <span class="dt">numerator =</span> <span class="st">&quot;species&quot;</span>, <span class="dt">nsim =</span> <span class="dv">10</span>)
 <span class="co">#&gt; $phylH</span>
 <span class="co">#&gt; Phylo Heritability               2.5%              97.5% </span>
-<span class="co">#&gt;          0.9460873          0.8993703          0.9773282 </span>
+<span class="co">#&gt;          0.9113232          0.8060910          0.9576643 </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; $bootstrap</span>
 <span class="co">#&gt;     Sim_1     Sim_2     Sim_3     Sim_4     Sim_5     Sim_6     Sim_7 </span>
-<span class="co">#&gt; 0.9447469 0.9315381 0.9667161 0.9143976 0.9389318 0.8982437 0.9690796 </span>
+<span class="co">#&gt; 0.8526184 0.8680473 0.9457547 0.8289484 0.8123404 0.8042766 0.8743656 </span>
 <span class="co">#&gt;     Sim_8     Sim_9    Sim_10 </span>
-<span class="co">#&gt; 0.9032509 0.9797230 0.9545464</span></code></pre></div>
+<span class="co">#&gt; 0.9576181 0.9576777 0.8720202</span></code></pre></div>
 </div>
 
 
