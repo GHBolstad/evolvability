@@ -26,19 +26,24 @@
 
 simulate_rate <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, x = NULL, model = "predictor_BM"){
   
+  # include error messages so that ERROR if
+  # Trees with negative edge lengths
+  # start_x is negative for model == "predictor_geomtricBM"
+  
   if(model == "predictor_BM" | model == "predictor_geometricBM"){
     EDGE <- cbind(tree$edge, round(tree$edge.length, 3))
     EDGE[,3][EDGE[,3]==0] <- 0.001 #adding one timestep to the edges that was rounded down to zero
-    # !!! NB !!! Some trees have negative edge lengths. What is this? Include error message
     EDGE <- EDGE[order(tree$edge[,1]),]
     x_evo <- list()
     y_evo <- list()
     
     # Simulating x-values
     for(i in 1:nrow(EDGE)){
-      # If the ancestor is among the descendants, the startingvalue is updated
-      if(EDGE[i,1] %in% EDGE[1:i,2]) x0 <- rev(x_evo[[which(EDGE[1:i,2] == EDGE[i,1])]])[1]
-      else x0 <- startv_x
+      if(EDGE[i,1] %in% EDGE[1:i,2]) x0 <- rev(x_evo[[which(EDGE[1:i,2] == EDGE[i,1])]])[1]  # If the ancestor already has a starting value
+      else{
+        if(model == "predictor_BM") x0 <- startv_x
+        if(model == "predictor_geometricBM") x0 <- log(startv_x)
+      }
       x_evo[[i]] <- x0 + cumsum(rnorm(n = EDGE[i,3]*1000, mean = 0, sd = sqrt(1/1000)*sigma_x))
     }
   
@@ -50,7 +55,7 @@ simulate_rate <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, x = NULL,
       
     # Simulating y-values
     for(i in 1:nrow(EDGE)){
-      if(EDGE[i,1] %in% EDGE[1:i,2]) y0 <- rev(y_evo[[which(EDGE[1:i,2] == EDGE[i,1])]])[1] # If the ancestor is among the descendants, the startingvalue is updated
+      if(EDGE[i,1] %in% EDGE[1:i,2]) y0 <- rev(y_evo[[which(EDGE[1:i,2] == EDGE[i,1])]])[1] # If the ancestor already has a starting value
       else y0 <- 0
       if(model == "predictor_BM"){
         r <- a + b*x_evo[[i]]
@@ -74,7 +79,7 @@ simulate_rate <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, x = NULL,
     A <-ape::vcv(tree)
     if(is.null(x)) x <- c(startv_x + t(chol(A))%*%rnorm(n, 0, sigma_x))
     V <- A + a*diag(n) + diag(a + b*x)
-    if(length(diag(V)[diag(V)<0])>0) stop("Values of x are too low, causing negative values in the variance matrix of y.")
+    if(length(diag(V)[diag(V)<0])>0) stop("Negative values in the variance matrix of y. Change a, b or x.")
     y <- t(chol(V))%*%rnorm(n)
     DATA <- data.frame(species = tree$tip.label, x = x, y = y)
   }
