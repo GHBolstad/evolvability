@@ -199,15 +199,14 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
   
   # updating values using gls
   for(i in 1:maxiter){
-    
     if(model == "residual_rate") {
-      # updating response variable updating response variable according to new V
+      # updating response variable according to new V
       Vinv <- solve(V)
       y_mean <- as.matrix(apply(cbind(y), 1, function(x){
-        i <- which(y==x)
-        new_y <- y[-i]
+        j <- which(y==x)
+        new_y <- y[-j]
         new_X <- matrix(rep(1, length(new_y)), ncol = 1) # design matrix
-        new_Vinv <- Vinv[-i,-i]
+        new_Vinv <- Vinv[-j,-j]
         solve(t(new_X)%*%new_Vinv%*%new_X)%*%t(new_X)%*%new_Vinv%*%new_y
       }))
       y_predicted <- y_mean + (V - solve(diag(x = diag(Vinv))))%*%Vinv%*%(y-y_mean)
@@ -298,9 +297,9 @@ plot.rate_gls = function(object, scale = "SD", print_param = TRUE, digits_param 
   if(scale == "VAR") plot(object$data$x, object$data$y2, main=main, xlab=xlab, ylab=ylab, col=col, ...)
   if(scale == "SD")  plot(object$data$x, sqrt(object$data$y2), main=main, xlab=xlab, ylab=ylab, col=col, ...)
   lines(x, y)
-  if(print_param) legend("topleft", legend = c(as.expression(bquote(italic(a) == .(round(object$param["a", 1], digits_param)) ~ "\u00B1" ~ .(round(object$param["a", 2], digits_param)))),
-                                               as.expression(bquote(italic(b) == .(round(object$param["b", 1], digits_param)) ~ "\u00B1" ~ .(round(object$param["b", 2], digits_param)))),
-                                               as.expression(bquote(italic(R)^2 == .(round(100*object$Rsquared, digits_rsquared)) ~ "%"))),
+  if(print_param) legend("topleft", legend = c(as.expression(bquote(italic(a) == .(round_and_format(object$param["a", 1], digits_param)) ~ "\u00B1" ~ .(round_and_format(object$param["a", 2], digits_param)))),
+                                               as.expression(bquote(italic(b) == .(round_and_format(object$param["b", 1], digits_param)) ~ "\u00B1" ~ .(round_and_format(object$param["b", 2], digits_param)))),
+                                               as.expression(bquote(italic(R)^2 == .(round_and_format(100*object$Rsquared, digits_rsquared)) ~ "%"))),
                          box.lty = 0, bg="transparent", xjust=0)
 }
 
