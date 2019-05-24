@@ -273,8 +273,8 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
 #' @param object a gls_rate object
 #' @param scale either the variance scale ("VAR") or the standard deviation scale ("SD").
 #' @param print_param logical if parameter estimates should be printed.
-#' @param digits_param number of digits passed to \code{round}.
-#' @param digits_rsquared number of digits passed to \code{round}.
+#' @param digits_param number of sigificant digits.
+#' @param digits_rsquared number of decimal places
 #' @param main as in \code{\link{plot}}.
 #' @param xlab as in \code{\link{plot}}.
 #' @param ylab as in \code{\link{plot}}.
@@ -290,21 +290,27 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
 #' 
 #' @export
 
-plot.rate_gls = function(object, scale = "SD", print_param = TRUE, digits_param = 2, digits_rsquared = 2, main = "GLS regression", xlab = "x", ylab = "Response", col = "grey",  ...){
+plot.rate_gls = function(object, scale = "SD", print_param = TRUE, digits_param = 2, digits_rsquared = 1, main = "GLS regression", xlab = "x", ylab = "Response", col = "grey",  ...){
   x <- seq(min(object$data$x), max(object$data$x), length.out = 100)
   y <- object$param["Intercept",1] + object$param["Slope",1]*x
   if(scale == "SD")  y <- try(sqrt(y))
   if(scale == "VAR") plot(object$data$x, object$data$y2, main=main, xlab=xlab, ylab=ylab, col=col, ...)
-  if(scale == "SD")  plot(object$data$x, sqrt(object$data$y2), main=main, xlab=xlab, ylab=ylab, col=col, ...)
+  if(scale == "SD")  plot(object$data$x, sqrt(object$data$y2), main=main, xlab=xlab, ylab=ylab, col=col)#, ...)
   lines(x, y)
-  if(print_param) legend("topleft", legend = c(as.expression(bquote(italic(a) == .(round_and_format(object$param["a", 1], digits_param)) ~ "\u00B1" ~ .(round_and_format(object$param["a", 2], digits_param)))),
-                                               as.expression(bquote(italic(b) == .(round_and_format(object$param["b", 1], digits_param)) ~ "\u00B1" ~ .(round_and_format(object$param["b", 2], digits_param)))),
+  if(print_param) legend("topleft", legend = c(as.expression(bquote(italic(a) == .(round_and_format(object$param["a", 1], sign_digits = digits_param)) ~ "\u00B1" ~ 
+                                                                      .(round_and_format(object$param["a", 2], sign_digits = digits_param)) ~~~ 
+                                                                    italic(b) == .(round_and_format(object$param["b", 1], sign_digits = digits_param)) ~ "\u00B1" ~ 
+                                                                      .(round_and_format(object$param["b", 2], sign_digits = digits_param)))),
+                                               as.expression(bquote(italic(A) == .(round_and_format(object$param["Intercept", 1], sign_digits = digits_param)) ~ "\u00B1" ~ 
+                                                                      .(round_and_format(object$param["Intercept", 2], sign_digits = digits_param)) ~~~ 
+                                                                    italic(B) == .(round_and_format(object$param["Slope", 1], sign_digits = digits_param)) ~ "\u00B1" ~ 
+                                                                      .(round_and_format(object$param["Slope", 2], sign_digits = digits_param)))),
                                                as.expression(bquote(italic(R)^2 == .(round_and_format(100*object$Rsquared, digits_rsquared)) ~ "%"))),
                          box.lty = 0, bg="transparent", xjust=0)
 }
 
 
-
+signif(10000.51, 2)
 
 #' Simulate responses from \code{\link{rate_gls}} fit
 #' 

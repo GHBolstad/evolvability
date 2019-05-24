@@ -5,7 +5,7 @@
 \title{Plot of gls_rate object}
 \usage{
 \method{plot}{rate_gls}(object, scale = "SD", print_param = TRUE,
-  digits_param = 2, digits_rsquared = 2, main = "GLS regression",
+  digits_param = 2, digits_rsquared = 1, main = "GLS regression",
   xlab = "x", ylab = "Response", col = "grey", ...)
 }
 \arguments{
@@ -15,9 +15,9 @@
 
 \item{print_param}{logical if parameter estimates should be printed.}
 
-\item{digits_param}{number of digits passed to \code{round}.}
+\item{digits_param}{number of sigificant digits.}
 
-\item{digits_rsquared}{number of digits passed to \code{round}.}
+\item{digits_rsquared}{number of decimal places}
 
 \item{main}{as in \code{\link{plot}}.}
 
