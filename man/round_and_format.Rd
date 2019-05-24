@@ -4,12 +4,15 @@
 \alias{round_and_format}
 \title{Rounds and formats in the same function}
 \usage{
-round_and_format(x, digits = 2, scientific = FALSE, trim = TRUE)
+round_and_format(x, digits = 2, sign_digits = NULL,
+  scientific = FALSE, trim = TRUE)
 }
 \arguments{
 \item{x}{data in numeric format}
 
-\item{digits}{Number of decimals}
+\item{digits}{Number of decimal places}
+
+\item{sign_digits}{Number of significant digits (if given this overrides \code{digits})}
 
 \item{scientfic}{Logical specifying whether encoding in scientific notation}
 }
