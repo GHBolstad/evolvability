@@ -42,18 +42,17 @@ but in practice it has little effect and FALSE will speed up the model fit
  \item{"model"}{the fitted model "predictor_BM", "predictor_gBM" or 
  "recent_evolution}
  \item{"param"}{parameter estimates and standard errors, where "A" and 
- "B" are the intercept and slope of the gls regression, "a" and "b" are parameters 
+ "B" are the intercept and slope of the GLS regression, "a" and "b" are parameters 
  of the evolutionary models (see vignette), and "sigma2_x" which is the BM-rate 
  for the "predictor_BM" and "predictor_gBM" models and the variance of x for the 
  "recent_evolution" model.}
  }
- \item{Rsquared}{The generalized r-square of the gls model fit}
- \item{GLS_objective_score}
+ \item{Rsquared}{The generalized r-square of the GLS model fit}
+ \item{GLS_objective_score}{The score of the GLS objective function}
  \item{R}{Residual variance matrix}
  \item{tree}{The phylogenetic tree}
- \item{data}{The data used for the gls regresssion}
+ \item{data}{The data used for the GLS regresssion}
  \item{convergence}{Whether the algoritm converged or not}
- \item{}
  \item{call}
 }
 \description{

@@ -43,18 +43,17 @@
 #'  \item{"model"}{the fitted model "predictor_BM", "predictor_gBM" or 
 #'  "recent_evolution}
 #'  \item{"param"}{parameter estimates and standard errors, where "A" and 
-#'  "B" are the intercept and slope of the gls regression, "a" and "b" are parameters 
+#'  "B" are the intercept and slope of the GLS regression, "a" and "b" are parameters 
 #'  of the evolutionary models (see vignette), and "sigma2_x" which is the BM-rate 
 #'  for the "predictor_BM" and "predictor_gBM" models and the variance of x for the 
 #'  "recent_evolution" model.}
 #'  }
-#'  \item{Rsquared}{The generalized r-square of the gls model fit}
-#'  \item{GLS_objective_score}
+#'  \item{Rsquared}{The generalized r-square of the GLS model fit}
+#'  \item{GLS_objective_score}{The score of the GLS objective function}
 #'  \item{R}{Residual variance matrix}
 #'  \item{tree}{The phylogenetic tree}
-#'  \item{data}{The data used for the gls regresssion}
+#'  \item{data}{The data used for the GLS regresssion}
 #'  \item{convergence}{Whether the algoritm converged or not}
-#'  \item{}
 #'  \item{call}
 #' 
 #' @author Geir H. Bolstad
@@ -194,23 +193,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
   #### iterative GLS ####
   for(i in 1:maxiter){
     if(model == "recent_evol") {
-      # response variable according to new V
-      Vinv <- solve(V)
-      if(useLFO){# here the mean is calculated leaving out the focal species
-        y_mean <- as.matrix(apply(cbind(y), 1, function(x){
-            j <- which(y==x)
-            new_y <- y[-j]
-            new_X <- matrix(rep(1, length(new_y)), ncol = 1) # design matrix
-            new_Vinv <- Vinv[-j,-j]
-            solve(t(new_X)%*%new_Vinv%*%new_X)%*%t(new_X)%*%new_Vinv%*%new_y
-            }
-          )
-        )
-      } else {# not leaving out the focal species
-        new_X <- matrix(rep(1, length(y)), ncol = 1)
-        y_mean <- c(solve(t(new_X)%*%Vinv%*%new_X)%*%t(new_X)%*%Vinv%*%y)
-        }
-      y_predicted <- y_mean + (V - solve(diag(x = diag(Vinv))))%*%Vinv%*%(y-y_mean)
+      y_predicted <- macro_pred(y=y, V=V, useLFO=useLFO)
       y2 <- (y-y_predicted)^2
     }
     

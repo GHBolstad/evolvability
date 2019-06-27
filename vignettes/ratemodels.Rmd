@@ -89,8 +89,6 @@ plot(gls_mod, scale = "VAR")
 
 # Extra stuff
 ```{r, eval = FALSE}
-
-
 #### recent_evol ####
 # Testing the estimation of b
 b_true <- c(1:100)/50
@@ -103,7 +101,7 @@ for(i in 1:length(b_true)){
     b_est[i] <- NA
   }else{
     gls_mod <- try(rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "recent_evol",
-                        maxiter = 1000, silent = TRUE, use_leave_focal_out_for_y_mean = FALSE), TRUE) 
+                        maxiter = 1000, silent = TRUE, useLFO = FALSE), TRUE) 
     if(length(gls_mod) == 1){
       b_est[i] <- NA
     }else{
@@ -138,6 +136,35 @@ abline(0,1)
 #lm(a_est~a_true) # this is good
 
 ```
+
+
+```{r, eval = FALSE}
+# testing the macro_pred
+ n = 500
+tree <- geiger::sim.bdtree(b = 1, d = 0, n = n, t = 4)
+#ape::is.ultrametric(tree)
+tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
+A <- ape::vcv(tree)
+V <- 0.5*A
+V <- Matrix::Matrix(V, sparse = TRUE)
+
+y <- t(chol(V))%*%rnorm(n)
+
+y_pred <- macro_pred(y@x, V)
+plot(y, y_pred)
+abline(0,1)
+
+
+
+terminal.edges<-matrix(NA,length(tree$tip.label))
+terminal.edges<-tree$edge.length[tree$edge[1:(2*length(tree$tip.label)-2),2]<=length(tree$tip.label)]
+plot(terminal.edges, abs(y_pred-y))
+
+# cecking the 
+
+
+```
+
 
 # old stuff
 

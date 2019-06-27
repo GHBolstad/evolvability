@@ -43,8 +43,6 @@ boot_rate_gls(gls_mod, n = 5, useLFO = FALSE)
 plot(gls_mod, scale = "VAR")
 
 ## ---- eval = FALSE-------------------------------------------------------
-#  
-#  
 #  #### recent_evol ####
 #  # Testing the estimation of b
 #  b_true <- c(1:100)/50
@@ -90,6 +88,32 @@ plot(gls_mod, scale = "VAR")
 #  plot(a_true, a_est)
 #  abline(0,1)
 #  #lm(a_est~a_true) # this is good
+#  
+
+## ---- eval = FALSE-------------------------------------------------------
+#  # testing the macro_pred
+#   n = 500
+#  tree <- geiger::sim.bdtree(b = 1, d = 0, n = n, t = 4)
+#  #ape::is.ultrametric(tree)
+#  tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
+#  A <- ape::vcv(tree)
+#  V <- 0.5*A
+#  V <- Matrix::Matrix(V, sparse = TRUE)
+#  
+#  y <- t(chol(V))%*%rnorm(n)
+#  
+#  y_pred <- macro_pred(y@x, V)
+#  plot(y, y_pred)
+#  abline(0,1)
+#  
+#  
+#  
+#  terminal.edges<-matrix(NA,length(tree$tip.label))
+#  terminal.edges<-tree$edge.length[tree$edge[1:(2*length(tree$tip.label)-2),2]<=length(tree$tip.label)]
+#  plot(terminal.edges, abs(y_pred-y))
+#  
+#  # cecking the
+#  
 #  
 
 ## ---- eval = FALSE-------------------------------------------------------
