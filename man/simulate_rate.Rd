@@ -4,25 +4,27 @@
 \alias{simulate_rate}
 \title{Simulating evolutionary rate model}
 \usage{
-simulate_rate(tree, startv_x = NULL, sigma_x = NULL, a, b, x = NULL,
-  model = "predictor_BM")
+simulate_rate(tree, startv_x = NULL, sigma_x = NULL, a, b,
+  sigma_y = NULL, x = NULL, model = "predictor_BM")
 }
 \arguments{
 \item{tree}{a \code{\link{phylo}} object. Must be ultrametric and scaled to unit length.}
 
-\item{sigma_x}{evolutionary rate of x}
+\item{sigma_x}{evolutionary rate of x.}
 
-\item{a}{parameter of the evolutionary rate of y (see details)}
+\item{a}{parameter of the evolutionary rate of y (see details).}
 
-\item{b}{parameter of the evolutionary rate of y (see details)}
+\item{b}{parameter of the evolutionary rate of y (see details).}
 
-\item{x}{optional fixed values of x (only for the "residual_rate" model), 
-must equal number of tips in the pylogeny, must be the same order as the tip labels}
+\item{sigma_y}{evolutionary rate for the macroevolution of y (Brownian motion process) used in the "recent_evolution" model.}
+
+\item{x}{optional fixed values of x (only for the "recent_evol" model), 
+must equal number of tips in the pylogeny, must correspond to the order of the tip labels}
 
 \item{model}{either Brownaian motion model of x "predictor_BM", 
-geometric Brownian motion model of x "predictor_geometricBM", or "residual_rate".}
+geometric Brownian motion model of x "predictor_gBM", or "recent_evol".}
 
-\item{starv_x}{starting value for x}
+\item{starv_x}{starting value for x.}
 }
 \value{
 \code{simulate_rate} returns a dataset of x and y values at the tips.

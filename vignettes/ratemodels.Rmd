@@ -18,7 +18,8 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette shows how to use the rate_gls function. We first need data. We start with the phylogeny that needs to be ultrametric. 
+This vignette shows how to use the `rate_gls` function. This function can fit three different types of evolutionary models depending on the `model` argument of the function. In all models the evolutionary rate of change in the y-variable is a function of the state of the predictor x. It can be used to test hypotesis about the effect of an evolving trait (x) on the rate of evolution in a different trait (y). The different evolutionary models are outlined below. However, to simulate data for the different evolutionary models, we first need an ultrametric phylogeny.
+
 ```{r}
 tree <- geiger::sim.bdtree(b = 1, d = 0, n = 100, t = 4)
 ape::is.ultrametric(tree)
@@ -29,35 +30,117 @@ We scale the tree to unit length between root and tips. (This makes the paramete
 tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
 ```
 
-# Predictor_BM
-Simulating data for the evolutionary model ...
+# Predictor as Brownian motion 
+The first model is a model where the predictor $x$ evolves according to a Brownian motion (BM) process, the evolutionary model is 
+
+$$dy = \sqrt{a + bx} dW_i $$
+
+$$dx = \sigma dW_i $$
+where the $dW_i$ are uncorrelated white noise. This means that $y$ is following a Brownian motion with variance linear in $x$, and $x$ itself is assumed to follow a standard Brownian motion with variance $\sigma^2$. The influence of $x$ is characterized by the parameter $b$. This model will break down when $a + bx$ becomes negative, and should be seen as an approximation that may be valid for a given range of $x$ values as spanned by the species to be used in the analysis. Using the function `simulate_rate` with `model = "predictor_BM"` we can simulate data with different parameter values.
 ```{r}
 sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=2, b=1, model = "predictor_BM")
 ```
-In this simulation often gives a warning message because the rate parameter a + bx in the model. In these instances, the rate parameter is assignd the value 0 in the simulaiton. As long as the number of these instances is low, this should not be a problem.   
+In this simulation often gives a warning message because the rate parameter, a + bx, is negative. In these instances, the rate parameter is assignd the value 0 in the simulaiton. As long as the number of these instances is low, this should not be a problem.   
 We can now fit the gls model to these data
 ```{r}
-gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "predictor_BM", maxiter = 100, silent = FALSE)
+gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "predictor_BM", maxiter = 100, silent = TRUE)
 gls_mod$param
 ```
-This gives the parameters of the model. The parameters "Intercept" and "Slope" gives the gls estimates of the regression of y^2 on x. The a, b and Sigma2_x are the parameters of the evolutonary model. The standard error of the estimates does not take into account the error in Sigma2_x. Parametric boostrapping can be used to get 95% confidence intervals taking into account error in the entire process (assuming that the phylogenetic tree true).
-
+This gives the parameters of the model. The parameters "Intercept (A)" and "Slope (B)" gives the gls estimates of the regression of y^2^ on x. The a, b and Sigma2_x are the parameters of the evolutonary model. The standard error of the estimates does not take into account the error in Sigma2_x. Parametric boostrapping can be used to get 95% confidence intervals taking into account error in the entire process (assuming that the phylogenetic tree is true).
 ```{r}
-boot_rate_gls(gls_mod, n = 5)
+boot_rate_gls(gls_mod, n = 5) # when doing a proper boostrap n should be larger n>999
 ```
-
-Plotting the the generalized least squares regression. 
+Plotting the the generalized least squares regression with $y^2$ on the y-axis (i.e. on the variance scale). 
+```{r}
+plot(gls_mod, scale = "VAR")
+```
+Alternatively we can plot the regression with with $|y|$ on the y-axis (i.e. on the standard deviation scale). This is the default of the plot function. 
 ```{r}
 plot(gls_mod) # with the default scale == "SD"
 ```
  
+# Predictor as geometric Brownian motion
+
+
+# Predictor affects rates of recent evolution
+EVOLUTIONARY MODEL
+
+Simulating data
+```{r}
+sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=2, b=1, sigma_y = 2, model = "recent_evol")
+```
+
+Fitting the GLS model
+```{r}
+gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "recent_evol", maxiter = 1000, silent = TRUE, useLFO = FALSE)
+gls_mod$param
+```
+
+```{r}
+boot_rate_gls(gls_mod, n = 5, useLFO = FALSE) 
+# when doing a proper boostrap n should be larger n>999
+
+```
+
 ```{r}
 plot(gls_mod, scale = "VAR")
 ```
 
 
+# Extra stuff
+```{r, eval = FALSE}
+
+
+#### recent_evol ####
+# Testing the estimation of b
+b_true <- c(1:100)/50
+b_est <- NA
+
+for(i in 1:length(b_true)){
+  sim_data <- try(simulate_rate(tree, startv_x=0, sigma_x=3, a=10, b=b_true[i], sigma_y = 2, 
+                                model = "recent_evol"), TRUE)
+  if(is.null(nrow(sim_data))){
+    b_est[i] <- NA
+  }else{
+    gls_mod <- try(rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "recent_evol",
+                        maxiter = 1000, silent = TRUE, use_leave_focal_out_for_y_mean = FALSE), TRUE) 
+    if(length(gls_mod) == 1){
+      b_est[i] <- NA
+    }else{
+      b_est[i] <- gls_mod$param["b",1]
+    }
+  }
+}
+plot(b_true, b_est)
+abline(0,1)
+#lm(b_est~b_true) # this is good
+
+# Testing the estimation of a
+a_true <- c(1:100)/50
+a_est <- NA
+for(i in 1:length(a_true)){
+  sim_data <- try(simulate_rate(tree, startv_x=0, sigma_x=3, a=a_true[i], b=0.1, sigma_y = 2, 
+                                model = "recent_evol"), TRUE)
+  if(is.null(nrow(sim_data))){
+    a_est[i] <- NA
+  }else{
+    gls_mod <- try(rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "recent_evol",
+                        maxiter = 1000, silent = TRUE, use_leave_focal_out_for_y_mean = FALSE), TRUE) 
+    if(length(gls_mod) == 1){
+      a_est[i] <- NA
+    }else{
+      a_est[i] <- gls_mod$param["a",1]
+    }
+  }
+}
+plot(a_true, a_est)
+abline(0,1)
+#lm(a_est~a_true) # this is good
+
+```
 
 # old stuff
+
 
 ```{r, eval = FALSE}
 # testing the R2 values

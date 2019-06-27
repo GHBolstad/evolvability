@@ -15,17 +15,82 @@ tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
 sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=2, b=1, model = "predictor_BM")
 
 ## ------------------------------------------------------------------------
-gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "predictor_BM", maxiter = 100, silent = FALSE)
+gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "predictor_BM", maxiter = 100, silent = TRUE)
 gls_mod$param
 
 ## ------------------------------------------------------------------------
-boot_rate_gls(gls_mod, n = 5)
+boot_rate_gls(gls_mod, n = 5) # when doing a proper boostrap n should be larger n>999
+
+## ------------------------------------------------------------------------
+plot(gls_mod, scale = "VAR")
 
 ## ------------------------------------------------------------------------
 plot(gls_mod) # with the default scale == "SD"
 
 ## ------------------------------------------------------------------------
+sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=2, b=1, sigma_y = 2, model = "recent_evol")
+
+## ------------------------------------------------------------------------
+gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "recent_evol", maxiter = 1000, silent = TRUE, useLFO = FALSE)
+gls_mod$param
+
+## ------------------------------------------------------------------------
+boot_rate_gls(gls_mod, n = 5, useLFO = FALSE) 
+# when doing a proper boostrap n should be larger n>999
+
+
+## ------------------------------------------------------------------------
 plot(gls_mod, scale = "VAR")
+
+## ---- eval = FALSE-------------------------------------------------------
+#  
+#  
+#  #### recent_evol ####
+#  # Testing the estimation of b
+#  b_true <- c(1:100)/50
+#  b_est <- NA
+#  
+#  for(i in 1:length(b_true)){
+#    sim_data <- try(simulate_rate(tree, startv_x=0, sigma_x=3, a=10, b=b_true[i], sigma_y = 2,
+#                                  model = "recent_evol"), TRUE)
+#    if(is.null(nrow(sim_data))){
+#      b_est[i] <- NA
+#    }else{
+#      gls_mod <- try(rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "recent_evol",
+#                          maxiter = 1000, silent = TRUE, use_leave_focal_out_for_y_mean = FALSE), TRUE)
+#      if(length(gls_mod) == 1){
+#        b_est[i] <- NA
+#      }else{
+#        b_est[i] <- gls_mod$param["b",1]
+#      }
+#    }
+#  }
+#  plot(b_true, b_est)
+#  abline(0,1)
+#  #lm(b_est~b_true) # this is good
+#  
+#  # Testing the estimation of a
+#  a_true <- c(1:100)/50
+#  a_est <- NA
+#  for(i in 1:length(a_true)){
+#    sim_data <- try(simulate_rate(tree, startv_x=0, sigma_x=3, a=a_true[i], b=0.1, sigma_y = 2,
+#                                  model = "recent_evol"), TRUE)
+#    if(is.null(nrow(sim_data))){
+#      a_est[i] <- NA
+#    }else{
+#      gls_mod <- try(rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "recent_evol",
+#                          maxiter = 1000, silent = TRUE, use_leave_focal_out_for_y_mean = FALSE), TRUE)
+#      if(length(gls_mod) == 1){
+#        a_est[i] <- NA
+#      }else{
+#        a_est[i] <- gls_mod$param["a",1]
+#      }
+#    }
+#  }
+#  plot(a_true, a_est)
+#  abline(0,1)
+#  #lm(a_est~a_true) # this is good
+#  
 
 ## ---- eval = FALSE-------------------------------------------------------
 #  # testing the R2 values
