@@ -4,14 +4,12 @@
 \alias{macro_pred}
 \title{Macroevolutionary predictions}
 \usage{
-macro_pred(y, V, Vinv = NULL, useLFO = TRUE)
+macro_pred(y, V, useLFO = TRUE)
 }
 \arguments{
 \item{y}{vector of species means}
 
 \item{V}{phylogenetic variance matrix, must have same order as \code{y}}
-
-\item{Vinv}{optional, the inverse of \code{V} to speed up code}
 
 \item{useLFO}{excludes the focal species when calculating the corresponding species' 
 mean. The correct way is to use TRUE, but in practice it has little effect and FALSE 

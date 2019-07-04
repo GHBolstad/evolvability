@@ -11,7 +11,7 @@ GLS(y, X, R = NULL, L = NULL, coef_only = FALSE)
 
 \item{X}{design matrix}
 
-\item{R}{residual covariance or correlation matrix (can be sparse), not needed if \code{L} is provided.}
+\item{R}{residual covariance or correlation matrix (can be sparse), ignored if \code{L} is provided.}
 
 \item{L}{lower triangular matrix of the cholescky decomposition of \code{R} (optional).}
 
@@ -33,7 +33,7 @@ GLS(y, X, R = NULL, L = NULL, coef_only = FALSE)
 \details{
 Note that the size of \code{R} does not matter (i.e. if \code{R} is multiplied by a scalar, the
 results don't change). Note also that the R-squared is estimated as 1-GSSE/GSST, where GSSE is the generalized
-residual sum of squares (i.e. the objective function score of the model) and GSST is the generalized total sum of
+residual sum of squares (i.e. the objective function score of the model) and GSST is the generalized total sum of 
 squares (i.e. the objective function score of the model when only the intercept is included in the model)
 }
 \examples{

@@ -39,41 +39,40 @@ but in practice it has little effect and FALSE will speed up the model fit
 \value{
 \code{rate_gls} returns a list with elements
 \itemize{
- \item{"model"}{the fitted model "predictor_BM", "predictor_gBM" or 
- "recent_evolution}
- \item{"param"}{parameter estimates and standard errors, where "A" and 
+ \item{\code{model}: name of fitted model ("predictor_BM", "predictor_gBM" or "recent_evolution").}
+ \item{\code{param}: parameter estimates and standard errors, where "A" and 
  "B" are the intercept and slope of the GLS regression, "a" and "b" are parameters 
  of the evolutionary models (see vignette), and "sigma2_x" which is the BM-rate 
  for the "predictor_BM" and "predictor_gBM" models and the variance of x for the 
  "recent_evolution" model.}
- }
- \item{Rsquared}{The generalized r-square of the GLS model fit}
+ \item{\code{R2}: the generalized R squared of the GLS model fit}
  \item{GLS_objective_score}{The score of the GLS objective function}
  \item{R}{Residual variance matrix}
  \item{tree}{The phylogenetic tree}
  \item{data}{The data used for the GLS regresssion}
  \item{convergence}{Whether the algoritm converged or not}
  \item{call}
+ }
 }
 \description{
-\code{rate_gls} Generalized least squares rate model
-}
-\details{
-\code{rate_gls} Fits a generalized least squares model to estimate parameters of 
+\code{rate_gls} fits a generalized least squares model to estimate parameters of 
 the evolutoinary model of two traits x and y, where the evoluitonary rate of y 
 depends on the value of x. Three models are implmented. In the two first, 
 "predictor_BM" and "predictor_gBM", the evolution of y follows a Brownian motion 
 with variance linear in x, while the evolution of x either follows a Brownian 
 motion or a geometric brownian motion, respectively. In the third model, the 
 residuals of the macroveoluitonary predictions of y have variance linear in x.
-
-the generalized least squares (GLS) model fit a regression where 
+}
+\details{
+The generalized least squares (GLS) model fit a regression where 
 explanatory variable is x (mean centred) and the response variable is vector of 
 squared y values for the "predictor_BM" and "predictor_gBM" models and squared 
 deviation from the evolutionary predictions (squared residuals) in the 
 "recent_evol" model. From the intercept and slope of the GLS fit the following 
 evolutionary paramters (a and b) are estimated. The evolutionary models are
 described in a vignette and in Hansen et al. (in prep)
+
+\deqn{dy = \sqrt{a + bx}dW_{i}}
 }
 \examples{
 
