@@ -19,26 +19,27 @@
 #' 
 #' @examples
 #' 
+#' @importFrom Matrix Matrix solve diag
+#' 
 #' @export
 
 macro_pred <- function(y, V, useLFO = TRUE){
-  Vinv <- solve(V)
   if(useLFO){# here the mean is calculated leaving out the focal species
     X <- matrix(rep(1, length(y)-1), ncol = 1) # design matrix
     y_mean <- as.matrix(
       apply(cbind(y), 1, 
             function(x){
               j <- which(c(y)==x)
-              new_y <- y[-j]
-              new_Vinv <- Vinv[-j,-j]
-              solve(t(X)%*%new_Vinv%*%X)%*%t(X)%*%new_Vinv%*%new_y
+              GLS(y = y[-j], X = X, R = V[-j,-j], coef_only = TRUE)$coefficients
             }
             )
       )
   } else {# not leaving out the focal species
     X <- matrix(rep(1, length(y)), ncol = 1)
-    y_mean <- c(solve(t(X)%*%Vinv%*%X)%*%t(X)%*%Vinv%*%y)
+    y_mean <-  GLS(y = y, X = X, R = V, coef_only = TRUE)$coefficients
   }
-  y_predicted <- y_mean + (V - solve(diag(x = diag(Vinv))))%*%Vinv%*%(y-y_mean)
+  Vinv <- Matrix::solve(V, sparse = TRUE)
+  diag(V) <- diag(V)-1/diag(Vinv) #this is the same as (V - solve(diag(x = diag(Vinv)))) 
+  y_mean + V%*%Vinv%*%(y-y_mean)
 }
 
