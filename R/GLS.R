@@ -33,7 +33,7 @@ GLS <- function(y, X, R=NULL, L = NULL, coef_only = FALSE){
   if(coef_only){
     obj <- lm.fit(forwardsolve(L, X), forwardsolve(L, y))
     GSSE <- sum(obj$residuals^2)    # generalized residual sum of squares
-    output <- list(coefficients = obj$coefficients, GSSE = GSSE)
+    output <- list(coef = obj$coef, GSSE = GSSE)
   }else{
     X <- forwardsolve(L, X)         # equivalent to solve(L)%*%X
     obj <- lm.fit(X, forwardsolve(L, y))
