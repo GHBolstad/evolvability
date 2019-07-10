@@ -30,16 +30,16 @@ macro_pred <- function(y, V, useLFO = TRUE){
       apply(cbind(y), 1, 
             function(x){
               j <- which(c(y)==x)
-              GLS(y = y[-j], X = X, R = V[-j,-j], coef_only = TRUE)$coefficients
+              GLS(y = y[-j], X = X, R = V[-j,-j], coef_only = TRUE)$coef
             }
             )
       )
   } else {# not leaving out the focal species
     X <- matrix(rep(1, length(y)), ncol = 1)
-    y_mean <-  GLS(y = y, X = X, R = V, coef_only = TRUE)$coefficients
+    y_mean <-  GLS(y = y, X = X, R = V, coef_only = TRUE)$coef
   }
   Vinv <- Matrix::solve(V, sparse = TRUE)
-  diag(V) <- diag(V)-1/diag(Vinv) #this is the same as (V - solve(diag(x = diag(Vinv)))) 
-  y_mean + V%*%Vinv%*%(y-y_mean)
+  inv_dVinv <- Matrix::Matrix(diag(x = 1/Matrix::diag(Vinv)), sparse = TRUE)
+  return(y_mean + (V-inv_dVinv)%*%Vinv%*%(y-y_mean))
 }
 
