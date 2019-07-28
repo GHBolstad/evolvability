@@ -61,7 +61,7 @@
 #' 
 #' @importFrom ape vcv
 #' @importFrom lme4 VarCorr
-#' @importFrom Matrix Matrix
+#' @importFrom Matrix Matrix solve
 #' 
 #' @export
 
@@ -78,38 +78,40 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
   A <- ape::vcv(tree)
   if(round(A[1,1], 5) != 1) stop("The tree is not standardized to unit length")
   A <- A[match(species, colnames(A)), match(species, colnames(A))] #ordering A according to species
-  Ainv <- solve(A)
-  
+  A <- Matrix::Matrix(A, sparse = TRUE)
+
   #### y-variable ####
   # mean (weighted assuming BM process and the phylogeny)
   X <- matrix(rep(1, length(x)), ncol = 1) # design matrix
-  mean_y <- solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%y
+  mean_y <- GLS(y, X, R = A, coef_only = TRUE)$coef
   
   # mean centring
   y <- y - c(mean_y) # note that for the residual rate model, this does not have any effect as the squared deviation from the predictons are used
   
   #### x-variable ####
-  # mean of x
-  if(model == "predictor_BM")  mean_x <- solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%x            
-  if(model == "predictor_gBM") mean_x <- exp(solve(t(X)%*%Ainv%*%X)%*%t(X)%*%Ainv%*%log(x))      
-  if(model == "recent_evol")   mean_x <- mean(x)
-  
-  # mean centring x or standardizing x
-  if(model == "predictor_BM")  x <- x - c(mean_x)
-  if(model == "predictor_gBM") x <- x/c(mean_x)
-  if(model == "recent_evol")   x <- x - c(mean_x) 
-  
-  # Variance of x
-  C <- t(chol(A)) #left cholesky factor
-  if(model == "predictor_BM")  sigma2_x <- var(solve(C)%*%x) 
-  if(model == "predictor_gBM") sigma2_x <- var(solve(C)%*%(log(x)-mean(log(x))))
-  if(model == "recent_evol")   sigma2_x <- var(x)
+  if(model == "predictor_BM"){
+    mod <- GLS(x, X, A)
+    mean_x <- mod$coef[1]
+    sigma2_x <- mod$sigma2
+    x <- x - c(mean_x)
+  }
+  if(model == "predictor_gBM"){
+    mod <- GLS(log(x), X, A)
+    mean_x <- exp(mod$coef[1])
+    sigma2_x <- mod$sigma2
+    x <- x/c(mean_x)
+  }
+  if(model == "recent_evol"){
+    mean_x <- mean(x)
+    sigma2_x <- var(x)
+    x <- x - c(mean_x) 
+  }
   sigma2_x <- c(sigma2_x)
   sigma2_x_SE <- sqrt(2*sigma2_x^2/(length(x)+2)) # from Lynch and Walsh 1998 eq A1.10c
   
   #### Internal functions ####
   if(model == "predictor_BM"){
-    a_func <- function(Beta, sigma2_x) Beta[1,1]
+    a_func <- function(Beta, sigma2_x, a_bias) Beta[1,1]
     b_func <- function(Beta, sigma2_x) 2*Beta[2,1]
     R_func <- function(a, b, sigma2_x, t_a) 2*a^2*t_a^2 + c(sigma2_x*(b/2)^2) * t_a*(1 - 2*t_a + 4*t_a^2)
     a_SE_func <- function(Beta_vcov, sigma2_x) sqrt(Beta_vcov[1,1])
@@ -121,39 +123,43 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
       X[is.na(X)] <- 0
       return(X)
     }
-    a_func <- function(Beta, sigma2_x) Beta[1,1]-3*Beta[2,1]*f(sigma2_x)*(exp(sigma2_x/2)-1)
+    a_func <- function(Beta, sigma2_x, a_bias) Beta[1,1]-3*Beta[2,1]*f(sigma2_x)*(exp(sigma2_x/2)-1)
     b_func <- function(Beta, sigma2_x) 3*sigma2_x*Beta[2,1]/(2*f(sigma2_x))
     R_func <- function(a, b, sigma2_x, t_a){
       2*a^2*t_a^2 + 8*a*b*t_a/sigma2_x*(exp(0.5*sigma2_x*t_a)-1)+
         2*b^2/sigma2_x^2*(exp(sigma2_x*t_a)-1)*(exp(sigma2_x*t_a)-1+2*(exp(0.5*sigma2_x*t_a)-exp(0.5*sigma2_x))^2+
                                                   4/3*(exp(0.5*sigma2_x)-exp(0.5*sigma2_x*t_a))*(f(sigma2_x, t_a)*exp(0.5*sigma2_x*t_a)-f(sigma2_x)*exp(0.5*sigma2_x))-
                                                   4/9*f(sigma2_x, t_a)*exp(0.5*sigma2_x*t_a)*f(sigma2_x)*exp(0.5*sigma2_x)+
-                                                  2/9*f(sigma2_x)^2*exp(sigma2_x)
-        )
+                                                  2/9*f(sigma2_x)^2*exp(sigma2_x))
+        
     }
     a_SE_func <- function(Beta_vcov, sigma2_x) sqrt(Beta_vcov[1,1] + 9*f(sigma2_x)^2*(exp(sigma2_x/2)-1)^2*Beta_vcov[2,2] - 3*f(sigma2_x)*(exp(sigma2_x/2-1)*Beta_vcov[1,2]))
     b_SE_func <- function(Beta_vcov, sigma2_x) sqrt(9*sigma2_x^2*Beta_vcov[2,2]/(4*f(sigma2_x)^2))
   }
   if(model == "recent_evol"){
-    a_func <- function(Beta, sigma2_x) Beta[1,1]  
+    a_func <- function(Beta, sigma2_x, a_bias) Beta[1,1]-a_bias  
     b_func <- function(Beta, sigma2_x) Beta[2,1]
-    R_func <- function(sigma2_x, V){
-      Vinv <- solve(V)
-      dVmin1 <- solve(diag(x = diag(Vinv)))
-      dVmin2 <- diag(x = diag(dVmin1)^2) #eqivalent to dVmin1%*%dVmin1 for diagonal matrces
-      return(2* (dVmin2%*%Vinv) * (dVmin2%*%Vinv))
+    R_func <- function(V, V_micro){
+      Vinv <- Matrix::solve(V)
+      dVinv <- Matrix::Matrix(diag(x = Matrix::diag(Vinv)))
+      Q <- Matrix::solve(dVinv%*%V%*%dVinv)
+      #inv_dVinv <- Matrix::Matrix(diag(x = Matrix::diag(Vinv)^-1))
+      #Idnt <- Matrix::Matrix(diag(nrow(V)))
+      #a_bias <- mean(Matrix::diag(Q) +  Matrix::diag((Idnt - 2*(inv_dVinv%*%Vinv))%*%V_micro))
+      a_bias <- mean(Matrix::diag(Q) - Matrix::diag(V_micro))
+      return(list(R = 2*Q*Q, a_bias = a_bias))
     }
-    a_SE_func <- function(Beta_vcov, sigma2_x) sqrt(Beta_vcov[1,1]) 
-    b_SE_func <- function(Beta_vcov, sigma2_x) sqrt(Beta_vcov[2,2]) 
+    a_SE_func <- function(Beta_vcov, sigma2_x) sqrt(Beta_vcov[1,1]) # This is wrong as it assumes that a_bias is measured without uncertainty
+    b_SE_func <- function(Beta_vcov, sigma2_x) sqrt(Beta_vcov[2,2])
   }
   
   
   
-  #######################
+  #~~~~~~~~~~~~~~~~~~~~~#
   #### The GLS model ####
-  #######################
+  #~~~~~~~~~~~~~~~~~~~~~#
   
-  #### response variabe and initial values ####
+  #### Response variabe and initial values ####
   obj <- NULL                                     # objective function scores
   a   <- startv$a                                 # parameter of the process
   b   <- startv$b                                 # parameter of the process
@@ -168,47 +174,49 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
       if(is.null(a)) a <- coef_lm[1]
       if(is.null(b)) b <- coef_lm[2]
     }
-    R <- A  # initial value of R (basically to get the correct size)                                        
+    R <- matrix(nrow = nrow(A), ncol = ncol(A))                                     
   }
   if(model == "recent_evol") {
     mod_Almer <- Almer(y ~ 1 + (1|species), A = list(species = Matrix::Matrix(A, sparse = TRUE)))
-    sigma2_y <- VarCorr(mod_Almer)$species[1]
-    residvar <- attr(VarCorr(mod_Almer), "sc")^2
+    sigma2_y <- lme4::VarCorr(mod_Almer)$species[1]
+    residvar <- attr(lme4::VarCorr(mod_Almer), "sc")^2
     if(is.null(a)) a <- residvar 
     if(is.null(b)) b <- 0
   }
   
-  # inverse of residual covariance matrix
-  # Rinv <- solve(R)
-  
   # gls design matrix  
   X <- as.matrix(cbind(rep(1, length(x)), x))
   
-  #### iterative GLS ####
+  #### Iterative GLS ####
   for(i in 1:maxiter){
     if(model == "predictor_BM" | model == "predictor_gBM"){
       R[!lower.tri(R)] <- R_func(a, b, sigma2_x, t_a)
       R[lower.tri(R)] <- t(R)[lower.tri(R)]
+      a_bias <- NULL # only needed for the "recent_evol" model
     }
     
     if(model == "recent_evol") {
-      E <- c(a)*diag(length(x)) + diag(x = c(b*x))
-      V <- sigma2_y*A + E
-      R <- R_func(sigma2_x, V)
-      y_predicted <- macro_pred(y=y, V=V, useLFO=useLFO)
+      diag_V_micro <- a + b*x
+      #diag_V_micro[diag_V_micro < 0] <- 0 # Negative residual variances are replaced by zero
+      V_micro <- Matrix::Matrix(diag(diag_V_micro))
+      V <- sigma2_y*A + V_micro
+      R_list <- R_func(V, V_micro)
+      R <- R_list$R
+      a_bias <- R_list$a_bias
+      y_predicted <- macro_pred(y=y, V=V, useLFO=useLFO) # change this to using equation 14 instead
       y2 <- (y-y_predicted)^2
     }
     
     # gls estimates
     mod <- GLS(y2, X, R, coef_only = TRUE) 
     Beta <- cbind(mod$coef)
-    #Beta <- solve(t(X)%*%Rinv%*%X)%*%t(X)%*%Rinv%*%y2
-    a <- a_func(Beta, sigma2_x)
+    a <- a_func(Beta, sigma2_x, a_bias)
     b <- b_func(Beta, sigma2_x)
+    minimum_a <- c(-min(b*x))
+    if(model == "recent_evol" & a < minimum_a) a <- minimum_a # forces the microevolutionary variance is zero or higher
     
     # Objective function
     obj[i] <- mod$GSSE
-    #obj[i] <- t(y2-X%*%Beta)%*%Rinv%*%(y2-X%*%Beta)
     if(!silent) print(paste("Generalized sum of squares:", obj[i]))
     if(i>1){
       if(obj[i]<=obj[i-1] & obj[i-1]-obj[i]<1e-8) break()
@@ -224,11 +232,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
   
   # R squared
   Rsquared <- mod$R2
-  # G <- matrix(rep(1, length(y2)), ncol = 1) # design matrix
-  # y_mean <- solve(t(G)%*%Rinv%*%G)%*%t(G)%*%Rinv%*%y2
-  # TSS <- t(y2-G%*%y_mean)%*%Rinv%*%(y2-G%*%y_mean)
-  #Rsquared <- 1-obj[length(obj)]/TSS
-  
+
   
   if(i == maxiter){
     warning("Model reached maximum number of iterations without convergence")
