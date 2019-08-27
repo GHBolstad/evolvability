@@ -12,6 +12,7 @@
 #' @export
 
 round_and_format <- function(x, digits = 2, sign_digits = NULL, scientific = FALSE, trim = TRUE){
+
   if(is.null(sign_digits)) format(round(x, digits = digits), nsmall = digits, scientific = scientific, trim = trim)
   else{
     x <- signif(x, digits = sign_digits)
@@ -26,4 +27,5 @@ round_and_format <- function(x, digits = 2, sign_digits = NULL, scientific = FAL
     }
     format(x, nsmall = nsmall, scientific = scientific, trim = trim)
   } 
+
 }
