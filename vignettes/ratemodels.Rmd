@@ -150,13 +150,17 @@ abline(lm(a_est~a_true), lty = "dashed")
 ```
 
 ```{r TESTING GLS, eval=FALSE}
+
 n = 100
+
 tree <- geiger::sim.bdtree(b = 1, d = 0, n = n, t = 4)
 #ape::is.ultrametric(tree)
 tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
 A <- ape::vcv(tree)
 y <- t(chol(A))%*%rnorm(n)
 X <- cbind(rep(1, n))
+
+
 
 system.time(GLS(y=y, X = X, R=A, coef_only = TRUE))
 system.time(GLS(y=y, X = X, R=A, coef_only = FALSE))
@@ -204,6 +208,7 @@ abline(0, mod$coef[2])
 
 
 
+
 ```{r TESTING macro_pred, eval = FALSE}
 
 n = 500
@@ -236,6 +241,7 @@ plot(terminal.edges, abs(y_pred-y))
 
 
 ```
+
 
 
 

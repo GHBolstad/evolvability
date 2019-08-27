@@ -103,7 +103,9 @@ plot(gls_mod, scale = "VAR")
 #  
 
 ## ----TESTING GLS, eval=FALSE---------------------------------------------
-#  n = 10000
+#  
+#  n = 100
+#  
 #  tree <- geiger::sim.bdtree(b = 1, d = 0, n = n, t = 4)
 #  #ape::is.ultrametric(tree)
 #  tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
@@ -111,19 +113,46 @@ plot(gls_mod, scale = "VAR")
 #  y <- t(chol(A))%*%rnorm(n)
 #  X <- cbind(rep(1, n))
 #  
+#  
+#  
 #  system.time(GLS(y=y, X = X, R=A, coef_only = TRUE))
 #  system.time(GLS(y=y, X = X, R=A, coef_only = FALSE))
 #  
-#  GLS(y=y, X = X, R=A, coef_only = TRUE)$coefficients
+#  mod <- GLS(y=y, X = X, R=A)
+#  mod$coef
 #  solve(t(X)%*%solve(A)%*%X)%*%t(X)%*%solve(A)%*%y # the standard GLS equation gives the same
 #  
-#  GLS(y=y, X = X, R=A)$sigma2 # this gives the diffusion variance
+#  mod$sigma2 # this gives the diffusion variance
 #  var(solve(t(chol(A)))%*%y)  # gives the same
+#  
+#  mod$GSSE #generalized sum of squares
+#  t(y-X%*%mod$coef[1])%*%solve(A)%*%(y-X%*%mod$coef[1]) # the standard GLS equation gives the same
 #  
 #  # also checking if Almer gives similar
 #  dimnames(A)
 #  ind <- colnames(A)
 #  Almer(y~1 + (1|ind), A = list(ind = Matrix::Matrix(A, sparse = TRUE))) #gives very similar results
+#  
+
+## ----plot of change in variance, eval=FALSE------------------------------
+#  
+#  tree <- geiger::sim.bdtree(b = 1, d = 0, n = 100, t = 4)
+#  ape::is.ultrametric(tree)
+#  tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
+#  sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=2, b=1, model = "predictor_BM")
+#  gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "predictor_BM", maxiter = 100, silent = TRUE)
+#  gls_mod$Rsquared
+#  invchol_R <- solve(t(chol(gls_mod$R))) #cholescky decomposition of the residual covariance matrix
+#  y2_star <- invchol_R%*%gls_mod$data$y2 # linearly transformed y-squared values
+#  X <- cbind(rep(1, length(gls_mod$data$y2)), gls_mod$data$x) # design matrix of the regression
+#  X_star <- invchol_R%*%X # linearly transfomred design matrix
+#  mod <- lm.fit(X_star, y2_star) #fitting a linear model with the transformed y2 and X
+#  mod$coef # should give the same values as the gls_mod intercept and slope (and the same R squared)
+#  gls_mod$param
+#  # we now look at outliers by plotting the residuals + effect of transformed x on transformed x
+#  plot(X_star[,2], mod$residuals + mod$coef[2]*X_star[,2])
+#  abline(0, mod$coef[2])
+#  
 #  
 
 ## ----TESTING macro_pred, eval = FALSE------------------------------------
