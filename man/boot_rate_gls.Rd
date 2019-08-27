@@ -4,15 +4,20 @@
 \alias{boot_rate_gls}
 \title{Boostrap of the rate gls model fit}
 \usage{
-boot_rate_gls(object, n = 10)
+boot_rate_gls(object, n = 10, useLFO = TRUE)
 }
 \arguments{
 \item{n}{number of bootsrap samples}
 
+\item{useLFO}{when calulating the mean vector of the traits in the "recent_evol" analysis, should the focal species
+be left out when calculating the corresponding species' mean. The correct way is to use TRUE, but in practice it has little effect and FALSE 
+will speed up the model fit (particularely useful when bootstrapping)}
+
 \item{mod}{output from \code{\link{rate_gls}}.}
 }
 \value{
-\code{boot_rate_gls}
+\code{boot_rate_gls} returns a table with the original estimates and SE from the GLS fit in the two first columns
+followed by the bootstrap estiamte of the SE and the 2.5\%, 50\% and 97.5\% quantiles of the boostrap distribution.
 }
 \description{
 \code{boot_rate_gls} Boostrap of the rate gls model fit

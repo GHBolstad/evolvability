@@ -5,42 +5,74 @@
 \title{Generalized least squares rate model}
 \usage{
 rate_gls(x, y, species, tree, model = "predictor_BM", startv = list(a =
-  NULL, b = NULL), maxiter = 100, silent = FALSE)
+  NULL, b = NULL), maxiter = 100, silent = FALSE, useLFO = TRUE)
 }
 \arguments{
-\item{x}{trait values must be equal to the length of y and tips on the tree. Note that x is mean centred in the "predictor_BM" and 
-"residual rate" analyses, while it is mean stadardized (divided by the mean) in the "predictor_geometricBM"}
+\item{x}{explanatory variable must be equal to the length of y and tips on the 
+tree. Note that the function mean centres x in the "predictor_BM" and "recent_evol" 
+analyses, while it is mean stadardized (divided by the mean) in the "predictor_gBM".}
 
-\item{y}{trait values of response variable}
+\item{y}{trait values of response variable.}
 
-\item{species}{names of the species, must be equal in length and in the same order as x and y}
+\item{species}{names of the species, must be equal in length and in the same order 
+as x and y.}
 
-\item{tree}{object of class \code{\link{phylo}}, needs to be ultrametric and with total length of unit,
-tips must have the same names as in \code{species}}
+\item{tree}{object of class \code{\link{phylo}}, needs to be ultrametric and with 
+total length of unit, tips must have the same names as in \code{species}.}
 
-\item{model}{either "predictor_BM", "predictor_geometricBM" or "residual_rate"}
+\item{model}{either "predictor_BM", "predictor_gBM" or "recent_evol" (see Details).}
 
-\item{startv}{vector of starting values for the a and b parameters.}
+\item{startv}{vector of optional starting values for the a and b parameters.
+(Ignored for the "recent_evol" model.)}
+
+\item{maxiter}{maximum number of iterations for updating the GLS.}
+
+\item{silent}{if the function should print the generalized sum of squares for each 
+iteration.}
+
+\item{useLFO}{acronym for use leave focal out when calulating the mean vector of 
+the traits. In the "recent_evol" analysis, should the focal species be left out 
+when calculating the corresponding species' mean. The correct way is to use TRUE, 
+but in practice it has little effect and FALSE will speed up the model fit 
+(particularely useful when bootstrapping)}
 }
 \value{
-\code{rate_gls}
+\code{rate_gls} returns a list with elements
+\itemize{
+ \item{\code{model}: name of fitted model ("predictor_BM", "predictor_gBM" or "recent_evolution").}
+ \item{\code{param}: parameter estimates and standard errors, where "A" and 
+ "B" are the intercept and slope of the GLS regression, "a" and "b" are parameters 
+ of the evolutionary models (see vignette), and "sigma2_x" which is the BM-rate 
+ for the "predictor_BM" and "predictor_gBM" models and the variance of x for the 
+ "recent_evolution" model.}
+ \item{\code{R2}: the generalized R squared of the GLS model fit}
+ \item{GLS_objective_score}{The score of the GLS objective function}
+ \item{R}{Residual variance matrix}
+ \item{tree}{The phylogenetic tree}
+ \item{data}{The data used for the GLS regresssion}
+ \item{convergence}{Whether the algoritm converged or not}
+ \item{call}
+ }
 }
 \description{
-\code{rate_gls} Generalized least squares rate model
+\code{rate_gls} fits a generalized least squares model to estimate parameters of 
+the evolutoinary model of two traits x and y, where the evoluitonary rate of y 
+depends on the value of x. Three models are implmented. In the two first, 
+"predictor_BM" and "predictor_gBM", the evolution of y follows a Brownian motion 
+with variance linear in x, while the evolution of x either follows a Brownian 
+motion or a geometric brownian motion, respectively. In the third model, the 
+residuals of the macroveoluitonary predictions of y have variance linear in x.
 }
 \details{
-\code{rate_gls} Fits a generalized least squares model to estimate parameters of the evolutoinary model of two traits x and y, 
-where the evoluitonary rate of y depends on the value of x. Three models are implmented. In the two first, "predictor_BM" and
-"predictor_geometricBM", the evolution of y follows a Brownian motion with variance linear in x, while the evolution of x either
-follows a Brownian motion or a geometric brownian motion, respectively. In the third model, the residuals of the macroveoluitonary
-predictions of y have variance linear in x.
+The generalized least squares (GLS) model fit a regression where 
+explanatory variable is x (mean centred) and the response variable is vector of 
+squared y values for the "predictor_BM" and "predictor_gBM" models and squared 
+deviation from the evolutionary predictions (squared residuals) in the 
+"recent_evol" model. From the intercept and slope of the GLS fit the following 
+evolutionary paramters (a and b) are estimated. The evolutionary models are
+described in a vignette and in Hansen et al. (in prep)
 
-the generalized least squares (GLS) model fit a regression where explanatory variable is x (mean centred) and the
-response variable is vector of squared y values for the "predictor_BM" and "predictor_geometricBM" models and squared deviation from
-the evolutionary predictions (squared residuals) in the "residual_rate" model. From the intercept and slope of the GLS fit
-the following evolutionary paramters (a and b) are estimated. 
-
-<the evolutionary models>
+\deqn{dy = \sqrt{a + bx}dW_{i}}
 }
 \examples{
 
