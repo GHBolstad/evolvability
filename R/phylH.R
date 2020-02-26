@@ -21,11 +21,11 @@
 
 
 phylH <- function(mod, numerator, residual = "Residual", nsim = 10){
-  y <- simulate_Almer(mod, nsim)
+  y <- Almer_sim(mod, nsim)
   dt <- mod@frame
   boot <- apply(y, 2, function(x){
-    dt$hopefullynotavariablealready2234uoiu234 <- x
-    mod_updt <- update(mod, hopefullynotavariablealready2234uoiu234 ~ ., data = dt)
+    dt$x86eb0d23_ebe6_4b37_bbc7_1d164b2f7c26 <- x # simulated response variable
+    mod_updt <- update(mod, x86eb0d23_ebe6_4b37_bbc7_1d164b2f7c26 ~ ., data = dt)
     H(mod_updt, numerator, residual)
   })
   return(list(phylH = c(H(mod, numerator, residual), quantile(boot, c(0.025, 0.975))),

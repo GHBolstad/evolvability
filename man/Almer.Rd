@@ -4,12 +4,22 @@
 \alias{Almer}
 \title{Linear mixed model with correlated random effects structure}
 \usage{
-Almer(formula, data = NULL, A = list(), REML = TRUE,
-  control = lme4::lmerControl(check.nobs.vs.nlev = "ignore",
-  check.nobs.vs.rankZ = "ignore", check.nobs.vs.nRE = "ignore"),
-  start = NULL, verbose = 0L, weights = NULL,
-  na.action = "na.omit", offset = NULL, contrasts = NULL,
-  devFunOnly = FALSE, ...)
+Almer(
+  formula,
+  data = NULL,
+  A = list(),
+  REML = TRUE,
+  control = lme4::lmerControl(check.nobs.vs.nlev = "ignore", check.nobs.vs.rankZ =
+    "ignore", check.nobs.vs.nRE = "ignore"),
+  start = NULL,
+  verbose = 0L,
+  weights = NULL,
+  na.action = "na.omit",
+  offset = NULL,
+  contrasts = NULL,
+  devFunOnly = FALSE,
+  ...
+)
 }
 \arguments{
 \item{formula}{as in \code{\link{lmer}}.}

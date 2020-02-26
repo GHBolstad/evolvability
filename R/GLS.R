@@ -6,7 +6,7 @@
 #' @param X design matrix
 #' @param R residual covariance or correlation matrix (can be sparse), ignored if \code{L} is provided.
 #' @param L lower triangular matrix of the cholescky decomposition of \code{R} (optional).
-#' @param coef_only if only the estimated coefficients (and the generalized residual sums of squares) should be returned.
+#' @param coef_only reduces the output of the model to the estimated coefficients (and the generalized residual sums of squares) only.
 #' 
 #' @details Note that the size of \code{R} does not matter (i.e. if \code{R} is multiplied by a scalar, the
 #' results don't change). Note also that the R-squared is estimated as 1-GSSE/GSST, where GSSE is the generalized
@@ -15,7 +15,7 @@
 #' 
 #' @return \code{GLS} a \code{\link{list}} of
 #' \itemize{
-#' \item{\code{coef}: the matrix of estimates and standard errors}
+#' \item{\code{coef}: a table of estimates and standard errors}
 #' \item{\code{R2}: the R-squared of the model fit}
 #' \item{\code{sigma2}: the residual variance}
 #' \item{\code{GSSE}: the generalized residual sum of squares (objective function score)}
@@ -35,7 +35,7 @@ GLS <- function(y, X, R=NULL, L = NULL, coef_only = FALSE){
     GSSE <- sum(obj$residuals^2)    # generalized residual sum of squares
     output <- list(coef = obj$coef, GSSE = GSSE)
   }else{
-    X <- forwardsolve(L, X)         # equivalent to solve(L)%*%X
+    X <- forwardsolve(L, X)
     obj <- lm.fit(X, forwardsolve(L, y))
     GSSE <- sum(obj$residuals^2)    # generalized residual sum of squares
     sigma2 <- GSSE/obj$df.residual  # generalized residual variance

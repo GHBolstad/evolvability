@@ -43,3 +43,4 @@ macro_pred <- function(y, V, useLFO = TRUE){
   return(y_mean + (V-inv_dVinv)%*%Vinv%*%(y-y_mean))
 }
 
+

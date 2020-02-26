@@ -4,8 +4,16 @@
 \alias{simulate_rate}
 \title{Simulating evolutionary rate model}
 \usage{
-simulate_rate(tree, startv_x = NULL, sigma_x = NULL, a, b,
-  sigma_y = NULL, x = NULL, model = "predictor_BM")
+simulate_rate(
+  tree,
+  startv_x = NULL,
+  sigma_x = NULL,
+  a,
+  b,
+  sigma_y = NULL,
+  x = NULL,
+  model = "predictor_BM"
+)
 }
 \arguments{
 \item{tree}{a \code{\link{phylo}} object. Must be ultrametric and scaled to unit length.}
@@ -27,7 +35,7 @@ geometric Brownian motion model of x "predictor_gBM", or "recent_evol".}
 \item{starv_x}{starting value for x.}
 }
 \value{
-\code{simulate_rate} returns a dataset of x and y values at the tips.
+\code{simulate_rate} returns a dataset of x and y values for the tips.
 }
 \description{
 \code{simulate_rate} Simulating evolutionary rate model

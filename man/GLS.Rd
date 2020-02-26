@@ -15,12 +15,12 @@ GLS(y, X, R = NULL, L = NULL, coef_only = FALSE)
 
 \item{L}{lower triangular matrix of the cholescky decomposition of \code{R} (optional).}
 
-\item{coef_only}{if only the estimated coefficients (and the generalized residual sums of squares) should be returned.}
+\item{coef_only}{reduces the output of the model to the estimated coefficients (and the generalized residual sums of squares) only.}
 }
 \value{
 \code{GLS} a \code{\link{list}} of
 \itemize{
-\item{\code{coef}: the matrix of estimates and standard errors}
+\item{\code{coef}: a table of estimates and standard errors}
 \item{\code{R2}: the R-squared of the model fit}
 \item{\code{sigma2}: the residual variance}
 \item{\code{GSSE}: the generalized residual sum of squares (objective function score)}

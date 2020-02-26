@@ -4,15 +4,24 @@
 \alias{rate_gls}
 \title{Generalized least squares rate model}
 \usage{
-rate_gls(x, y, species, tree, model = "predictor_BM", startv = list(a =
-  NULL, b = NULL), maxiter = 100, silent = FALSE, useLFO = TRUE)
+rate_gls(
+  x,
+  y,
+  species,
+  tree,
+  model = "predictor_BM",
+  startv = list(a = NULL, b = NULL),
+  maxiter = 100,
+  silent = FALSE,
+  useLFO = TRUE
+)
 }
 \arguments{
 \item{x}{explanatory variable must be equal to the length of y and tips on the 
-tree. Note that the function mean centres x in the "predictor_BM" and "recent_evol" 
+tree. Note that the algorithm mean centres x in the "predictor_BM" and "recent_evol" 
 analyses, while it is mean stadardized (divided by the mean) in the "predictor_gBM".}
 
-\item{y}{trait values of response variable.}
+\item{y}{trait values of response variable. Note that the algorithm mean centres y.}
 
 \item{species}{names of the species, must be equal in length and in the same order 
 as x and y.}
@@ -30,7 +39,7 @@ total length of unit, tips must have the same names as in \code{species}.}
 \item{silent}{if the function should print the generalized sum of squares for each 
 iteration.}
 
-\item{useLFO}{acronym for use leave focal out when calulating the mean vector of 
+\item{useLFO}{acronym for use "Leave Focal Out" when calulating the mean vector of 
 the traits. In the "recent_evol" analysis, should the focal species be left out 
 when calculating the corresponding species' mean. The correct way is to use TRUE, 
 but in practice it has little effect and FALSE will speed up the model fit 
@@ -42,8 +51,8 @@ but in practice it has little effect and FALSE will speed up the model fit
  \item{\code{model}: name of fitted model ("predictor_BM", "predictor_gBM" or "recent_evolution").}
  \item{\code{param}: parameter estimates and standard errors, where "A" and 
  "B" are the intercept and slope of the GLS regression, "a" and "b" are parameters 
- of the evolutionary models (see vignette), and "sigma2_x" which is the BM-rate 
- for the "predictor_BM" and "predictor_gBM" models and the variance of x for the 
+ of the evolutionary models (see vignette), and "s2" is the BM-rate parameter of x for the "predictor_BM" model,
+ the BM-rate parameter for log x for the "predictor_gBM" model, and the variance of x for the 
  "recent_evolution" model.}
  \item{\code{R2}: the generalized R squared of the GLS model fit}
  \item{GLS_objective_score}{The score of the GLS objective function}
@@ -56,7 +65,7 @@ but in practice it has little effect and FALSE will speed up the model fit
 }
 \description{
 \code{rate_gls} fits a generalized least squares model to estimate parameters of 
-the evolutoinary model of two traits x and y, where the evoluitonary rate of y 
+the evolutoinary model of two traits x and y, where the evolutionary rate of y 
 depends on the value of x. Three models are implmented. In the two first, 
 "predictor_BM" and "predictor_gBM", the evolution of y follows a Brownian motion 
 with variance linear in x, while the evolution of x either follows a Brownian 

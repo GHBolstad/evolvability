@@ -4,8 +4,13 @@
 \alias{round_and_format}
 \title{Rounds and formats in the same function}
 \usage{
-round_and_format(x, digits = 2, sign_digits = NULL,
-  scientific = FALSE, trim = TRUE)
+round_and_format(
+  x,
+  digits = 2,
+  sign_digits = NULL,
+  scientific = FALSE,
+  trim = TRUE
+)
 }
 \arguments{
 \item{x}{data in numeric format}

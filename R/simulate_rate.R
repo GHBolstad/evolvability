@@ -16,7 +16,7 @@
 #' @param model either Brownaian motion model of x "predictor_BM", 
 #' geometric Brownian motion model of x "predictor_gBM", or "recent_evol".
 #' 
-#' @return \code{simulate_rate} returns a dataset of x and y values at the tips.
+#' @return \code{simulate_rate} returns a dataset of x and y values for the tips.
 #' 
 #' @author Geir H. Bolstad
 #' 
@@ -40,29 +40,39 @@ simulate_rate <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, sigma_y =
     
     # Simulating x-values
     for(i in 1:nrow(EDGE)){
-      if(EDGE[i,1] %in% EDGE[1:i,2]) x0 <- rev(x_evo[[which(EDGE[1:i,2] == EDGE[i,1])]])[1]  # If the ancestor already has a starting value
-      else{
-        if(model == "predictor_BM") x0 <- startv_x
-        if(model == "predictor_gBM") x0 <- log(startv_x)
-      }
+      if(EDGE[i,1] %in% EDGE[1:i,2]){
+        x0 <- rev(x_evo[[which(EDGE[1:i,2] == EDGE[i,1])]])[1]  # If the ancestor already has a starting value
+        }else{
+          if(model == "predictor_BM")  x0 <- startv_x
+          if(model == "predictor_gBM") x0 <- log(startv_x)
+        }
       x_evo[[i]] <- x0 + cumsum(rnorm(n = EDGE[i,3]*1000, mean = 0, sd = sqrt(1/1000)*sigma_x))
-
-    # percentage negative square roots
-    if(model == "predictor_BM")          percent_negative <- length(which((a + b*unlist(x_evo))<0))/length(unlist(x_evo))*100
-    if(model == "predictor_gBM") percent_negative <- length(which((a + b*exp(unlist(x_evo)))<0))/length(exp(unlist(x_evo)))*100
-    if(percent_negative>0.5) warning(paste("Number of negative a + bx is ", round(percent_negative, 0), "%. The term a + bx is set to zero for these iterations", sep = ""))
     }
-      
+
+    if(a == "scaleme"){
+      if(model == "predictor_BM")  a <- -min(b*unlist(x_evo))
+      if(model == "predictor_gBM") a <- -min(b*exp(unlist(x_evo)))
+    } 
+    
+    # percentage of negative square roots
+    if(model == "predictor_BM")  percent_negative <- length(which((a + b*unlist(x_evo))<0))/length(unlist(x_evo))*100
+    if(model == "predictor_gBM") percent_negative <- length(which((a + b*exp(unlist(x_evo)))<0))/length(exp(unlist(x_evo)))*100
+    if(percent_negative>0.001) warning(paste("Number of negative a + bx is ", round(percent_negative, 0), "%. The term a + bx is set to zero for these iterations", sep = ""))
+    
     # Simulating y-values
     for(i in 1:nrow(EDGE)){
-      if(EDGE[i,1] %in% EDGE[1:i,2]) y0 <- rev(y_evo[[which(EDGE[1:i,2] == EDGE[i,1])]])[1] # If the ancestor already has a starting value
-      else y0 <- 0
+      if(EDGE[i,1] %in% EDGE[1:i,2]){
+        y0 <- rev(y_evo[[which(EDGE[1:i,2] == EDGE[i,1])]])[1] # If the ancestor already has a starting value
+        }else{
+          y0 <- 0
+          }
       if(model == "predictor_BM")  r <- a + b*x_evo[[i]]
       if(model == "predictor_gBM") r <- a + b*exp(x_evo[[i]])
       r[r<0] <- 0
-      y_evo[[i]] <- y0 + cumsum(sqrt(r) * rnorm(n = EDGE[i,3]*1000, mean = 0, sd = 1/sqrt(1000))) 
+      y_evo[[i]] <- y0 + cumsum(sqrt(r) * rnorm(n = length(r), mean = 0, sd = 1/sqrt(1000))) 
     }
     
+
     EDGE <- cbind(EDGE, sapply(x_evo, function(x) rev(x)[1]), sapply(y_evo, function(x) rev(x)[1]))
     DATA <- EDGE[EDGE[,2]<EDGE[1,1],c(2,4,5)]
     DATA <- DATA[order(DATA[,1]),]
@@ -77,18 +87,20 @@ simulate_rate <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, sigma_y =
     n <- length(tree$tip.label)
     A <- ape::vcv(tree)
     sigma_y <- sigma_y[1]
-    if(is.null(x)) x <- c(startv_x + t(chol(A))%*%rnorm(n, 0, sigma_x))
+    if(is.null(x)) x <- rnorm(n, startv_x, sigma_x)
     if(is.null(sigma_y)) stop("Specify a positive sigma_y") 
     if(sigma_y <= 0)    stop("Specify a positive sigma_y") 
     Vmacro <- c(sigma_y^2)*A
     diag_Vmicro <- c(a + b*x)
-    # diag_Vmicro[diag_Vmicro<0] <- 0  #Ensures that there are no negative variances
+    diag_Vmicro[diag_Vmicro<0] <- 0  #Ensures that there are no negative variances
     Vmicro <- diag(x = diag_Vmicro)
     V <- Vmacro + Vmicro
-    if(length(diag(V)[diag(V)<0])>0) stop("Negative values in the variance matrix of y. Change a, b or x.")
+    #if(length(diag(V)[diag(V)<0])>0) stop("Negative values along the diagonal of the variance matrix of y. Change a, b or x.")
     y <- t(chol(V))%*%rnorm(n)
     DATA <- data.frame(species = tree$tip.label, x = x, y = y)
   }
   return(DATA)
 }
+
+
 
