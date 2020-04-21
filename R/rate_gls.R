@@ -18,7 +18,6 @@
 #' total length of unit, tips must have the same names as in \code{species}.
 #' @param model either "predictor_BM", "predictor_gBM" or "recent_evol" (see Details).
 #' @param startv vector of optional starting values for the a and b parameters.
-#' (Ignored for the "recent_evol" model.)
 #' @param maxiter maximum number of iterations for updating the GLS.
 #' @param silent if the function should print the generalized sum of squares for each 
 #' iteration.
@@ -26,7 +25,7 @@
 #' the traits. In the "recent_evol" analysis, should the focal species be left out 
 #' when calculating the corresponding species' mean. The correct way is to use TRUE, 
 #' but in practice it has little effect and FALSE will speed up the model fit 
-#' (particularely useful when bootstrapping) 
+#' (particularely useful when bootstrapping) .
 #' 
 #' @details The generalized least squares (GLS) model fit a regression where 
 #' explanatory variable is x (mean centred) and the response variable is vector of 
@@ -41,17 +40,20 @@
 #' @return \code{rate_gls} returns a list with elements
 #' \itemize{
 #'  \item{\code{model}: name of fitted model ("predictor_BM", "predictor_gBM" or "recent_evolution").}
-#'  \item{\code{param}: parameter estimates and standard errors, where "A" and 
-#'  "B" are the intercept and slope of the GLS regression, "a" and "b" are parameters 
-#'  of the evolutionary models (see vignette), and "s2" is the BM-rate parameter of x for the "predictor_BM" model,
+#'  \item{\code{param}: parameter estimates and standard errors, where "a" and "b" are parameters 
+#'  of the evolutionary models (see vignette), and "sigma(x)^2" is the BM-rate parameter of x for the "predictor_BM" model,
 #'  the BM-rate parameter for log x for the "predictor_gBM" model, and the variance of x for the 
 #'  "recent_evolution" model.}
 #'  \item{\code{R2}: the generalized R squared of the GLS model fit}
 #'  \item{GLS_objective_score}{The score of the GLS objective function}
+#'  \item{b_all_iterations}{The values for the parameter b through all iterations}
 #'  \item{R}{Residual variance matrix}
+#'  \item{Beta}{Intercept and slope of GLS regression}
+#'  \item{Beta_vcov}{Error variance matrix of Beta}
 #'  \item{tree}{The phylogenetic tree}
 #'  \item{data}{The data used for the GLS regresssion}
 #'  \item{convergence}{Whether the algoritm converged or not}
+#'  \item{additional_param}{Some additional parameter estimates, mainly used for testing}
 #'  \item{call}
 #'  }
 #'  
@@ -65,9 +67,6 @@
 #' 
 #' @export
 
-# TODO: print.rate_gls function
-# 
-
 rate_gls <- function(x, y, species, tree, model = "predictor_BM", 
                      startv = list(a = NULL, b = NULL), maxiter = 100, silent = FALSE,
                      useLFO = TRUE){
@@ -78,7 +77,8 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
   A <- ape::vcv(tree)
   if(round(A[1,1], 5) != 1) stop("The tree is not standardized to unit length")
   A <- A[match(species, colnames(A)), match(species, colnames(A))] #ordering A according to species
-
+  I <- diag(nrow(A))
+  
   #### storing original y and x values ####
   y_original <- y
   x_original <- x
@@ -92,43 +92,26 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
   
   # mean centring
   y <- y - c(mean_y) # note that for the residual rate model, this does not have any effect as the squared deviation from the predictons are used
-  #Vy <- 0 # NB!!!!! must be removed when mean scaling !!!!!!
-  #L <- t(chol(A))        #!!!!!!!!!CHOLESKY TEST!!!!!!!!
-  #y <- forwardsolve(L, y)#!!!!!!!!!CHOLESKY TEST!!!!!!!!
-  
+
   #### x-variable ####
   if(model == "predictor_BM"){
     mod <- GLS(x, X, A)
     mean_x <- mod$coef[1]
     Vx <- mod$coef[2]^2
     s2 <- mod$sigma2
-    #s2 <- 0.25^2 # Setting it to true value!
     x <- x - c(mean_x)
-    #Vx <- 0 # NB!!!!! must be removed when mean scaling !!!!!!
     AoA <- A*A
-    #I <- diag(nrow(A))
     x <- c(x - (1/2)*AoA%*%solve(A, x)) # solve(A, x) equals solve(A)%*%x, but is numerically more stable (and faster)
-    #Ainv <- Matrix::solve(A)
-    #x <- as.matrix((I-(1/2)*AoA%*%Ainv)%*%x)
-    #x <- forwardsolve(L, x) #!!!!!!!!!CHOLESKY TEST!!!!!!!!
   }
   if(model == "predictor_gBM"){
     mod <- GLS(log(x), X, A)
     mean_x <- exp(mod$coef[1])
     Vx <- mod$coef[2]^2
     s2 <- mod$sigma2
-    #s2 <- 2 # Setting it to true value!
-    if(s2 < 1) warning("sigma(x)^2 < 1, the estimates are innaccurate, probably better to use model = 'predictor_BM'")
     x <- x/c(mean_x)
-    #x <- x-1
-    #Vx <- 0 # NB!!!!! must be removed when mean scaling !!!!!!
     e_32s2A   <- exp(3/2*s2*A)-1
     e_s2A <- exp(s2*A)-1
-    x <- c((2/s2)*(x-(2/3)*exp(-s2/2)*e_32s2A%*%solve(e_s2A, x)))  
-    #x <- x-mean(x) ########REMOVE THIS!!!!!
-    #I <- diag(nrow(A))
-    #inv_e_s2A <- solve(exp(s2*A)-1)
-    #x <- as.matrix((2/s2)*(I-(2/3)*exp(-s2/2)*e_32s2A%*%inv_e_s2A)%*%x) 
+    x <- c((2/s2)*(x-(2/3)*exp(-s2/2)*e_32s2A%*%solve(e_s2A, x)))
   }
   if(model == "recent_evol"){
     mean_x <- mean(x)
@@ -139,43 +122,17 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
   s2 <- c(s2)
   s2_SE <- sqrt(2*s2^2/(length(x)+2)) # from Lynch and Walsh 1998 eq A1.10c 
 
-  #A <- diag(length(species)) #!!!!!!!!!CHOLESKY TEST!!!!!!!!
-  
-  
-  
 #### Internal functions ####
   if(model == "predictor_BM"){
-    a_func <- function(Beta, a_bias) Beta[1,1] + Vy
+    a_func <- function(Beta) Beta[1,1] + Vy
     b_func <- function(Beta) Beta[2,1]
     Q <- (A*A*A) - (1/4)*AoA%*%solve(A, AoA) # solve(A, AoA) is equivalent to solve(A)%*%AoA
-    #Q <- (A*A*A) - (1/4)*AoA%*%Ainv%*%AoA #by pulling this outside the function, it does not need to be calculated each iteration
     R_func <- function(a, b) 4*a*Vy*A + 2*(a^2 + b^2*Vx)*AoA + b^2*s2*Q
     a_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[1,1]) #CAN WE GET THE UNCERTAINTY IN Vy????? approximation using Lynch and Walsh formula?
     b_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[2,2])
   }
   if(model == "predictor_gBM"){
-    # f <- function(s2, t_a = 1){
-    #   X <- try((exp(s2*t_a)+2*exp(-0.5*s2*t_a)-3)/(exp(s2*t_a)-1))
-    #   X[t_a == 0] <- 0
-    #   return(X)
-    # }
-    # 
-    # b_func <- function(Beta, s2) 3*s2*Beta[2,1]/(2*f(s2))
-    # #a_func <- function(Beta, s2, a_bias) Beta[1,1]-3*Beta[2,1]*f(s2)*(exp(s2/2)-1)
-    # a_func <- function(Beta, s2, a_bias) Beta[1,1]-2*b_func(Beta, s2)*(exp(s2/2)-1)/s2
-    # R_func <- function(a, b, s2, t_a){
-    #   2*a^2*t_a^2 + (8*a*b*t_a/s2)*(exp(0.5*s2*t_a)-1)+
-    #     (2*b^2/s2^2)*(exp(s2*t_a)-1)*(exp(s2*t_a)-1+2*(exp(0.5*s2*t_a)-exp(0.5*s2))^2+
-    #                                               4/3*(exp(0.5*s2)-exp(0.5*s2*t_a))*(f(s2, t_a)*exp(0.5*s2*t_a)-f(s2)*exp(0.5*s2))-
-    #                                               4/9*f(s2, t_a)*exp(0.5*s2*t_a)*f(s2)*exp(0.5*s2)+
-    #                                               2/9*f(s2)^2*exp(s2))
-    #     
-    # }
-    # a_SE_func <- function(Beta_vcov, s2) sqrt(Beta_vcov[1,1] + 9*f(s2)^2*(exp(s2/2)-1)^2*Beta_vcov[2,2] - 3*f(s2)*(exp(s2/2-1)*Beta_vcov[1,2]))
-    # b_SE_func <- function(Beta_vcov, s2) sqrt(9*s2^2*Beta_vcov[2,2]/(4*f(s2)^2))
-    
-    a_func <- function(Beta, a_bias) Beta[1,1] + Vy - 2*Beta[2,1]*exp(Vx/2)*(exp(s2/2) - 1)/s2
-    #a_func <- function(Beta, a_bias) Beta[1,1] + Vy -  2*0.1      *exp(Vx/2)*(exp(s2/2) - 1)/s2
+    a_func <- function(Beta) Beta[1,1] + Vy # - 2*Beta[2,1]*exp(Vx/2)*(exp(s2/2) - 1)/s2 
     b_func <- function(Beta) Beta[2,1]
     # some matrix calculations to avoid repeating them in the loop ...
     AoA <- A*A
@@ -187,21 +144,20 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
     Q2       <- 2*e_2Vx/s2^2*(8/3*(e_2s2A-e_hlfs2A)-e_2s2A-8/9*e_32s2A%*%solve(e_s2A, e_32s2A, tol = 1e-99))
     # ... end matrix calculations
     R_func <- function(a, b) 4*a*Vy*A + 8*b*Vy*e_hlfVx/s2*e_hlfs2A + 2*a^2*AoA + a*b*Q1 + b^2 * Q2
-    a_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[1,1]) # This is only an apprixmation, check if it good with parametric simulations
+    a_SE_func <- function(Beta_vcov){
+      sqrt(Beta_vcov[1,1])
+      }
     b_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[2,2])
   }
   if(model == "recent_evol"){
-    a_func <- function(Beta, a_bias) Beta[1,1]-a_bias  
     b_func <- function(Beta) Beta[2,1]
     R_func <- function(V, V_micro){
       Vinv <- solve(V)
       dVinv <- diag(x = diag(Vinv))
       Q <- solve(dVinv%*%V%*%dVinv)
-      I <- diag(nrow(A))
-      a_bias <- mean(diag(Q + (I-2*solve(dVinv)%*%Vinv)%*%V_micro))
-      return(list(R = 2*Q*Q, a_bias = a_bias))
+      return(2*Q*Q)
     }
-    a_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[1,1]) # !!!! This is wrong as it assumes that a_bias is measured without uncertainty !!!! (check if it is a good approximation)
+    a_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[1,1])
     b_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[2,2])
   }
   
@@ -211,111 +167,111 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
   #### The GLS model ####
   #~~~~~~~~~~~~~~~~~~~~~#
   
+  # GLS design matrix  
+  X <- as.matrix(cbind(rep(1, length(x)), x))
+
   #### Response variabe and initial values ####
   obj <- NULL                                     # objective function scores
   a   <- startv$a                                 # parameter of the process
   b   <- startv$b                                 # parameter of the process
   
   if(model == "predictor_BM" | model == "predictor_gBM"){
-    # age of common ancestor
-    t_a <- as.vector(A[which(!lower.tri(A))])     #  not needed anymore...        
-    
     # response variable
     y2 <- y^2
-
     # finding starting values when not specified
     if(is.null(a) | is.null(b)){ 
-      coef_lm <- coef(lm(y2~x))
+      coef_lm <- coef(lm(y2~1))
       if(is.null(a)) a <- coef_lm[1]
-      if(is.null(b)) b <- 2*coef_lm[2]
+      if(is.null(b)) b <- 0 #2*coef_lm[2]
     }
     R <- matrix(nrow = nrow(A), ncol = ncol(A))                                    
-  }
-  if(model == "recent_evol") {
+  } else { #model == "recent_evol" 
     mod_Almer <- Almer(y ~ 1 + (1|species), A = list(species = Matrix::Matrix(A, sparse = TRUE)))
-    #mod_Almer <- Almer(y ~ 1 + (1|species), A = list(species = A))
+    Vy <- coef(summary(mod_Almer))[1,2]^2
     sigma2_y <- lme4::VarCorr(mod_Almer)$species[1]
-    sigma2_y_SE <- sqrt(2*sigma2_y^2/(length(y)+2)) # from Lynch and Walsh 1998 eq A1.10c 
     residvar <- attr(lme4::VarCorr(mod_Almer), "sc")^2
     if(is.null(a)) a <- residvar 
     if(is.null(b)) b <- 0
+    diag_V_micro <- a + b*x
+    diag_V_micro[diag_V_micro < 0] <- 0 # Negative residual variances are replaced by zero
+    V_micro <- diag(diag_V_micro)
+    V <- sigma2_y*A + V_micro 
+    Vinv <- solve(V) 
+    dVinv <- diag(x = diag(Vinv))
+    a <- -mean(diag((I-2*solve(dVinv)%*%Vinv)%*%V_micro))
   }
-  
-  # GLS design matrix  
-  X <- as.matrix(cbind(rep(1, length(x)), x))
-  a_bias <- NULL # this is only needed for the "recent_evol" model
   
   #### Iterative GLS ####
   for(i in 1:maxiter){
     if(model == "predictor_BM" | model == "predictor_gBM"){
-      R <- R_func(a, b) # R_func(1, 0.1) #
-      #R[!lower.tri(R)] <- R_func(a, b, s2, t_a)
-      #R[lower.tri(R)] <- t(R)[lower.tri(R)]
-    }
-    
-    if(model == "recent_evol") {
-      diag_V_micro <- a + b*x
-      #diag_V_micro[diag_V_micro < 0] <- 0 # Negative residual variances are replaced by zero
+      if(i == 1){
+        R <- R_func(a, b)
+      }else{
+        R <- R_func(a, b[i-1])
+      }
+    } else{ #model == "recent_evol"
+      if(i == 1){
+        diag_V_micro <- a + b*x
+      }else{
+        diag_V_micro <- a + b[i-1]*x
+      }
+      diag_V_micro[diag_V_micro < 0] <- 0 # Negative residual variances are replaced by zero
       V_micro <- diag(diag_V_micro)
-      V <- sigma2_y*A + V_micro
-      R_list <- R_func(V, V_micro)
-      R <- R_list$R
-      a_bias <- R_list$a_bias
-      y_predicted <- macro_pred(y=y, V=V, useLFO=useLFO) # maybe change this to using equation 14 instead
+      V <- sigma2_y*A + V_micro 
+      R <- R_func(V, V_micro)
+      y_predicted <- macro_pred(y=y, V=V, useLFO=useLFO)
       y2 <- (y-y_predicted)^2
     }
     
     # GLS estimates
-    mod <- GLS(y=y2, X, R, coef_only = TRUE) 
+    mod <- GLS(y=y2, X, R, coef_only = TRUE)
     Beta <- cbind(mod$coef)
-    a <- a_func(Beta, a_bias)
-    b <- b_func(Beta)
-    minimum_a <- c(-min(b*x))
-    if(model == "recent_evol" & a < minimum_a) a <- minimum_a # forces the microevolutionary variance to be zero or higher
-    
+    if(model != "recent_evol") a <- a_func(Beta) # Not iterating over a in the "recent_evolution" model
+    b[i] <- b_func(Beta)
+ 
     # Objective function
     obj[i] <- mod$GSSE
     if(!silent) print(paste("Generalized sum of squares:", obj[i]))
+    
+    # Provides new starting value for b when the algorithm fluctuates between two states
+    if(i > 10){
+      diff_1 <- obj[i-1]-obj[i]
+      diff_2 <- obj[i-2]-obj[i]
+      if(abs(diff_2) < abs(diff_1)/2){
+        b[i] <- (b[i]+b[i-1])/2
+      }
+    }
+    
     if(i>1){
       if(obj[i]<=obj[i-1] & obj[i-1]-obj[i]<1e-7) break()
     }
   }
   
-  
-  #### CAN BE DELETED!!! TEST's THAT THE GLS GIVE WHAT IT SHOULD####
-  # Rtest <- R
-  # GLS(y=y2, X, Rtest, coef_only = TRUE)
-  # param <- solve(t(X)%*%solve(Rtest)%*%X)%*%t(X)%*%solve(Rtest)%*%y2
-  # param
-  # t(y2-X%*%param)%*%solve(Rtest)%*%(y2-X%*%param)
-  ##############
-  
-  mod <- GLS(y2, X, R) # rerunning the model with all the output
+  mod <- GLS(y2, X, R)
   Beta_vcov <- mod$coef_vcov
-  #Beta_SE <- sqrt(diag(Beta_vcov))
-  param <- cbind(rbind(a, b, s2), rbind(a_SE_func(Beta_vcov), b_SE_func(Beta_vcov), s2_SE))
+  param <- cbind(rbind(a, b[i], s2), rbind(a_SE_func(Beta_vcov), b_SE_func(Beta_vcov), s2_SE))
   colnames(param) <- c("Estimate", "SE")
   rownames(param) <- c("a", "b", "sigma(x)^2") 
-  # REMOVE A and B altoghether (maybe A is neede for plottin, or recalculate it in the plotting function)
-  # change sigma(x)^2 to var(x) ??? should be easier to understand 
 
   if(model == "recent_evol"){
-    param <- rbind(param, cbind(sigma2_y, sigma2_y_SE) )
+    param <- rbind(param, cbind(sigma2_y, NA))
     rownames(param)[4] <- "sigma(y)^2"
   }
   
   # R squared
   Rsquared <- mod$R2
 
-  
   if(i == maxiter){
     warning("Model reached maximum number of iterations without convergence")
     convergence <- "No convergence"
-  }
-  else  convergence <- "Convergence"
+  } else {
+    convergence <- "Convergence"
+  } 
   
-  report <-  list(model = model, param = param, Rsquared = Rsquared, GLS_objective_scores = obj,
-                  R=R, Beta = Beta, Beta_vcov = Beta_vcov, tree = tree, data = list(y2 = y2, x = x, y = y), convergence = convergence,
+  report <-  list(model = model, param = param, Rsquared = Rsquared, GLS_objective_scores = obj, b_all_iterations = b,
+                  R=R, Beta = Beta, Beta_vcov = Beta_vcov, tree = tree, 
+                  data = list(y2 = y2, x = x, y = y, x_original = x_original, y_original = y_original), 
+                  convergence = convergence,
                   additional_param = c(mean_y = mean_y, Vy = Vy, mean_x = mean_x, Vx = Vx))
   class(report) = "rate_gls"
   report$call <- match.call()
@@ -356,18 +312,12 @@ plot.rate_gls = function(object, scale = "SD", print_param = TRUE, digits_param 
   if(scale == "VAR") plot(object$data$x, object$data$y2, main=main, xlab=xlab, ylab=ylab, col=col, ...)
   if(scale == "SD")  plot(object$data$x, sqrt(object$data$y2), main=main, xlab=xlab, ylab=ylab, col=col)#, ...)
   lines(x, y)
-
   if(print_param) legend("topleft", legend = 
                            c(as.expression(bquote(italic(a) == .(round_and_format(object$param["a", 1], sign_digits = digits_param)) ~ "\u00B1" ~
                                                     .(round_and_format(object$param["a", 2], sign_digits = digits_param)) ~~~
                                                     italic(b) == .(round_and_format(object$param["b", 1], sign_digits = digits_param)) ~ "\u00B1" ~
                                                     .(round_and_format(object$param["b", 2], sign_digits = digits_param)))),
-                             # as.expression(bquote(italic(A) == .(round_and_format(object$param["A", 1], sign_digits = digits_param)) ~ "\u00B1" ~ 
-                             #                        .(round_and_format(object$param["A", 2], sign_digits = digits_param)) ~~~ 
-                             #                        italic(B) == .(round_and_format(object$param["B", 1], sign_digits = digits_param)) ~ "\u00B1" ~ 
-                             #                        .(round_and_format(object$param["B", 2], sign_digits = digits_param)))),
                              as.expression(bquote(italic(R)^2 == .(round_and_format(100*object$Rsquared, digits_rsquared)) ~ "%"))),
-
                          box.lty = 0, bg="transparent", xjust=0)
 }
 
@@ -381,11 +331,13 @@ plot.rate_gls = function(object, scale = "SD", print_param = TRUE, digits_param 
 #' 
 #' @param object fitted object from \code{\link{rate_gls}}
 #' @param nsim numder of simulations.
-#' @return \code{simulate.rate_gls} returns a list where each slot is an interation. 
+#' @return A list of length \code{nsim} of simulated responses. 
 #' 
 #' @author Geir H. Bolstad
 #' 
 #' @examples
+#' 
+#' @importFrom stats simulate
 #' 
 #' @export
 
@@ -408,11 +360,12 @@ simulate.rate_gls <- function(object, nsim = 10){
   return(sim_out)
 }
 
+
 #' Boostrap of the rate gls model fit
 #' 
-#' \code{boot.rate_gls} Boostrap of the rate gls model fit
+#' \code{rate_gls_boot} Boostrap of the rate gls model fit
 #' 
-#' \code{boot_rate_gls} Provides a parametric boostrap of the generalized least squares rate model fit 
+#' \code{rate_gls_boot} Provides a parametric boostrap of the generalized least squares rate model fit 
 #' using \code{\link{simulate.rate_gls}}  
 #' 
 #' @param mod output from \code{\link{rate_gls}}.
@@ -422,16 +375,20 @@ simulate.rate_gls <- function(object, nsim = 10){
 #' will speed up the model fit (particularely useful when bootstrapping) 
 #' @param silent 
 #' 
-#' @return \code{boot.rate_gls} returns list where the first slot is a table with the original estimates and SE from the GLS fit in the two first columns
+#' @return A list where the first slot is a table with the original estimates and SE from the GLS fit in the two first columns
 #' followed by the bootstrap estiamte of the SE and the 2.5\%, 50\% and 97.5\% quantiles of the boostrap distribution. The second slot is the complete distribution.
 #' 
 #' @author Geir H. Bolstad
 #' 
 #' @examples
 #' 
+#' @importFrom stats var quantile
+#' 
 #' @export
 
-boot.rate_gls <- function(object, n = 10, useLFO = TRUE, silent = FALSE){
+
+
+rate_gls_boot <- function(object, n = 10, useLFO = TRUE, silent = FALSE){
   if(object$model == "recent_evol"){
     boot_distribution <- matrix(NA, ncol = 5, nrow = n)  
     colnames(boot_distribution) <- c("a", "b", "sigma2_x", "sigma2_y", "Rsquared")
