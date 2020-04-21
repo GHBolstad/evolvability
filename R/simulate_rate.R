@@ -57,7 +57,7 @@ simulate_rate <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, sigma_y =
     # percentage of negative square roots
     if(model == "predictor_BM")  percent_negative <- length(which((a + b*unlist(x_evo))<0))/length(unlist(x_evo))*100
     if(model == "predictor_gBM") percent_negative <- length(which((a + b*exp(unlist(x_evo)))<0))/length(exp(unlist(x_evo)))*100
-    if(percent_negative>0.001) warning(paste("Number of negative a + bx is ", round(percent_negative, 0), "%. The term a + bx is set to zero for these iterations", sep = ""))
+    if(percent_negative>0.01) warning(paste("Number of negative a + bx is ", round(percent_negative, 1), "%. The term a + bx is set to zero for these values of x", sep = ""))
     
     # Simulating y-values
     for(i in 1:nrow(EDGE)){
