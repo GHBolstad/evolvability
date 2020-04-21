@@ -26,6 +26,9 @@
 #' 
 #' @examples
 #' 
+#' @importFrom stats lm.fit
+#' 
+#' 
 #' @export
 
 GLS <- function(y, X, R=NULL, L = NULL, coef_only = FALSE){

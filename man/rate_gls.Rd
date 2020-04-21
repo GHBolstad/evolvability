@@ -31,8 +31,7 @@ total length of unit, tips must have the same names as in \code{species}.}
 
 \item{model}{either "predictor_BM", "predictor_gBM" or "recent_evol" (see Details).}
 
-\item{startv}{vector of optional starting values for the a and b parameters.
-(Ignored for the "recent_evol" model.)}
+\item{startv}{vector of optional starting values for the a and b parameters.}
 
 \item{maxiter}{maximum number of iterations for updating the GLS.}
 
@@ -43,23 +42,26 @@ iteration.}
 the traits. In the "recent_evol" analysis, should the focal species be left out 
 when calculating the corresponding species' mean. The correct way is to use TRUE, 
 but in practice it has little effect and FALSE will speed up the model fit 
-(particularely useful when bootstrapping)}
+(particularely useful when bootstrapping) .}
 }
 \value{
 \code{rate_gls} returns a list with elements
 \itemize{
  \item{\code{model}: name of fitted model ("predictor_BM", "predictor_gBM" or "recent_evolution").}
- \item{\code{param}: parameter estimates and standard errors, where "A" and 
- "B" are the intercept and slope of the GLS regression, "a" and "b" are parameters 
- of the evolutionary models (see vignette), and "s2" is the BM-rate parameter of x for the "predictor_BM" model,
+ \item{\code{param}: parameter estimates and standard errors, where "a" and "b" are parameters 
+ of the evolutionary models (see vignette), and "sigma(x)^2" is the BM-rate parameter of x for the "predictor_BM" model,
  the BM-rate parameter for log x for the "predictor_gBM" model, and the variance of x for the 
  "recent_evolution" model.}
  \item{\code{R2}: the generalized R squared of the GLS model fit}
  \item{GLS_objective_score}{The score of the GLS objective function}
+ \item{b_all_iterations}{The values for the parameter b through all iterations}
  \item{R}{Residual variance matrix}
+ \item{Beta}{Intercept and slope of GLS regression}
+ \item{Beta_vcov}{Error variance matrix of Beta}
  \item{tree}{The phylogenetic tree}
  \item{data}{The data used for the GLS regresssion}
  \item{convergence}{Whether the algoritm converged or not}
+ \item{additional_param}{Some additional parameter estimates, mainly used for testing}
  \item{call}
  }
 }

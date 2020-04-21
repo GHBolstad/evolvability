@@ -13,19 +13,19 @@ round_and_format(
 )
 }
 \arguments{
-\item{x}{data in numeric format}
+\item{x}{A numeric vector.}
 
-\item{digits}{Number of decimal places}
+\item{digits}{Number of decimal places.}
 
-\item{sign_digits}{Number of significant digits (if given this overrides \code{digits})}
+\item{sign_digits}{Number of significant digits (if given this overrides \code{digits}).}
 
-\item{scientfic}{Logical specifying whether encoding in scientific notation}
+\item{scientfic}{Logical specifying whether encoding in scientific notation.}
 }
 \value{
-rounded and formatted values
+Rounded and formatted values as characters.
 }
 \description{
-\code{round_and_format} rounds and formats data
+\code{round_and_format} rounds and formats a numeric vector. This is useful for providing output for tables or plots in a standardized format.
 }
 \author{
 Geir H. Bolstad

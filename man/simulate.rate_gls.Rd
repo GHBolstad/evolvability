@@ -12,7 +12,7 @@
 \item{nsim}{numder of simulations.}
 }
 \value{
-\code{simulate.rate_gls} returns a list where each slot is an interation.
+A list of length \code{nsim} of simulated responses.
 }
 \description{
 \code{simulate.rate_gls} Simulate responses from \code{\link{rate_gls}} fit

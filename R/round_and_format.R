@@ -1,18 +1,16 @@
 #' Rounds and formats in the same function
 #'
-#' \code{round_and_format} rounds and formats data
+#' \code{round_and_format} rounds and formats a numeric vector. This is useful for providing output for tables or plots in a standardized format.
 #'
-#' @param x data in numeric format
-#' @param digits Number of decimal places
-#' @param sign_digits Number of significant digits (if given this overrides \code{digits})
-#' @param scientfic Logical specifying whether encoding in scientific notation
-#' @return rounded and formatted values
+#' @param x A numeric vector.
+#' @param digits Number of decimal places.
+#' @param sign_digits Number of significant digits (if given this overrides \code{digits}).
+#' @param scientfic Logical specifying whether encoding in scientific notation.
+#' @return Rounded and formatted values as characters.
 #' @author Geir H. Bolstad
 #'
 #' @export
-
 round_and_format <- function(x, digits = 2, sign_digits = NULL, scientific = FALSE, trim = TRUE){
-
   if(is.null(sign_digits)) format(round(x, digits = digits), nsmall = digits, scientific = scientific, trim = trim)
   else{
     x <- signif(x, digits = sign_digits)
@@ -27,5 +25,4 @@ round_and_format <- function(x, digits = 2, sign_digits = NULL, scientific = FAL
     }
     format(x, nsmall = nsmall, scientific = scientific, trim = trim)
   } 
-
 }

@@ -25,7 +25,7 @@ from a univariate Gaussian distribution with zero mean and unit variance. The
 vector is then divided by its norm to standardize it to unit length.
 }
 \examples{
-## Two vectors of dimension 3:
+# Two vectors of dimension 3:
 randomBeta(n = 2, k = 3)  
 }
 \author{

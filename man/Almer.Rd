@@ -53,9 +53,6 @@ All levels of the random effect should appear as row and column names for the ma
 \code{Almer} an object of class \code{\link{merMod}}.
 }
 \description{
-\code{Almer} Linear mixed model with correlated random effects structure
-}
-\details{
 \code{Almer} fits a univariate linear mixed model incorporating a correlated random effects structure. Can be used to fit 
 phylogenetic mixed models and animal models. The function is based on the \code{\link{lme4}} package and is very similar to \code{\link{lmer}},
 apart from the A argument.

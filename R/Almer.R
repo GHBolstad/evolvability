@@ -1,7 +1,5 @@
 #' Linear mixed model with correlated random effects structure
 #' 
-#' \code{Almer} Linear mixed model with correlated random effects structure
-#' 
 #' \code{Almer} fits a univariate linear mixed model incorporating a correlated random effects structure. Can be used to fit 
 #' phylogenetic mixed models and animal models. The function is based on the \code{\link{lme4}} package and is very similar to \code{\link{lmer}},
 #' apart from the A argument.
@@ -20,17 +18,12 @@
 #' @param contrasts as in \code{\link{lmer}}.
 #' @param devFunOnly as in \code{\link{lmer}}.
 #' @param ... as in \code{\link{lmer}}.
-#'  
-#' 
 #' @return \code{Almer} an object of class \code{\link{merMod}}.
-#' 
 #' @author Geir H. Bolstad
-#' 
 #' @examples
 #' 
 #' @importFrom lme4 lFormula lmerControl mkLmerDevfun optimizeLmer mkMerMod
 #' @importFrom Matrix Matrix t chol
-#' 
 #' @export
 
 Almer <- function(formula, data = NULL, A = list(), REML = TRUE, 
@@ -125,6 +118,7 @@ Almer_SE <- function(formula, SE=NULL, maxiter = 100,
 #' 
 #' @importFrom lme4 VarCorr ranef fixef 
 #' @importFrom Matrix t
+#' @importFrom stats rnorm residuals
 #' 
 #' @export
 #' 
@@ -168,6 +162,7 @@ Almer_sim <- function(mod, nsim = 1000){
 #' 
 #' @importFrom lme4 VarCorr ranef fixef 
 #' @importFrom Matrix t
+#' @importFrom stats update sd quantile 
 #' 
 #' @export
 #' 

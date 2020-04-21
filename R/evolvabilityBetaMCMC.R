@@ -1,5 +1,57 @@
+#' Calculate posterior distribution of evolvability parameters from a set of selection gradients
+#' 
+#' \code{evolvabilityBetaMCMC} calculates (unconditional) evolvability (e), respondability (r), conditional evolvability (c), autonomy (a) 
+#' and integration (i) from selection gradients given the posterior distribution of an additive-genetic variance matrix. These measures and their 
+#' meanings are described in Hansen and Houle (2008). 
+#' 
+#' @param G_mcmc posterior distribution of a variance matrix in the form of a table. Each row in the table must be one iteration of 
+#' the posterior distribution (or bootstrap distribution). Each iteration of the matrix must be on the form as given by \code{c(x)}, 
+#' where \code{x} is a matrix. A posterior distribution of a matrix in the slot \code{VCV} of a object of class \code{MCMCglmm} is by 
+#' default on this form.
+#' @param Beta either a vector or a matrix of unit length selection gradients stacked column wise.
+#' @param post.dist logical: should the posterior distribution of the evolvability parameters be saved.
+#' @return An object of \code{class} \code{"evolvabilityBetaMCMC"}, which is a list with the following components:
+#' \tabular{llllll}{
+#' \code{eB} \tab\tab\tab\tab The posterior median and highest posterior density interval of evolvability for each selection gradient. \cr
+#' \code{rB} \tab\tab\tab\tab The posterior median and highest posterior density interval of respondability for each selection gradient. \cr
+#' \code{cB} \tab\tab\tab\tab The posterior median and highest posterior density interval of conditional evolvability for each selection gradient. \cr
+#' \code{aB} \tab\tab\tab\tab The posterior median and highest posterior density interval of autonomy for each selection gradient.\cr
+#' \code{iB} \tab\tab\tab\tab The posterior median and highest posterior density interval of integration for each selection gradient.\cr
+#' \code{Beta} \tab\tab\tab\tab The matrix of selection gradients. \cr
+#' \code{summary} \tab\tab\tab\tab The means of evolvability parameters across all selection gradients. \cr
+#' \code{post.dist} \tab\tab\tab\tab The full posterior distribution.
+#' }
+#' @references Hansen, T. F. & Houle, D. (2008) Measuring and comparing evolvability and constraint in multivariate characters. 
+#' J. Evol. Biol. 21:1201-1219.
+#' @author Geir H. Bolstad
+#' @examples
+#' # Simulating a posterior distribution 
+#' # (or bootstrap distribution) of a G-matrix:
+#' G = matrix(c(1, 1, 0, 1, 4, 1, 0, 1, 2), ncol = 3)
+#' G_mcmc = sapply(c(G), function(x) rnorm(10, x, 0.01)) 
+#' G_mcmc = t(apply(G_mcmc, 1, function(x){
+#'   G = matrix(x, ncol=sqrt(length(x)))
+#'   G[lower.tri(G)] = t(G)[lower.tri(G)]
+#'   c(G)
+#' }))
+#' 
+#' # Simulating a posterior distribution 
+#' # (or bootstrap distribution) of trait means:
+#' means = c(1, 1.4, 2.1)
+#' means_mcmc = sapply(means, function(x) rnorm(10, x, 0.01)) 
+#' 
+#' # Mean standardizing the G-matrix:
+#' G_mcmc = meanStdGMCMC(G_mcmc, means_mcmc)
+#' 
+#' # Generating selection gradients in five random directions:
+#' Beta = randomBeta(5, 3) 
+#' 
+#' # Calculating evolvability parameters:
+#' x = evolvabilityBetaMCMC(G_mcmc, Beta, post.dist=TRUE)
+#' summary(x)
+#' @keywords array algebra multivariate
+#' @importFrom stats median
 #' @export
-
 evolvabilityBetaMCMC = function(G_mcmc, Beta, post.dist = FALSE){
   X1 = t(apply(G_mcmc, 1,
                function(G){
@@ -42,6 +94,22 @@ print.evolvabilityBetaMCMC = function(x, ...){
   print(t(x$iB))
 } 
 
+
+#' Summarizing posterior distribution of evolvability parameters over a set of selection gradients
+#' 
+#' \code{summary} method for class \code{"evolvabilityBetaMCMC"}.
+#' 
+#' @param object an object of class \code{"evolvabilityBetaMCMC"}.
+#' @param ... additional arguments affecting the summary produced.
+#' @return A list with the following components: 
+#' \tabular{llllll}{
+#'   \code{Averages} \tab\tab\tab\tab The averages of the evolvability parameters over all selection gradients. \cr
+#'   \code{Minimum} \tab\tab\tab\tab The minimum (given by the posterior median) of the evolvability parameters over all selection gradients. \cr
+#'   \code{Maximum} \tab\tab\tab\tab The maximum (given by the posterior median) of the evolvability parameters over all selection gradients.
+#' }
+#' @author Geir H. Bolstad
+#' @seealso \code{\link{evolvabilityBetaMCMC}}
+#' @keywords array algebra
 #' @export
 summary.evolvabilityBetaMCMC = function(object, ...){
   X = list()
