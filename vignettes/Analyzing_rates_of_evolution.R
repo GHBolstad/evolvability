@@ -89,7 +89,7 @@ plot(gls_mod, scale = "VAR")
 plot(gls_mod) # with the default scale == "SD"
 
 ## -----------------------------------------------------------------------------
-#  sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=5, b=2, sigma_y = 2, model = "recent_evol")
+#  sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=1, b=1, sigma_y = 1, model = "recent_evol")
 
 ## -----------------------------------------------------------------------------
 #  gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "recent_evol", useLFO = FALSE)

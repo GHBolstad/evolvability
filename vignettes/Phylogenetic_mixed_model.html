@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <meta name="author" content="Geir Bolstad" />
 
-<meta name="date" content="2019-11-19" />
+<meta name="date" content="2020-04-15" />
 
 <title>Phylogenetic mixed model</title>
 
@@ -118,9 +117,6 @@ padding-right: 2em;
 font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 font-size: 14px;
 line-height: 1.35;
-}
-#header {
-text-align: center;
 }
 #TOC {
 clear: both;
@@ -289,7 +285,8 @@ code > span.st { color: #d14; }
 code > span.co { color: #888888; font-style: italic; } 
 code > span.ot { color: #007020; } 
 code > span.al { color: #ff0000; font-weight: bold; } 
-code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
 </style>
 
 
@@ -304,7 +301,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">Phylogenetic mixed model</h1>
 <h4 class="author">Geir Bolstad</h4>
-<h4 class="date">2019-11-19</h4>
+<h4 class="date">2020-04-15</h4>
 
 
 
@@ -332,21 +329,21 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb6-4" data-line-number="4"><span class="co">#&gt; Formula: y ~ 1 + (1 | species)</span></a>
 <a class="sourceLine" id="cb6-5" data-line-number="5"><span class="co">#&gt;    Data: dt</span></a>
 <a class="sourceLine" id="cb6-6" data-line-number="6"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-7" data-line-number="7"><span class="co">#&gt; REML criterion at convergence: 404.2</span></a>
+<a class="sourceLine" id="cb6-7" data-line-number="7"><span class="co">#&gt; REML criterion at convergence: 406.2</span></a>
 <a class="sourceLine" id="cb6-8" data-line-number="8"><span class="co">#&gt; </span></a>
 <a class="sourceLine" id="cb6-9" data-line-number="9"><span class="co">#&gt; Scaled residuals: </span></a>
-<a class="sourceLine" id="cb6-10" data-line-number="10"><span class="co">#&gt;      Min       1Q   Median       3Q      Max </span></a>
-<a class="sourceLine" id="cb6-11" data-line-number="11"><span class="co">#&gt; -1.35865 -0.29856  0.03655  0.38451  1.43457 </span></a>
+<a class="sourceLine" id="cb6-10" data-line-number="10"><span class="co">#&gt;     Min      1Q  Median      3Q     Max </span></a>
+<a class="sourceLine" id="cb6-11" data-line-number="11"><span class="co">#&gt; -1.6799 -0.4408  0.0012  0.4996  1.4904 </span></a>
 <a class="sourceLine" id="cb6-12" data-line-number="12"><span class="co">#&gt; </span></a>
 <a class="sourceLine" id="cb6-13" data-line-number="13"><span class="co">#&gt; Random effects:</span></a>
 <a class="sourceLine" id="cb6-14" data-line-number="14"><span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span></a>
-<a class="sourceLine" id="cb6-15" data-line-number="15"><span class="co">#&gt;  species  (Intercept) 4.0589   2.0147  </span></a>
-<a class="sourceLine" id="cb6-16" data-line-number="16"><span class="co">#&gt;  Residual             0.8472   0.9205  </span></a>
+<a class="sourceLine" id="cb6-15" data-line-number="15"><span class="co">#&gt;  species  (Intercept) 4.392    2.096   </span></a>
+<a class="sourceLine" id="cb6-16" data-line-number="16"><span class="co">#&gt;  Residual             1.165    1.080   </span></a>
 <a class="sourceLine" id="cb6-17" data-line-number="17"><span class="co">#&gt; Number of obs: 100, groups:  species, 100</span></a>
 <a class="sourceLine" id="cb6-18" data-line-number="18"><span class="co">#&gt; </span></a>
 <a class="sourceLine" id="cb6-19" data-line-number="19"><span class="co">#&gt; Fixed effects:</span></a>
 <a class="sourceLine" id="cb6-20" data-line-number="20"><span class="co">#&gt;             Estimate Std. Error t value</span></a>
-<a class="sourceLine" id="cb6-21" data-line-number="21"><span class="co">#&gt; (Intercept)   4.6062     0.5998    7.68</span></a></code></pre></div>
+<a class="sourceLine" id="cb6-21" data-line-number="21"><span class="co">#&gt; (Intercept)   4.5294     0.6826   6.636</span></a></code></pre></div>
 <p>The <code>Almer</code> function is flexible as it is based on the lmer function, and can include additional fixed and random effects on top of the phylogenetic effects. Alo, it is not restricted to phylogeny related problems, for example it can be used to estimate additive gentic variances and/or dominance variances (the argument A list can have several entries).</p>
 </div>
 <div id="the-almer_se-function" class="section level1">
@@ -362,21 +359,21 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb8-5" data-line-number="5"><span class="co">#&gt;    Data: ..1</span></a>
 <a class="sourceLine" id="cb8-6" data-line-number="6"><span class="co">#&gt; Weights: wgth</span></a>
 <a class="sourceLine" id="cb8-7" data-line-number="7"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb8-8" data-line-number="8"><span class="co">#&gt; REML criterion at convergence: 404.2</span></a>
+<a class="sourceLine" id="cb8-8" data-line-number="8"><span class="co">#&gt; REML criterion at convergence: 406.2</span></a>
 <a class="sourceLine" id="cb8-9" data-line-number="9"><span class="co">#&gt; </span></a>
 <a class="sourceLine" id="cb8-10" data-line-number="10"><span class="co">#&gt; Scaled residuals: </span></a>
-<a class="sourceLine" id="cb8-11" data-line-number="11"><span class="co">#&gt;     Min      1Q  Median      3Q     Max </span></a>
-<a class="sourceLine" id="cb8-12" data-line-number="12"><span class="co">#&gt; -1.3531 -0.2995  0.0350  0.3835  1.4411 </span></a>
+<a class="sourceLine" id="cb8-11" data-line-number="11"><span class="co">#&gt;      Min       1Q   Median       3Q      Max </span></a>
+<a class="sourceLine" id="cb8-12" data-line-number="12"><span class="co">#&gt; -1.68388 -0.43982  0.00052  0.50044  1.49312 </span></a>
 <a class="sourceLine" id="cb8-13" data-line-number="13"><span class="co">#&gt; </span></a>
 <a class="sourceLine" id="cb8-14" data-line-number="14"><span class="co">#&gt; Random effects:</span></a>
 <a class="sourceLine" id="cb8-15" data-line-number="15"><span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span></a>
-<a class="sourceLine" id="cb8-16" data-line-number="16"><span class="co">#&gt;  species  (Intercept) 4.0564   2.0140  </span></a>
-<a class="sourceLine" id="cb8-17" data-line-number="17"><span class="co">#&gt;  Residual             0.8238   0.9076  </span></a>
+<a class="sourceLine" id="cb8-16" data-line-number="16"><span class="co">#&gt;  species  (Intercept) 4.379    2.093   </span></a>
+<a class="sourceLine" id="cb8-17" data-line-number="17"><span class="co">#&gt;  Residual             1.145    1.070   </span></a>
 <a class="sourceLine" id="cb8-18" data-line-number="18"><span class="co">#&gt; Number of obs: 100, groups:  species, 100</span></a>
 <a class="sourceLine" id="cb8-19" data-line-number="19"><span class="co">#&gt; </span></a>
 <a class="sourceLine" id="cb8-20" data-line-number="20"><span class="co">#&gt; Fixed effects:</span></a>
 <a class="sourceLine" id="cb8-21" data-line-number="21"><span class="co">#&gt;             Estimate Std. Error t value</span></a>
-<a class="sourceLine" id="cb8-22" data-line-number="22"><span class="co">#&gt; (Intercept)   4.6064     0.5996   7.682</span></a></code></pre></div>
+<a class="sourceLine" id="cb8-22" data-line-number="22"><span class="co">#&gt; (Intercept)   4.5302     0.6817   6.646</span></a></code></pre></div>
 <p>Note that the estimated residual vairance represent the residual variance after correcting for the uncertainty in the means.</p>
 </div>
 <div id="simulating-data-from-the-fitted-model" class="section level1">
@@ -385,10 +382,10 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1">sim_y &lt;-<span class="st"> </span><span class="kw">Almer_sim</span>(mod_SE, <span class="dt">nsim =</span> <span class="dv">3</span>)</a>
 <a class="sourceLine" id="cb9-2" data-line-number="2">sim_y[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>,]</a>
 <a class="sourceLine" id="cb9-3" data-line-number="3"><span class="co">#&gt; 3 x 3 Matrix of class &quot;dgeMatrix&quot;</span></a>
-<a class="sourceLine" id="cb9-4" data-line-number="4"><span class="co">#&gt;      Sim_1    Sim_2      Sim_3</span></a>
-<a class="sourceLine" id="cb9-5" data-line-number="5"><span class="co">#&gt; 1 6.119518 6.991247  2.6824421</span></a>
-<a class="sourceLine" id="cb9-6" data-line-number="6"><span class="co">#&gt; 2 3.899752 8.316010  1.2031951</span></a>
-<a class="sourceLine" id="cb9-7" data-line-number="7"><span class="co">#&gt; 3 5.377782 9.273315 -0.5174232</span></a></code></pre></div>
+<a class="sourceLine" id="cb9-4" data-line-number="4"><span class="co">#&gt;      Sim_1    Sim_2    Sim_3</span></a>
+<a class="sourceLine" id="cb9-5" data-line-number="5"><span class="co">#&gt; 1 4.670584 6.448113 6.550622</span></a>
+<a class="sourceLine" id="cb9-6" data-line-number="6"><span class="co">#&gt; 2 2.487862 6.800478 6.798801</span></a>
+<a class="sourceLine" id="cb9-7" data-line-number="7"><span class="co">#&gt; 3 4.389271 2.335597 7.073759</span></a></code></pre></div>
 <p>This can further be used to do bootsrapping</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1">dt<span class="op">$</span>group &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">rep</span>(<span class="st">&quot;A&quot;</span>, <span class="dv">50</span>), <span class="kw">rep</span>(<span class="st">&quot;B&quot;</span>, <span class="dv">50</span>))</a>
 <a class="sourceLine" id="cb10-2" data-line-number="2">mod &lt;-<span class="st"> </span><span class="kw">Almer</span>(y <span class="op">~</span><span class="st"> </span>group <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">A =</span> <span class="kw">list</span>(<span class="dt">species =</span> A))</a>
@@ -429,11 +426,11 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1"><span class="kw">phylH</span>(mod, <span class="dt">numerator =</span> <span class="st">&quot;species&quot;</span>, <span class="dt">nsim =</span> <span class="dv">3</span>)</a>
 <a class="sourceLine" id="cb11-2" data-line-number="2"><span class="co">#&gt; $phylH</span></a>
 <a class="sourceLine" id="cb11-3" data-line-number="3"><span class="co">#&gt; Phylo Heritability               2.5%              97.5% </span></a>
-<a class="sourceLine" id="cb11-4" data-line-number="4"><span class="co">#&gt;          0.8273109          0.6835279          0.9192169 </span></a>
+<a class="sourceLine" id="cb11-4" data-line-number="4"><span class="co">#&gt;          0.7903033          0.6858172          0.8575539 </span></a>
 <a class="sourceLine" id="cb11-5" data-line-number="5"><span class="co">#&gt; </span></a>
 <a class="sourceLine" id="cb11-6" data-line-number="6"><span class="co">#&gt; $bootstrap</span></a>
 <a class="sourceLine" id="cb11-7" data-line-number="7"><span class="co">#&gt;     Sim_1     Sim_2     Sim_3 </span></a>
-<a class="sourceLine" id="cb11-8" data-line-number="8"><span class="co">#&gt; 0.7761824 0.6786513 0.9267450</span></a></code></pre></div>
+<a class="sourceLine" id="cb11-8" data-line-number="8"><span class="co">#&gt; 0.6839388 0.8647143 0.7215065</span></a></code></pre></div>
 </div>
 
 

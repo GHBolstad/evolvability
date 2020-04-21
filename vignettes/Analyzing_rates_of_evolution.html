@@ -8,11 +8,11 @@
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <meta name="author" content="Geir Bolstad" />
 
-<meta name="date" content="2020-01-28" />
+<meta name="date" content="2020-04-15" />
 
 <title>Analyzing rates of evolution</title>
 
@@ -117,9 +117,6 @@ padding-right: 2em;
 font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 font-size: 14px;
 line-height: 1.35;
-}
-#header {
-text-align: center;
 }
 #TOC {
 clear: both;
@@ -288,7 +285,8 @@ code > span.st { color: #d14; }
 code > span.co { color: #888888; font-style: italic; } 
 code > span.ot { color: #007020; } 
 code > span.al { color: #ff0000; font-weight: bold; } 
-code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
 </style>
 
 
@@ -303,7 +301,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">Analyzing rates of evolution</h1>
 <h4 class="author">Geir Bolstad</h4>
-<h4 class="date">2020-01-28</h4>
+<h4 class="date">2020-04-15</h4>
 
 
 
@@ -391,7 +389,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <h1>Predictor affects rates of recent evolution</h1>
 <p>This model stands out from the two above, in that we focus on the recent the recent evolution. The species mean trait vector is modelled as <span class="math inline">\(\mathbf{y} = \mathbf{y}_{macro} + \mathbf{y}_{micro}\)</span>, where <span class="math inline">\(\mathbf{y}_{macro}\)</span> is the result of a Brownian motion process and <span class="math inline">\(\mathbf{y}_{micro}\)</span> is a microevolutionary deviation. The variance of <span class="math inline">\(\mathbf{y}_{micro}\)</span> may depend on the predictor variable: <span class="math display">\[\mathbf{y}_{micro} \sim N(\mathbf{0}, a\mathbf{I} + diag(b\mathbf{x}))\]</span> where <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> are parameter, <span class="math inline">\(\mathbf{I}\)</span> is the identity matrix and <span class="math inline">\(\mathbf{x}\)</span> is a vector of species-specific predictor variables. The <span class="math inline">\(diag\)</span>-function applied to a vector yields a diagonal matrix with the vector along the diagonal. The model assumes that only the recent value of the predictor matters, hence it is treated as a fixed effect in the regression.</p>
 <p>Using the function <code>simulate_rate</code> with <code>model = &quot;recent_evol&quot;</code> we can simulate data with different parameter values.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1">sim_data &lt;-<span class="st"> </span><span class="kw">simulate_rate</span>(tree, <span class="dt">startv_x=</span><span class="dv">0</span>, <span class="dt">sigma_x=</span><span class="dv">1</span>, <span class="dt">a=</span><span class="dv">5</span>, <span class="dt">b=</span><span class="dv">2</span>, <span class="dt">sigma_y =</span> <span class="dv">2</span>, <span class="dt">model =</span> <span class="st">&quot;recent_evol&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1">sim_data &lt;-<span class="st"> </span><span class="kw">simulate_rate</span>(tree, <span class="dt">startv_x=</span><span class="dv">0</span>, <span class="dt">sigma_x=</span><span class="dv">1</span>, <span class="dt">a=</span><span class="dv">1</span>, <span class="dt">b=</span><span class="dv">1</span>, <span class="dt">sigma_y =</span> <span class="dv">1</span>, <span class="dt">model =</span> <span class="st">&quot;recent_evol&quot;</span>)</a></code></pre></div>
 <p>We can now fit the gls model to these data. Note that the model centres <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> on their respective phylogenetically weighted means. Note also that the <code>useLFO</code> argument can be set to <code>FALSE</code> to speed up the algorithm (particularely useful when bootstrapping). <code>useLFO</code> is an acronym for use “Leave Focal Out”, should the focal species be left out when calculating the species’ mean in the algorithm. The correct way is to use TRUE, but in practice it has little effect.</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" data-line-number="1">gls_mod &lt;-<span class="st"> </span><span class="kw">rate_gls</span>(<span class="dt">x=</span>sim_data<span class="op">$</span>x, <span class="dt">y=</span>sim_data<span class="op">$</span>y, <span class="dt">species=</span>sim_data<span class="op">$</span>species, tree, <span class="dt">model =</span> <span class="st">&quot;recent_evol&quot;</span>, <span class="dt">useLFO =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
 <div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" data-line-number="1">gls_mod<span class="op">$</span>param</a>

@@ -4,7 +4,7 @@ author: "Geir Bolstad"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Analyzing rates of evolution}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
@@ -186,7 +186,7 @@ value of the predictor matters, hence it is treated as a fixed effect in the reg
 
 Using the function `simulate_rate` with `model = "recent_evol"` we can simulate data with different parameter values.
 ```{r}
-sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=5, b=2, sigma_y = 2, model = "recent_evol")
+sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=1, b=1, sigma_y = 1, model = "recent_evol")
 ```
 
 We can now fit the gls model to these data. Note that the model centres $x$ and $y$ on their respective phylogenetically weighted means. Note also that the `useLFO` argument can be set to `FALSE` to speed up the algorithm (particularely useful when bootstrapping). `useLFO` is an acronym for use "Leave Focal Out", should the focal species be left out when calculating the  species' mean in the algorithm. The correct way is to use TRUE, but in practice it has little effect. 
