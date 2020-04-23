@@ -1,72 +1,123 @@
 #' Generalized least squares rate model
 #' 
 #' \code{rate_gls} fits a generalized least squares model to estimate parameters of 
-#' the evolutoinary model of two traits x and y, where the evolutionary rate of y 
-#' depends on the value of x. Three models are implmented. In the two first, 
+#' an evolutionary model of two traits x and y, where the evolutionary rate of y 
+#' depends on the value of x. Three models are implemented. In the two first, 
 #' "predictor_BM" and "predictor_gBM", the evolution of y follows a Brownian motion 
 #' with variance linear in x, while the evolution of x either follows a Brownian 
-#' motion or a geometric brownian motion, respectively. In the third model, the 
-#' residuals of the macroveoluitonary predictions of y have variance linear in x. 
+#' motion or a geometric Brownian motion, respectively. In the third model, "recent_evol", the 
+#' residuals of the macroevolutionary predictions of y have variance linear in x. 
+#' It is highly recommended  to read Hansen et al. (in review) and the vignette "Analysing rates of evolution"
+#' before fitting these models. 
 #'
-#' @param x explanatory variable must be equal to the length of y and tips on the 
-#' tree. Note that the algorithm mean centres x in the "predictor_BM" and "recent_evol" 
-#' analyses, while it is mean stadardized (divided by the mean) in the "predictor_gBM".
-#' @param y trait values of response variable. Note that the algorithm mean centres y.
-#' @param species names of the species, must be equal in length and in the same order 
-#' as x and y.
-#' @param tree object of class \code{\link{phylo}}, needs to be ultrametric and with 
+#' @param x The explanatory variable, which must be equal to the length of \code{y} and tips on the 
+#' tree. 
+#' @param y The trait values of response variable. Note that the algorithm mean centres y.
+#' @param species A vector with the names of the species, must be equal in length and in the same order 
+#' as \code{x} and \code{y}.
+#' @param tree An object of class \code{\link{phylo}}, needs to be ultrametric and with 
 #' total length of unit, tips must have the same names as in \code{species}.
-#' @param model either "predictor_BM", "predictor_gBM" or "recent_evol" (see Details).
-#' @param startv vector of optional starting values for the a and b parameters.
-#' @param maxiter maximum number of iterations for updating the GLS.
-#' @param silent if the function should print the generalized sum of squares for each 
+#' @param model The acronym of the evolutionary model to be fitted. There are three options: "predictor_BM", 
+#' "predictor_gBM" or "recent_evol" (see the vignette "Analysing rates of evolution").
+#' @param startv A vector of optional starting values for the a and b parameters.
+#' @param maxiter The maximum number of iterations for updating the GLS.
+#' @param silent logical: if the function should not print the generalized sum of squares for each 
 #' iteration.
-#' @param useLFO acronym for use "Leave Focal Out" when calulating the mean vector of 
-#' the traits. In the "recent_evol" analysis, should the focal species be left out 
-#' when calculating the corresponding species' mean. The correct way is to use TRUE, 
-#' but in practice it has little effect and FALSE will speed up the model fit 
-#' (particularely useful when bootstrapping) .
-#' 
-#' @details The generalized least squares (GLS) model fit a regression where 
-#' explanatory variable is x (mean centred) and the response variable is vector of 
-#' squared y values for the "predictor_BM" and "predictor_gBM" models and squared 
-#' deviation from the evolutionary predictions (squared residuals) in the 
-#' "recent_evol" model. From the intercept and slope of the GLS fit the following 
-#' evolutionary paramters (a and b) are estimated. The evolutionary models are
-#' described in a vignette and in Hansen et al. (in prep)
-#' 
-#' \deqn{dy = \sqrt{a + bx}dW_{i}}
-#' 
-#' @return \code{rate_gls} returns a list with elements
-#' \itemize{
-#'  \item{\code{model}: name of fitted model ("predictor_BM", "predictor_gBM" or "recent_evolution").}
-#'  \item{\code{param}: parameter estimates and standard errors, where "a" and "b" are parameters 
-#'  of the evolutionary models (see vignette), and "sigma(x)^2" is the BM-rate parameter of x for the "predictor_BM" model,
+#' @param useLFO logical: whether the focal species should be left out when calculating the corresponding species' means. 
+#' Note that this is only relevant for the "recent_evol" model. The most correct is to use \code{TRUE}, 
+#' but in practice it has little effect and \code{FALSE} will speed up the model fit 
+#' (particularely useful when bootstrapping). LFO is an acronym for "Leave the Focal species Out".
+#' @details \code{rate_gls} is an iterative generalized least squares (GLS) model fitting a regression where 
+#' the response variable is a vector of squared mean-centred \code{y}-values for the "predictor_BM" and "predictor_gBM" models and squared 
+#' deviation from the evolutionary predictions (see \code{\link{macro_pred}}) for the "recent_evol" model. Note that the algorithm mean 
+#' centres \code{x} in the "predictor_BM" and "recent_evol" analyses, while it mean stadardized \code{x} (i.e. divided \code{x} by its mean) 
+#' in the "predictor_gBM". The evolutionary parameters a and b are inferred from the intercept and the slope of the GLS fit. Again, it is 
+#' highly recommended to read Hansen et al. (in review) and the vignette "Analysing rates of evolution"
+#' before fitting these models. In Hanen et al. (in review) the three models "predictor_BM", "predictor_gBM" and "recent_evol" are referred to
+#' as "Model 1", "Model 2" and "Model 3", respectively. 
+#' @return An object of \code{class} \code{"rate_gls"}, which is a list with the following components:
+#' \tabular{llllll}{
+#' \code{model} \tab\tab\tab\tab The name of the model ("predictor_BM", "predictor_gBM" or "recent_evolution"). \cr
+#' \code{param} \tab\tab\tab\tab The focal parameter estimates and their standard errors, where "a" and "b" are parameters 
+#'  of the evolutionary models, and "sigma(x)^2" is the BM-rate parameter of x for the "predictor_BM" model,
 #'  the BM-rate parameter for log x for the "predictor_gBM" model, and the variance of x for the 
-#'  "recent_evolution" model.}
-#'  \item{\code{R2}: the generalized R squared of the GLS model fit}
-#'  \item{GLS_objective_score}{The score of the GLS objective function}
-#'  \item{b_all_iterations}{The values for the parameter b through all iterations}
-#'  \item{R}{Residual variance matrix}
-#'  \item{Beta}{Intercept and slope of GLS regression}
-#'  \item{Beta_vcov}{Error variance matrix of Beta}
-#'  \item{tree}{The phylogenetic tree}
-#'  \item{data}{The data used for the GLS regresssion}
-#'  \item{convergence}{Whether the algoritm converged or not}
-#'  \item{additional_param}{Some additional parameter estimates, mainly used for testing}
-#'  \item{call}
-#'  }
-#'  
+#'  "recent_evolution" model. \cr
+#' \code{R2} \tab\tab\tab\tab The generalized R squared of the GLS model fit. \cr
+#' \code{GLS_objective_score} \tab\tab\tab\tab The score of the GLS objective function. \cr
+#' \code{b_all_iterations} \tab\tab\tab\tab The values for the parameter b through all iterations. \cr
+#' \code{R} \tab\tab\tab\tab The residual variance matrix. \cr
+#' \code{Beta} \tab\tab\tab\tab The intercept and slope of GLS regression. \cr
+#' \code{Beta_vcov} \tab\tab\tab\tab The error variance matrix of \code{Beta} \cr
+#' \code{tree} \tab\tab\tab\tab The phylogenetic tree. \cr
+#' \code{data} \tab\tab\tab\tab The data used in the GLS regression. \cr
+#' \code{convergence} \tab\tab\tab\tab Whether the algorithm converged or not. \cr
+#' \code{additional_param} \tab\tab\tab\tab Some additional parameter estimates, mainly used for testing. \cr
+#' \code{call} \tab\tab\tab\tab The function call.
+#' }
+#' @references Hansen T. F., Bolstad G. H., Tsuboi M. Analyzing disparity and rates of morphological evolution 
+#' with model-based phylogenetic comparative methods. Systematic Biology. In review.
 #' @author Geir H. Bolstad
-#' 
 #' @examples
+#' # Also see the vignette "Analysing rates of evolution".
+#'
+#' \dontrun{
+#' # Generating a tree with 500 species
+#' set.seed(102)
+#' tree <- ape::rtree(n = 500)
+#' tree <- ape::chronopl(tree, lambda = 1, age.min = 1)
 #' 
+#' ### model = "predictor_BM" ###
+#' sim_data <- simulate_rate(tree, startv_x=0, sigma_x=0.25, a=1, b=1, model = "predictor_BM")
+#' head(sim_data)
+#' gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "predictor_BM")
+#' gls_mod$param
+#' par(mfrow = c(1,2))
+#' plot(gls_mod, scale = "SD")  # Response shown on the standard deviation scale (default).
+#' plot(gls_mod, scale = "VAR") # Response shown on the variance scale, where the regression is linear.
+#' par(mfrow = c(1,1))
+#' # Parametric bootstrapping to get the uncertainty of the parameter estimates taking the complete process into account.
+#' # (this takes some minutes)
+#' gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000) 
+#' gls_mod_boot$summary
+#' 
+#' ### model = "predictor_gBM" ###
+#' sim_data <- simulate_rate(tree, startv_x=1, sigma_x=1, a=1, b=0.1, model = "predictor_gBM")
+#' head(sim_data)
+#' gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "predictor_gBM")
+#' gls_mod$param
+#' plot(gls_mod)
+#' par(mfrow = c(1,2))
+#' plot(gls_mod, scale = "SD")  # Response shown on the standard deviation scale (default).
+#' plot(gls_mod, scale = "VAR") # Response shown on the variance scale, where the regression is linear.
+#' par(mfrow = c(1,1))
+#' 
+#' # Parametric bootstrapping to get the uncertainty of the parameter estimates taking the complete process into account.
+#' # (this takes some minutes)
+#' gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000) 
+#' gls_mod_boot$summary
+#' 
+#' ### model = "recent_evol" ###
+#' sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=1, b=1, sigma_y = 1, model = "recent_evol")
+#' head(sim_data)
+#' gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "recent_evol", useLFO = FALSE) 
+#' #useLFO = TRUE is much slower, and although more correct it should give very similar estimates in most situations.
+#' gls_mod$param
+#' par(mfrow = c(1,2))
+#' plot(gls_mod, scale = "SD")  # Response shown on the standard deviation scale (default).
+#' plot(gls_mod, scale = "VAR") # Response shown on the variance scale, where the regression is linear.
+#' par(mfrow = c(1,1))
+#' 
+#' # Parametric bootstrapping to get the uncertainty of the parameter estimates taking the complete process into account.
+#' # Note that x is considered as fixed effect.
+#' # (this takes a long time)
+#' gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000, useLFO = FALSE) 
+#' gls_mod_boot$summary
+#' #'}
 #' @importFrom ape vcv
 #' @importFrom lme4 VarCorr
 #' @importFrom Matrix Matrix solve Diagonal rowSums
-#' 
+#' @importFrom stats coef lm
 #' @export
-
 rate_gls <- function(x, y, species, tree, model = "predictor_BM", 
                      startv = list(a = NULL, b = NULL), maxiter = 100, silent = FALSE,
                      useLFO = TRUE){
@@ -127,7 +178,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
     a_func <- function(Beta) Beta[1,1] + Vy
     b_func <- function(Beta) Beta[2,1]
     Q <- (A*A*A) - (1/4)*AoA%*%solve(A, AoA) # solve(A, AoA) is equivalent to solve(A)%*%AoA
-    R_func <- function(a, b) 4*a*Vy*A + 2*(a^2 + b^2*Vx)*AoA + b^2*s2*Q
+    R_func <- function(a=NULL, b=NULL, V=NULL, V_micro=NULL) 4*a*Vy*A + 2*(a^2 + b^2*Vx)*AoA + b^2*s2*Q
     a_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[1,1]) #CAN WE GET THE UNCERTAINTY IN Vy????? approximation using Lynch and Walsh formula?
     b_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[2,2])
   }
@@ -143,7 +194,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
     Q1       <- 8*e_hlfVx/s2*A*e_hlfs2A 
     Q2       <- 2*e_2Vx/s2^2*(8/3*(e_2s2A-e_hlfs2A)-e_2s2A-8/9*e_32s2A%*%solve(e_s2A, e_32s2A, tol = 1e-99))
     # ... end matrix calculations
-    R_func <- function(a, b) 4*a*Vy*A + 8*b*Vy*e_hlfVx/s2*e_hlfs2A + 2*a^2*AoA + a*b*Q1 + b^2 * Q2
+    R_func <- function(a=NULL, b=NULL, V=NULL, V_micro=NULL) 4*a*Vy*A + 8*b*Vy*e_hlfVx/s2*e_hlfs2A + 2*a^2*AoA + a*b*Q1 + b^2 * Q2
     a_SE_func <- function(Beta_vcov){
       sqrt(Beta_vcov[1,1])
       }
@@ -151,7 +202,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
   }
   if(model == "recent_evol"){
     b_func <- function(Beta) Beta[2,1]
-    R_func <- function(V, V_micro){
+    R_func <- function(a=NULL, b=NULL, V=NULL, V_micro=NULL){
       Vinv <- solve(V)
       dVinv <- diag(x = diag(Vinv))
       Q <- solve(dVinv%*%V%*%dVinv)
@@ -205,9 +256,9 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
   for(i in 1:maxiter){
     if(model == "predictor_BM" | model == "predictor_gBM"){
       if(i == 1){
-        R <- R_func(a, b)
+        R <- R_func(a=a, b=b)
       }else{
-        R <- R_func(a, b[i-1])
+        R <- R_func(a=a, b=b[i-1])
       }
     } else{ #model == "recent_evol"
       if(i == 1){
@@ -218,7 +269,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
       diag_V_micro[diag_V_micro < 0] <- 0 # Negative residual variances are replaced by zero
       V_micro <- diag(diag_V_micro)
       V <- sigma2_y*A + V_micro 
-      R <- R_func(V, V_micro)
+      R <- R_func(V=V, V_micro=V_micro)
       y_predicted <- macro_pred(y=y, V=V, useLFO=useLFO)
       y2 <- (y-y_predicted)^2
     }
@@ -279,70 +330,60 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM",
 }
 
 
-#' Plot of gls_rate object
+#' Plot of rate_gls object
 #' 
-#' \code{plot} Plots the gls rate regression 
+#' \code{plot} method for class \code{"rate_gls"}.  
 #' 
-#' \code{plot} ... 
-#'
-#' @param object a gls_rate object
-#' @param scale the scale of the y-axis, either the variance scale ("VAR"), that is y^2, or the standard deviation scale ("SD"), that is abs(y).
-#' @param print_param logical if parameter estimates should be printed.
-#' @param digits_param number of sigificant digits.
-#' @param digits_rsquared number of decimal places
+#' @param x An object of class \code{"rate_gls"}.
+#' @param scale The scale of the y-axis, either the variance scale ("VAR"), that is y^2, or the standard deviation scale ("SD"), that is abs(y).
+#' @param print_param logical: if parameter estimates should be printed or not.
+#' @param digits_param The number of significant digits displayed for the parameters in the plots.
+#' @param digits_rsquared The number of decimal places displayed for the r-squared.
 #' @param main as in \code{\link{plot}}.
 #' @param xlab as in \code{\link{plot}}.
 #' @param ylab as in \code{\link{plot}}.
 #' @param col as in \code{\link{plot}}.
-#' @param ... additional arguments passed to \code{\link{plot}}.
-#' 
-#' @details Plots the gls rate regression from a gls_rate object obtained from the gls_rate function. The regression line 
+#' @param ... Additional arguments passed to \code{\link{plot}}.
+#' @details Plots the gls rate regression fitted by the \code{\link{rate_gls}} function. The regression line 
 #' gives the expected variance or standard deviation (depending on scale).The regression is linear on the variance scale.
-#'  
 #' @return \code{plot} returns a plot of the gls rate regression
-#' 
+#' @examples 
+#' # See the vignette "Analysing rates of evolution".
 #' @author Geir H. Bolstad
-#' 
+#' @importFrom graphics plot lines legend
 #' @export
-
-plot.rate_gls = function(object, scale = "SD", print_param = TRUE, digits_param = 2, digits_rsquared = 1, main = "GLS regression", xlab = "x", ylab = "Response", col = "grey",  ...){
-  x <- seq(min(object$data$x), max(object$data$x), length.out = 100)
-  y <- object$Beta[1] + object$Beta[2]*x
+plot.rate_gls = function(x, scale = "SD", print_param = TRUE, digits_param = 2, digits_rsquared = 1, main = "GLS regression", xlab = "x", ylab = "Response", col = "grey",  ...){
+  mod <- x
+  x <- seq(min(mod$data$x), max(mod$data$x), length.out = 100)
+  y <- mod$Beta[1] + mod$Beta[2]*x
   if(scale == "SD")  y <- try(sqrt(y))
-  if(scale == "VAR") plot(object$data$x, object$data$y2, main=main, xlab=xlab, ylab=ylab, col=col, ...)
-  if(scale == "SD")  plot(object$data$x, sqrt(object$data$y2), main=main, xlab=xlab, ylab=ylab, col=col)#, ...)
+  if(scale == "VAR") plot(mod$data$x, mod$data$y2, main=main, xlab=xlab, ylab=ylab, col=col, ...)
+  if(scale == "SD")  plot(mod$data$x, sqrt(mod$data$y2), main=main, xlab=xlab, ylab=ylab, col=col, ...)
   lines(x, y)
   if(print_param) legend("topleft", legend = 
-                           c(as.expression(bquote(italic(a) == .(round_and_format(object$param["a", 1], sign_digits = digits_param)) ~ "\u00B1" ~
-                                                    .(round_and_format(object$param["a", 2], sign_digits = digits_param)) ~~~
-                                                    italic(b) == .(round_and_format(object$param["b", 1], sign_digits = digits_param)) ~ "\u00B1" ~
-                                                    .(round_and_format(object$param["b", 2], sign_digits = digits_param)))),
-                             as.expression(bquote(italic(R)^2 == .(round_and_format(100*object$Rsquared, digits_rsquared)) ~ "%"))),
+                           c(as.expression(bquote(italic(a) == .(round_and_format(mod$param["a", 1], sign_digits = digits_param)) ~ "\u00B1" ~
+                                                    .(round_and_format(mod$param["a", 2], sign_digits = digits_param)) ~~~
+                                                    italic(b) == .(round_and_format(mod$param["b", 1], sign_digits = digits_param)) ~ "\u00B1" ~
+                                                    .(round_and_format(mod$param["b", 2], sign_digits = digits_param)))),
+                             as.expression(bquote(italic(R)^2 == .(round_and_format(100*mod$Rsquared, digits_rsquared)) ~ "%"))),
                          box.lty = 0, bg="transparent", xjust=0)
 }
 
-
-
 #' Simulate responses from \code{\link{rate_gls}} fit
 #' 
-#' \code{simulate.rate_gls} Simulate responses from \code{\link{rate_gls}} fit
+#' \code{rate_gls_sim} responses from the models defined by an object of class \code{"rate_gls"}.
 #' 
-#' \code{simulate.rate_gls} ... 
-#' 
-#' @param object fitted object from \code{\link{rate_gls}}
-#' @param nsim numder of simulations.
+#' @param object The fitted object from \code{\link{rate_gls}}
+#' @param nsim The number of simulations.
+#' @details \code{rate_gls_sim} simply passes the estimates in an object of class \code{"rate_gls"} to the 
+#' function \code{\link{simulate_rate}} for simulating responses of the evolutionary process. It is mainly intended for 
+#' internal use in \code{\link{rate_gls_boot}}.
 #' @return A list of length \code{nsim} of simulated responses. 
-#' 
 #' @author Geir H. Bolstad
-#' 
 #' @examples
-#' 
-#' @importFrom stats simulate
-#' 
+#' # See the vignette "Analysing rates of evolution".
 #' @export
-
-
-simulate.rate_gls <- function(object, nsim = 10){
+rate_gls_sim <- function(object, nsim = 10){
   sim_out <- list()
   for(i in 1:nsim){
     sim_out[[i]] <-
@@ -360,34 +401,23 @@ simulate.rate_gls <- function(object, nsim = 10){
   return(sim_out)
 }
 
-
-#' Boostrap of the rate gls model fit
+#' Boostrap of the \code{rate_gls} model fit
 #' 
-#' \code{rate_gls_boot} Boostrap of the rate gls model fit
+#' \code{rate_gls_boot} performes a parametric bootstrap of a \code{\link{rate_gls}} model fit. 
 #' 
-#' \code{rate_gls_boot} Provides a parametric boostrap of the generalized least squares rate model fit 
-#' using \code{\link{simulate.rate_gls}}  
-#' 
-#' @param mod output from \code{\link{rate_gls}}.
-#' @param n number of bootsrap samples
-#' @param useLFO when calulating the mean vector of the traits in the "recent_evol" analysis, should the focal species
+#' @param object The output from \code{\link{rate_gls}}.
+#' @param n The number of bootsrap samples
+#' @param useLFO logical: when calulating the mean vector of the traits in the "recent_evol" analysis, should the focal species
 #' be left out when calculating the corresponding species' mean. The correct way is to use TRUE, but in practice it has little effect and FALSE 
-#' will speed up the model fit (particularely useful when bootstrapping) 
-#' @param silent 
-#' 
+#' will speed up the model fit (particularely useful when bootstrapping). 
+#' @param silent logical: whether or not the bootstrap iterations should be printed.
 #' @return A list where the first slot is a table with the original estimates and SE from the GLS fit in the two first columns
 #' followed by the bootstrap estiamte of the SE and the 2.5\%, 50\% and 97.5\% quantiles of the boostrap distribution. The second slot is the complete distribution.
-#' 
 #' @author Geir H. Bolstad
-#' 
 #' @examples
-#' 
+#' # See the vignette "Analysing rates of evolution".
 #' @importFrom stats var quantile
-#' 
 #' @export
-
-
-
 rate_gls_boot <- function(object, n = 10, useLFO = TRUE, silent = FALSE){
   if(object$model == "recent_evol"){
     boot_distribution <- matrix(NA, ncol = 5, nrow = n)  
@@ -397,7 +427,7 @@ rate_gls_boot <- function(object, n = 10, useLFO = TRUE, silent = FALSE){
     colnames(boot_distribution) <- c("a", "b", "s2", "Rsquared")
   }
   for(i in 1:n){
-    sim_out <- simulate.rate_gls(object, nsim = 1)
+    sim_out <- rate_gls_sim(object, nsim = 1)
     mod <- rate_gls(x=sim_out[[1]][,"x"], y=sim_out[[1]][,"y"], species = sim_out[[1]][,"species"], tree=object$tree, 
                     startv = list(object$param["a",1], object$param["b",1]), model = object$model, silent = TRUE,
                     useLFO = useLFO)
