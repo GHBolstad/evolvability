@@ -11,6 +11,7 @@ Description: This package calculates evolvability parameters from estimated G-ma
 License: GPL (>= 2)
 Imports: coda, Matrix, ape, lme4, stats
 RoxygenNote: 7.0.2
+Encoding: UTF-8
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 
