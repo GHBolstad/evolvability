@@ -21,11 +21,10 @@
 #' @return \code{Almer} an object of class \code{\link{merMod}}.
 #' @author Geir H. Bolstad
 #' @examples
-#' 
+#' # See the vignette "Phylogenetic mixed model".
 #' @importFrom lme4 lFormula lmerControl mkLmerDevfun optimizeLmer mkMerMod
 #' @importFrom Matrix Matrix t chol
 #' @export
-
 Almer <- function(formula, data = NULL, A = list(), REML = TRUE, 
                   control = lme4::lmerControl(check.nobs.vs.nlev  = "ignore", 
                                         check.nobs.vs.rankZ = "ignore", 
@@ -53,37 +52,29 @@ Almer <- function(formula, data = NULL, A = list(), REML = TRUE,
   return(mod_obj)
 }
 
-
 #' Linear mixed model for responsvariables with uncertainty
 #' 
-#' \code{Almer_SE} Linear mixed model for responsvariables with uncertainty
+#' \code{Almer_SE} Linear mixed model for response variables with uncertainty
 #' 
 #' @param formula as in \code{\link{lmer}}.
-#' @param SE a vector of standard errors associated with the response variable.
-#' @param maxiter maximum number of iterations.
+#' @param SE A vector of standard errors associated with the response variable.
+#' @param maxiter The maximum number of iterations.
 #' @param control as in \code{\link{lmer}}.
-#' @param ... optional arguments, see \code{\link{Almer}}.
-#' 
-#' @return \code{Almer_SE} an object of class \code{\link{merMod}}.
-#' 
+#' @param ... Further optional arguments, see \code{\link{Almer}}.
+#' @return \code{Almer_SE} returns an object of class \code{\link{merMod}}.
 #' @author Geir H. Bolstad
-#' 
 #' @examples
-#' 
+#' # See the vignette "Phylogenetic mixed model".
 #' @importFrom lme4 VarCorr lmerControl
-#' 
 #' @export
-
 Almer_SE <- function(formula, SE=NULL, maxiter = 100, 
                      control = lme4::lmerControl(check.nobs.vs.nlev  = "ignore", 
                                                  check.nobs.vs.rankZ = "ignore", 
                                                  check.nobs.vs.nRE   = "ignore"),
                      ...){
-  
   if(is.null(SE)) stop("No SE. Use Almer instead")
   wgth <- 1/(1+SE^2)
   mod <- Almer(formula, weights = wgth, control = control, ...)
-  
   for(i in 1:maxiter){
     rvariance <- attr(lme4::VarCorr(mod), "sc")^2
     wgth <- 1/(1+(SE^2)/rvariance)
@@ -93,36 +84,25 @@ Almer_SE <- function(formula, SE=NULL, maxiter = 100,
   if(i == maxiter){
     warning("Optimization of weights reached maximum number of iterations.")
   }
-  
   return(mod)
 }
 
-
 #' Simulate responses from \code{\link{Almer}} fit
 #' 
-#' \code{Almer_sim} Simulate responses from \code{\link{Almer}} fit
+#' \code{Almer_sim} Simulate responses from an \code{\link{Almer}} model fit.
 #' 
-#' \code{Almer_sim} ...
-#' 
-#' @param mod fitted object from \code{\link{Almer}}
-#' @param nsim numder of simulations.
-#'  
-#' @details This function is only included as the \code{\link{simulate.merMod}} funciton did not seem to work properly when the 
+#' @param mod A fitted object from \code{\link{Almer}}
+#' @param nsim The number of simulations.
+#' @details This function is only included as the \code{\link{simulate.merMod}} function did not seem to work properly when the 
 #' number of random effect levels equal the number of observations. 
-#' 
-#' @return \code{Almer_sim} a matrix of simulated responses, colunms correspond to each simulations.
-#' 
+#' @return \code{Almer_sim} a matrix of simulated responses, columns correspond to each simulations.
 #' @author Geir H. Bolstad
-#' 
 #' @examples
-#' 
+#' # See the vignette "Phylogenetic mixed model".
 #' @importFrom lme4 VarCorr ranef fixef 
 #' @importFrom Matrix t
 #' @importFrom stats rnorm residuals
-#' 
 #' @export
-#' 
-
 Almer_sim <- function(mod, nsim = 1000){
   samp_size_ranef <- c(sapply(ranef(mod), function(x) length(x[,1])))
   SD <- as.data.frame(VarCorr(mod))
@@ -140,39 +120,28 @@ Almer_sim <- function(mod, nsim = 1000){
   return(y)
 }
 
-
 #' Parametric bootstrap on \code{\link{Almer}} model fit
 #' 
-#' \code{Almer_boot} Parametric bootstrap on \code{\link{Almer}} model fit
+#' \code{Almer_boot} performs a parametric bootstrap from an \code{\link{Almer}} model fit
 #' 
-#' \code{Almer_boot} ...
-#' 
-#' @param mod fitted object from \code{\link{Almer}}
-#' @param nsim numder of simulations.
-#'  
-#' @details 
-#' 
+#' @param mod A fitted object from \code{\link{Almer}}
+#' @param nsim The number of simulations.
 #' @return \code{Almer_boot} a list with entries fixef, vcov, fixef_distribution and vcov_distribution, where the two first entries includes
-#' the means, standard deviations, and quantiles of the fixed effects means and (co)variances, respectively, and the two latter includes all
-#' the bootstrap values.
-#' 
+#' the means, standard deviations, and quantiles of the fixed effects means and (co)variances, respectively, and the two latter includes the
+#' complete boostrap distribution.
 #' @author Geir H. Bolstad
-#' 
 #' @examples
-#' 
+#' # See the vignette "Phylogenetic mixed model".
 #' @importFrom lme4 VarCorr ranef fixef 
 #' @importFrom Matrix t
 #' @importFrom stats update sd quantile 
-#' 
 #' @export
-#' 
-
 Almer_boot <- function(mod, nsim = 1000){
   y <- Almer_sim(mod, nsim)
   dt <- mod@frame
   boot <- apply(y, 2, function(x){
-    dt$hopefullynotavariablealready <- x
-    update(mod, hopefullynotavariablealready ~ ., data = dt)
+    dt$x86eb0d23_ebe6_4b37_bbc7_1d164b2f7c26 <- x
+    update(mod, x86eb0d23_ebe6_4b37_bbc7_1d164b2f7c26 ~ ., data = dt)
   })
   fixef_boot <- sapply(boot, lme4::fixef)
   if(is.vector(fixef_boot)){
@@ -183,17 +152,16 @@ Almer_boot <- function(mod, nsim = 1000){
   VarCorr_list <- lapply(boot, function(x) as.data.frame(lme4::VarCorr(x))) 
   vcov_boot <- t(sapply(VarCorr_list, function(x) x$vcov))
   colnames(vcov_boot) <- VarCorr_list[[1]]$grp
-  
   list(
-    fixef = cbind(mean = apply(fixef_boot, 2, mean), 
-                  std.err. = apply(fixef_boot, 2, sd), 
-                  "2.5% quantile" = apply(fixef_boot, 2, quantile, probs = 0.025),
-                  "97.5% quantile" = apply(fixef_boot, 2, quantile, probs = 0.975)
+    fixef = cbind(Mean = apply(fixef_boot, 2, mean), 
+                  "Std. Err." = apply(fixef_boot, 2, sd), 
+                  "2.5%" = apply(fixef_boot, 2, quantile, probs = 0.025),
+                  "97.5%" = apply(fixef_boot, 2, quantile, probs = 0.975)
     ),
-    vcov = cbind(mean = apply(vcov_boot, 2, mean), 
-                 std.err. = apply(vcov_boot, 2, sd), 
-                 "2.5% quantile" = apply(vcov_boot, 2, quantile, probs = 0.025),
-                 "97.5% quantile" = apply(vcov_boot, 2, quantile, probs = 0.975)
+    vcov = cbind(Mean = apply(vcov_boot, 2, mean), 
+                 "Std. Err." = apply(vcov_boot, 2, sd), 
+                 "2.5%" = apply(vcov_boot, 2, quantile, probs = 0.025),
+                 "97.5%" = apply(vcov_boot, 2, quantile, probs = 0.975)
     ),
-    fixef_distribution = fixef_boot, vcov_distribution <- vcov_boot)
+    fixef_distribution = fixef_boot, vcov_distribution = vcov_boot)
 }

@@ -1,27 +1,28 @@
 #' Simulating evolutionary rate model
 #' 
-#' \code{simulate_rate} Simulating evolutionary rate model
+#' \code{simulate_rate} Simulates three different evolutionary rates models. In the two first, 
+#' "predictor_BM" and "predictor_gBM", the evolution of y follows a Brownian motion 
+#' with variance linear in x, while the evolution of x either follows a Brownian 
+#' motion or a geometric Brownian motion, respectively. In the third model, "recent_evol", the 
+#' residuals of the macroevolutionary predictions of y have variance linear in x. 
 #' 
-#' \code{simulate_rate} Simulates different evolutionary rates models where a trait x evolves according to a Brownian motion or geometric Bronian motion 
-#' process (constant evolutionary rate) while the rate of a second trait, y, is a linear function of x.  
-#' 
-#' @param tree a \code{\link{phylo}} object. Must be ultrametric and scaled to unit length.
-#' @param starv_x starting value for x.
-#' @param sigma_x evolutionary rate of x.
-#' @param a parameter of the evolutionary rate of y (see details).
-#' @param b parameter of the evolutionary rate of y (see details).
-#' @param sigma_y evolutionary rate for the macroevolution of y (Brownian motion process) used in the "recent_evolution" model.
+#' @param tree A \code{\link{phylo}} object. Must be ultrametric and scaled to unit length.
+#' @param startv_x The starting value for x (usually 0 for "predictor_BM" and "recent_evol", and 1 for "predictor_gBM").
+#' @param sigma_x The evolutionary rate of x.
+#' @param a A parameter of the evolutionary rate of y.
+#' @param b A parameter of the evolutionary rate of y.
+#' @param sigma_y The evolutionary rate for the macroevolution of y (Brownian motion process) used in the "recent_evolution" model.
 #' @param x optional fixed values of x (only for the "recent_evol" model), 
-#' must equal number of tips in the pylogeny, must correspond to the order of the tip labels
+#' must equal number of tips in the pylogeny, must correspond to the order of the tip labels.
 #' @param model either Brownaian motion model of x "predictor_BM", 
 #' geometric Brownian motion model of x "predictor_gBM", or "recent_evol".
-#' 
-#' @return \code{simulate_rate} returns a dataset of x and y values for the tips.
-#' 
+#' @details See the vignette "Analysing rates of evolution" for examples of use. A large part of parameter space will cause negative 
+#' rates for y (i.e. negative a+bx). In these cases the rates are set to 0. A warning message is given if the number of such instances 
+#' is larger than 0.01%.
+#' @return \code{simulate_rate} returns a data frame of x and y values for the tips.
 #' @author Geir H. Bolstad
-#' 
 #' @examples
-#' 
+#' # See the vignette "Analysing rates of evolution".
 #' @export
 
 simulate_rate <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, sigma_y = NULL, x = NULL, model = "predictor_BM"){

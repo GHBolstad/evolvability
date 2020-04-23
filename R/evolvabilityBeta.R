@@ -42,12 +42,12 @@ evolvabilityBeta = function(G, Beta, means = 1){
   est
 }
 
-#'  Summarizing evolvability parameters over a set of selection gradients
+#' Summarizing evolvability parameters over a set of selection gradients
+#' 
+#' \code{summary} method for class \code{"evolvabilityBeta"}. 
 #'  
-#'  \code{summary} method for class \code{"evolvabilityBeta"}. The returned object is suitable for printing with the \code{print.summary.evolvabilityBeta} method.
-#'  
-#'  @param object An object of class \code{"evolvabilityBeta"}.
-#'  @param ... Additional arguments.
+#' @param object An object of class \code{"evolvabilityBeta"}.
+#' @param ... Additional arguments.
 #' @return A list with the following components:
 #' \tabular{llllll}{
 #' \code{Averages} \tab\tab\tab\tab The averages of the evolvability parameters over all selection gradients. \cr

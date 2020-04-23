@@ -1,20 +1,15 @@
 #' Phylogenetic heritability
 #' 
-#' \code{phylH} Phylogenetic heritability from a Almer fit
+#' \code{phylH} calculates the phylogenetic heritability from an \code{Almer} model fit and provides associated uncertainty using parameteric bootstrapping.
 #' 
-#' \code{phylH} calculates the phylogenetic heritability with uncertainty using parameteric bootstrapping
-#' 
-#' @param mod a merMod object
-#' @param numerator name of phylogenetic effect level
+#' @param mod An object of class \code{"merMod"}
+#' @param numerator The name of phylogenetic effect level
 #' @param residual name of the residual effect level  
 #' @param nsim number of bootstraps
-#' 
 #' @return \code{phylH} returns a list with the REML estimate, the 95% confidence interval from the parametric bootstrap, and the bootstrap samples.
-#' 
 #' @author Geir H. Bolstad
-#' 
 #' @examples
-#' 
+#' # See the vignette "Phylogenetic mixed model".
 #' @importFrom lme4 VarCorr 
 #' 
 #' @export

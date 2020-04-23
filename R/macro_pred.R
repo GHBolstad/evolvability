@@ -11,18 +11,20 @@
 #' @param useLFO excludes the focal species when calculating the corresponding species' 
 #' mean. The correct way is to use TRUE, but in practice it has little effect and FALSE 
 #' will speed up the model fit.
-#' 
 #' @return \code{macro_pred} returns a of macroevolutionary preditions at the 
 #' tips.
-#' 
 #' @author Geir H. Bolstad
-#' 
 #' @examples
+#' # Trait values
+#' y <- rnorm(3)
 #' 
+#' # A varianance matrix (the diagonal must be the same order as y).
+#' V <- matrix(c(1.0,0.5,0.2,0.5,1.0,0.4,0.2,0.4,1.0), ncol = 3)
+#' 
+#' # Macroevolutionary predictions (output in the same order as y).
+#' macro_pred(y, V)
 #' @importFrom Matrix Matrix solve diag
-#' 
 #' @export
-
 macro_pred <- function(y, V, useLFO = TRUE){
   if(useLFO){# here the mean is calculated leaving out the focal species
     X <- matrix(rep(1, length(y)-1), ncol = 1) # design matrix
