@@ -19,7 +19,9 @@ round_and_format(
 
 \item{sign_digits}{Number of significant digits (if given this overrides \code{digits}).}
 
-\item{scientfic}{Logical specifying whether encoding in scientific notation.}
+\item{scientific}{logical: whether encoding should be in scientific notation or not.}
+
+\item{trim}{logical: if leading blanks for justification to common width should be excluded or not.}
 }
 \value{
 Rounded and formatted values as characters.

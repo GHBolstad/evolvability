@@ -28,7 +28,14 @@ species based on the other species given the phylogeny and a phylogenetic
 variance matrix.
 }
 \examples{
+# Trait values
+y <- rnorm(3)
 
+# A varianance matrix (the diagonal must be the same order as y).
+V <- matrix(c(1.0,0.5,0.2,0.5,1.0,0.4,0.2,0.4,1.0), ncol = 3)
+
+# Macroevolutionary predictions (output in the same order as y).
+macro_pred(y, V)
 }
 \author{
 Geir H. Bolstad

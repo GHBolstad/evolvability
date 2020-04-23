@@ -7,23 +7,20 @@
 Almer_boot(mod, nsim = 1000)
 }
 \arguments{
-\item{mod}{fitted object from \code{\link{Almer}}}
+\item{mod}{A fitted object from \code{\link{Almer}}}
 
-\item{nsim}{numder of simulations.}
+\item{nsim}{The number of simulations.}
 }
 \value{
 \code{Almer_boot} a list with entries fixef, vcov, fixef_distribution and vcov_distribution, where the two first entries includes
-the means, standard deviations, and quantiles of the fixed effects means and (co)variances, respectively, and the two latter includes all
-the bootstrap values.
+the means, standard deviations, and quantiles of the fixed effects means and (co)variances, respectively, and the two latter includes the
+complete boostrap distribution.
 }
 \description{
-\code{Almer_boot} Parametric bootstrap on \code{\link{Almer}} model fit
-}
-\details{
-\code{Almer_boot} ...
+\code{Almer_boot} performs a parametric bootstrap from an \code{\link{Almer}} model fit
 }
 \examples{
-
+# See the vignette "Phylogenetic mixed model".
 }
 \author{
 Geir H. Bolstad

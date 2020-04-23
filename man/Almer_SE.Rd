@@ -16,22 +16,22 @@ Almer_SE(
 \arguments{
 \item{formula}{as in \code{\link{lmer}}.}
 
-\item{SE}{a vector of standard errors associated with the response variable.}
+\item{SE}{A vector of standard errors associated with the response variable.}
 
-\item{maxiter}{maximum number of iterations.}
+\item{maxiter}{The maximum number of iterations.}
 
 \item{control}{as in \code{\link{lmer}}.}
 
-\item{...}{optional arguments, see \code{\link{Almer}}.}
+\item{...}{Further optional arguments, see \code{\link{Almer}}.}
 }
 \value{
-\code{Almer_SE} an object of class \code{\link{merMod}}.
+\code{Almer_SE} returns an object of class \code{\link{merMod}}.
 }
 \description{
-\code{Almer_SE} Linear mixed model for responsvariables with uncertainty
+\code{Almer_SE} Linear mixed model for response variables with uncertainty
 }
 \examples{
-
+# See the vignette "Phylogenetic mixed model".
 }
 \author{
 Geir H. Bolstad

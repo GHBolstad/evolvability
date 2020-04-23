@@ -7,9 +7,9 @@
 phylH(mod, numerator, residual = "Residual", nsim = 10)
 }
 \arguments{
-\item{mod}{a merMod object}
+\item{mod}{An object of class \code{"merMod"}}
 
-\item{numerator}{name of phylogenetic effect level}
+\item{numerator}{The name of phylogenetic effect level}
 
 \item{residual}{name of the residual effect level}
 
@@ -19,13 +19,10 @@ phylH(mod, numerator, residual = "Residual", nsim = 10)
 \code{phylH} returns a list with the REML estimate, the 95% confidence interval from the parametric bootstrap, and the bootstrap samples.
 }
 \description{
-\code{phylH} Phylogenetic heritability from a Almer fit
-}
-\details{
-\code{phylH} calculates the phylogenetic heritability with uncertainty using parameteric bootstrapping
+\code{phylH} calculates the phylogenetic heritability from an \code{Almer} model fit and provides associated uncertainty using parameteric bootstrapping.
 }
 \examples{
-
+# See the vignette "Phylogenetic mixed model".
 }
 \author{
 Geir H. Bolstad

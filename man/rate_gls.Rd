@@ -17,76 +17,134 @@ rate_gls(
 )
 }
 \arguments{
-\item{x}{explanatory variable must be equal to the length of y and tips on the 
-tree. Note that the algorithm mean centres x in the "predictor_BM" and "recent_evol" 
-analyses, while it is mean stadardized (divided by the mean) in the "predictor_gBM".}
+\item{x}{The explanatory variable, which must be equal to the length of \code{y} and tips on the 
+tree.}
 
-\item{y}{trait values of response variable. Note that the algorithm mean centres y.}
+\item{y}{The trait values of response variable. Note that the algorithm mean centres y.}
 
-\item{species}{names of the species, must be equal in length and in the same order 
-as x and y.}
+\item{species}{A vector with the names of the species, must be equal in length and in the same order 
+as \code{x} and \code{y}.}
 
-\item{tree}{object of class \code{\link{phylo}}, needs to be ultrametric and with 
+\item{tree}{An object of class \code{\link{phylo}}, needs to be ultrametric and with 
 total length of unit, tips must have the same names as in \code{species}.}
 
-\item{model}{either "predictor_BM", "predictor_gBM" or "recent_evol" (see Details).}
+\item{model}{The acronym of the evolutionary model to be fitted. There are three options: "predictor_BM", 
+"predictor_gBM" or "recent_evol" (see the vignette "Analysing rates of evolution").}
 
-\item{startv}{vector of optional starting values for the a and b parameters.}
+\item{startv}{A vector of optional starting values for the a and b parameters.}
 
-\item{maxiter}{maximum number of iterations for updating the GLS.}
+\item{maxiter}{The maximum number of iterations for updating the GLS.}
 
-\item{silent}{if the function should print the generalized sum of squares for each 
+\item{silent}{logical: if the function should not print the generalized sum of squares for each 
 iteration.}
 
-\item{useLFO}{acronym for use "Leave Focal Out" when calulating the mean vector of 
-the traits. In the "recent_evol" analysis, should the focal species be left out 
-when calculating the corresponding species' mean. The correct way is to use TRUE, 
-but in practice it has little effect and FALSE will speed up the model fit 
-(particularely useful when bootstrapping) .}
+\item{useLFO}{logical: whether the focal species should be left out when calculating the corresponding species' means. 
+Note that this is only relevant for the "recent_evol" model. The most correct is to use \code{TRUE}, 
+but in practice it has little effect and \code{FALSE} will speed up the model fit 
+(particularely useful when bootstrapping). LFO is an acronym for "Leave the Focal species Out".}
 }
 \value{
-\code{rate_gls} returns a list with elements
-\itemize{
- \item{\code{model}: name of fitted model ("predictor_BM", "predictor_gBM" or "recent_evolution").}
- \item{\code{param}: parameter estimates and standard errors, where "a" and "b" are parameters 
- of the evolutionary models (see vignette), and "sigma(x)^2" is the BM-rate parameter of x for the "predictor_BM" model,
+An object of \code{class} \code{"rate_gls"}, which is a list with the following components:
+\tabular{llllll}{
+\code{model} \tab\tab\tab\tab The name of the model ("predictor_BM", "predictor_gBM" or "recent_evolution"). \cr
+\code{param} \tab\tab\tab\tab The focal parameter estimates and their standard errors, where "a" and "b" are parameters 
+ of the evolutionary models, and "sigma(x)^2" is the BM-rate parameter of x for the "predictor_BM" model,
  the BM-rate parameter for log x for the "predictor_gBM" model, and the variance of x for the 
- "recent_evolution" model.}
- \item{\code{R2}: the generalized R squared of the GLS model fit}
- \item{GLS_objective_score}{The score of the GLS objective function}
- \item{b_all_iterations}{The values for the parameter b through all iterations}
- \item{R}{Residual variance matrix}
- \item{Beta}{Intercept and slope of GLS regression}
- \item{Beta_vcov}{Error variance matrix of Beta}
- \item{tree}{The phylogenetic tree}
- \item{data}{The data used for the GLS regresssion}
- \item{convergence}{Whether the algoritm converged or not}
- \item{additional_param}{Some additional parameter estimates, mainly used for testing}
- \item{call}
- }
+ "recent_evolution" model. \cr
+\code{R2} \tab\tab\tab\tab The generalized R squared of the GLS model fit. \cr
+\code{GLS_objective_score} \tab\tab\tab\tab The score of the GLS objective function. \cr
+\code{b_all_iterations} \tab\tab\tab\tab The values for the parameter b through all iterations. \cr
+\code{R} \tab\tab\tab\tab The residual variance matrix. \cr
+\code{Beta} \tab\tab\tab\tab The intercept and slope of GLS regression. \cr
+\code{Beta_vcov} \tab\tab\tab\tab The error variance matrix of \code{Beta} \cr
+\code{tree} \tab\tab\tab\tab The phylogenetic tree. \cr
+\code{data} \tab\tab\tab\tab The data used in the GLS regression. \cr
+\code{convergence} \tab\tab\tab\tab Whether the algorithm converged or not. \cr
+\code{additional_param} \tab\tab\tab\tab Some additional parameter estimates, mainly used for testing. \cr
+\code{call} \tab\tab\tab\tab The function call.
+}
 }
 \description{
 \code{rate_gls} fits a generalized least squares model to estimate parameters of 
-the evolutoinary model of two traits x and y, where the evolutionary rate of y 
-depends on the value of x. Three models are implmented. In the two first, 
+an evolutionary model of two traits x and y, where the evolutionary rate of y 
+depends on the value of x. Three models are implemented. In the two first, 
 "predictor_BM" and "predictor_gBM", the evolution of y follows a Brownian motion 
 with variance linear in x, while the evolution of x either follows a Brownian 
-motion or a geometric brownian motion, respectively. In the third model, the 
-residuals of the macroveoluitonary predictions of y have variance linear in x.
+motion or a geometric Brownian motion, respectively. In the third model, "recent_evol", the 
+residuals of the macroevolutionary predictions of y have variance linear in x. 
+It is highly recommended  to read Hansen et al. (in review) and the vignette "Analysing rates of evolution"
+before fitting these models.
 }
 \details{
-The generalized least squares (GLS) model fit a regression where 
-explanatory variable is x (mean centred) and the response variable is vector of 
-squared y values for the "predictor_BM" and "predictor_gBM" models and squared 
-deviation from the evolutionary predictions (squared residuals) in the 
-"recent_evol" model. From the intercept and slope of the GLS fit the following 
-evolutionary paramters (a and b) are estimated. The evolutionary models are
-described in a vignette and in Hansen et al. (in prep)
-
-\deqn{dy = \sqrt{a + bx}dW_{i}}
+\code{rate_gls} is an iterative generalized least squares (GLS) model fitting a regression where 
+the response variable is a vector of squared mean-centred \code{y}-values for the "predictor_BM" and "predictor_gBM" models and squared 
+deviation from the evolutionary predictions (see \code{\link{macro_pred}}) for the "recent_evol" model. Note that the algorithm mean 
+centres \code{x} in the "predictor_BM" and "recent_evol" analyses, while it mean stadardized \code{x} (i.e. divided \code{x} by its mean) 
+in the "predictor_gBM". The evolutionary parameters a and b are inferred from the intercept and the slope of the GLS fit. Again, it is 
+highly recommended to read Hansen et al. (in review) and the vignette "Analysing rates of evolution"
+before fitting these models. In Hanen et al. (in review) the three models "predictor_BM", "predictor_gBM" and "recent_evol" are referred to
+as "Model 1", "Model 2" and "Model 3", respectively.
 }
 \examples{
+# Also see the vignette "Analysing rates of evolution".
 
+\dontrun{
+# Generating a tree with 500 species
+set.seed(102)
+tree <- ape::rtree(n = 500)
+tree <- ape::chronopl(tree, lambda = 1, age.min = 1)
+
+### model = "predictor_BM" ###
+sim_data <- simulate_rate(tree, startv_x=0, sigma_x=0.25, a=1, b=1, model = "predictor_BM")
+head(sim_data)
+gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "predictor_BM")
+gls_mod$param
+par(mfrow = c(1,2))
+plot(gls_mod, scale = "SD")  # Response shown on the standard deviation scale (default).
+plot(gls_mod, scale = "VAR") # Response shown on the variance scale, where the regression is linear.
+par(mfrow = c(1,1))
+# Parametric bootstrapping to get the uncertainty of the parameter estimates taking the complete process into account.
+# (this takes some minutes)
+gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000) 
+gls_mod_boot$summary
+
+### model = "predictor_gBM" ###
+sim_data <- simulate_rate(tree, startv_x=1, sigma_x=1, a=1, b=0.1, model = "predictor_gBM")
+head(sim_data)
+gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "predictor_gBM")
+gls_mod$param
+plot(gls_mod)
+par(mfrow = c(1,2))
+plot(gls_mod, scale = "SD")  # Response shown on the standard deviation scale (default).
+plot(gls_mod, scale = "VAR") # Response shown on the variance scale, where the regression is linear.
+par(mfrow = c(1,1))
+
+# Parametric bootstrapping to get the uncertainty of the parameter estimates taking the complete process into account.
+# (this takes some minutes)
+gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000) 
+gls_mod_boot$summary
+
+### model = "recent_evol" ###
+sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=1, b=1, sigma_y = 1, model = "recent_evol")
+head(sim_data)
+gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "recent_evol", useLFO = FALSE) 
+#useLFO = TRUE is much slower, and although more correct it should give very similar estimates in most situations.
+gls_mod$param
+par(mfrow = c(1,2))
+plot(gls_mod, scale = "SD")  # Response shown on the standard deviation scale (default).
+plot(gls_mod, scale = "VAR") # Response shown on the variance scale, where the regression is linear.
+par(mfrow = c(1,1))
+
+# Parametric bootstrapping to get the uncertainty of the parameter estimates taking the complete process into account.
+# Note that x is considered as fixed effect.
+# (this takes a long time)
+gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000, useLFO = FALSE) 
+gls_mod_boot$summary
+#'}
+}
+\references{
+Hansen T. F., Bolstad G. H., Tsuboi M. Analyzing disparity and rates of morphological evolution 
+with model-based phylogenetic comparative methods. Systematic Biology. In review.
 }
 \author{
 Geir H. Bolstad

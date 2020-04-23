@@ -36,9 +36,6 @@ results don't change). Note also that the R-squared is estimated as 1-GSSE/GSST,
 residual sum of squares (i.e. the objective function score of the model) and GSST is the generalized total sum of 
 squares (i.e. the objective function score of the model when only the intercept is included in the model)
 }
-\examples{
-
-}
 \author{
 Geir H. Bolstad
 }

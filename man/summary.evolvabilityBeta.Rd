@@ -2,14 +2,14 @@
 % Please edit documentation in R/evolvabilityBeta.R
 \name{summary.evolvabilityBeta}
 \alias{summary.evolvabilityBeta}
-\title{Summarizing evolvability parameters over a set of selection gradients
- 
- \code{summary} method for class \code{"evolvabilityBeta"}. The returned object is suitable for printing with the \code{print.summary.evolvabilityBeta} method.
- 
- @param object An object of class \code{"evolvabilityBeta"}.
- @param ... Additional arguments.}
+\title{Summarizing evolvability parameters over a set of selection gradients}
 \usage{
 \method{summary}{evolvabilityBeta}(object, ...)
+}
+\arguments{
+\item{object}{An object of class \code{"evolvabilityBeta"}.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 A list with the following components:
@@ -20,12 +20,7 @@ A list with the following components:
 }
 }
 \description{
-Summarizing evolvability parameters over a set of selection gradients
- 
- \code{summary} method for class \code{"evolvabilityBeta"}. The returned object is suitable for printing with the \code{print.summary.evolvabilityBeta} method.
- 
- @param object An object of class \code{"evolvabilityBeta"}.
- @param ... Additional arguments.
+\code{summary} method for class \code{"evolvabilityBeta"}.
 }
 \seealso{
 \code{\link{evolvabilityBeta}}

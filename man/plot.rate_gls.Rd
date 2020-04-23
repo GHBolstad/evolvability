@@ -2,10 +2,10 @@
 % Please edit documentation in R/rate_gls.R
 \name{plot.rate_gls}
 \alias{plot.rate_gls}
-\title{Plot of gls_rate object}
+\title{Plot of rate_gls object}
 \usage{
 \method{plot}{rate_gls}(
-  object,
+  x,
   scale = "SD",
   print_param = TRUE,
   digits_param = 2,
@@ -18,15 +18,15 @@
 )
 }
 \arguments{
-\item{object}{a gls_rate object}
+\item{x}{An object of class \code{"rate_gls"}.}
 
-\item{scale}{the scale of the y-axis, either the variance scale ("VAR"), that is y^2, or the standard deviation scale ("SD"), that is abs(y).}
+\item{scale}{The scale of the y-axis, either the variance scale ("VAR"), that is y^2, or the standard deviation scale ("SD"), that is abs(y).}
 
-\item{print_param}{logical if parameter estimates should be printed.}
+\item{print_param}{logical: if parameter estimates should be printed or not.}
 
-\item{digits_param}{number of sigificant digits.}
+\item{digits_param}{The number of significant digits displayed for the parameters in the plots.}
 
-\item{digits_rsquared}{number of decimal places}
+\item{digits_rsquared}{The number of decimal places displayed for the r-squared.}
 
 \item{main}{as in \code{\link{plot}}.}
 
@@ -36,19 +36,20 @@
 
 \item{col}{as in \code{\link{plot}}.}
 
-\item{...}{additional arguments passed to \code{\link{plot}}.}
+\item{...}{Additional arguments passed to \code{\link{plot}}.}
 }
 \value{
 \code{plot} returns a plot of the gls rate regression
 }
 \description{
-\code{plot} Plots the gls rate regression
+\code{plot} method for class \code{"rate_gls"}.
 }
 \details{
-\code{plot} ...
-
-Plots the gls rate regression from a gls_rate object obtained from the gls_rate function. The regression line 
+Plots the gls rate regression fitted by the \code{\link{rate_gls}} function. The regression line 
 gives the expected variance or standard deviation (depending on scale).The regression is linear on the variance scale.
+}
+\examples{
+# See the vignette "Analysing rates of evolution".
 }
 \author{
 Geir H. Bolstad

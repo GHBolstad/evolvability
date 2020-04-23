@@ -58,7 +58,7 @@ phylogenetic mixed models and animal models. The function is based on the \code{
 apart from the A argument.
 }
 \examples{
-
+# See the vignette "Phylogenetic mixed model".
 }
 \author{
 Geir H. Bolstad
