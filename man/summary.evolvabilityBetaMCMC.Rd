@@ -7,7 +7,7 @@
 \method{summary}{evolvabilityBetaMCMC}(object, ...)
 }
 \arguments{
-\item{object}{an object of class \code{"evolvabilityBetaMCMC"}.}
+\item{object}{an object of class \code{'evolvabilityBetaMCMC'}.}
 
 \item{...}{additional arguments affecting the summary produced.}
 }
@@ -20,7 +20,7 @@ A list with the following components:
 }
 }
 \description{
-\code{summary} method for class \code{"evolvabilityBetaMCMC"}.
+\code{summary} method for class \code{'evolvabilityBetaMCMC'}.
 }
 \seealso{
 \code{\link{evolvabilityBetaMCMC}}

@@ -1,6 +1,6 @@
 ---
 title: "Phylogenetic mixed model"
-author: "Geir Bolstad"
+author: "Geir H. Bolstad"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -41,7 +41,7 @@ The columnames of A must be the species identifier.
 colnames(A) <- rownames(A) <- paste("species", 1:n_species, sep = "_")
 ```
 
-From this we can simulate a Browninan motion process and add some residual noise.
+From this we can simulate a Brownian motion process and add some residual noise.
 ```{r}
 y <- 5 + t(chol(A))%*%rnorm(n_species, 0, 2) + # BM process with mean = 5 and sd = 2
      rnorm(n_species, 0, 1)                    # residual variation with sd = 1
@@ -61,7 +61,7 @@ summary(mod)
 The `Almer` function is flexible as it is based on the lmer function, and can include additional fixed and random effects on top of the phylogenetic effects. Also, it is not restricted to phylogeny related problems, for example it can be used to estimate additive genetic variances and/or dominance variances (the argument A list can have several entries).
 
 # The `Almer_SE` function
-This function extends the Almer function by allowing the inclusion of uncertainty of the species means. To do this, we take advantage of how weights are included in the `lmer` function: the diagonal of the residual covariance matrix is the residual variance parameter $\sigma^2$ times the vector of inverse weights. By using weights equal to $1/(1+SE^2/\sigma^2)$, where SE is a vector of standard errors, the diagonal of the residual covariance matrix is $\sigma^2 + SE^2$. Because the weights includes the residual variance parameter, the function uses an itarative approach.   
+This function extends the Almer function by allowing the inclusion of uncertainty of the species means. To do this, we take advantage of how weights are included in the `lmer` function: the diagonal of the residual co-variance matrix is the residual variance parameter $\sigma^2$ times the vector of inverse weights. By using weights equal to $1/(1+SE^2/\sigma^2)$, where SE is a vector of standard errors, the diagonal of the residual co-variance matrix is $\sigma^2 + SE^2$. Because the weights includes the residual variance parameter, the function uses an iterative approach.   
   
 To illustrate the approach, we start with adding some arbitrary SE values to the data
 
@@ -69,7 +69,7 @@ To illustrate the approach, we start with adding some arbitrary SE values to the
 dt$SE <- runif(nrow(dt), min = 0.1, max = 0.2) 
 ```
 
-`Almer_SE` can then be used to estimate the means and variances of the process taking the unceratinty into account.
+`Almer_SE` can then be used to estimate the means and variances of the process taking the uncertainty into account.
 
 ```{r}
 mod_SE <- Almer_SE(y ~ 1 + (1|species), data = dt, SE = dt$SE, A = list(species = A))
@@ -95,7 +95,7 @@ Almer_boot_obj$vcov
 ```
 
 # Phylogenetic heritability
-The phylH function can be used to estimate the phylogenetic heritability of a object fitted by Almer. The 95% confidence interval is estimated by bootstrapping. The name of the numerator of the heritability, and unless the phylogenetic residual is estiamated as residuals in the model fit, the name of the phylogenetic residuals also needs to be given.  
+The phylH function can be used to estimate the phylogenetic heritability of a object fitted by Almer. The 95% confidence interval is estimated by bootstrapping. The name of the numerator of the heritability, and unless the phylogenetic residual is estimated as residuals in the model fit, the name of the phylogenetic residuals also needs to be given.  
 ```{r}
 # The number of bootstrap simulations is kept very low in the interest 
 # of computational speed. Often 1000 is used in real analyses.

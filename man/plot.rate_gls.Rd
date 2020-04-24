@@ -18,15 +18,18 @@
 )
 }
 \arguments{
-\item{x}{An object of class \code{"rate_gls"}.}
+\item{x}{An object of class \code{'rate_gls'}.}
 
-\item{scale}{The scale of the y-axis, either the variance scale ("VAR"), that is y^2, or the standard deviation scale ("SD"), that is abs(y).}
+\item{scale}{The scale of the y-axis, either the variance scale ('VAR'), that
+is y^2, or the standard deviation scale ('SD'), that is abs(y).}
 
 \item{print_param}{logical: if parameter estimates should be printed or not.}
 
-\item{digits_param}{The number of significant digits displayed for the parameters in the plots.}
+\item{digits_param}{The number of significant digits displayed for the
+parameters in the plots.}
 
-\item{digits_rsquared}{The number of decimal places displayed for the r-squared.}
+\item{digits_rsquared}{The number of decimal places displayed for the
+r-squared.}
 
 \item{main}{as in \code{\link{plot}}.}
 
@@ -42,14 +45,16 @@
 \code{plot} returns a plot of the gls rate regression
 }
 \description{
-\code{plot} method for class \code{"rate_gls"}.
+\code{plot} method for class \code{'rate_gls'}.
 }
 \details{
-Plots the gls rate regression fitted by the \code{\link{rate_gls}} function. The regression line 
-gives the expected variance or standard deviation (depending on scale).The regression is linear on the variance scale.
+Plots the gls rate regression fitted by the \code{\link{rate_gls}}
+  function. The regression line gives the expected variance or standard
+  deviation (depending on scale).The regression is linear on the variance
+  scale.
 }
 \examples{
-# See the vignette "Analysing rates of evolution".
+# See the vignette 'Analyzing rates of evolution'.
 }
 \author{
 Geir H. Bolstad

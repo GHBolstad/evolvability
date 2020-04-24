@@ -7,7 +7,7 @@
 \method{summary}{evolvabilityBeta}(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{"evolvabilityBeta"}.}
+\item{object}{An object of class \code{'evolvabilityBeta'}.}
 
 \item{...}{Additional arguments.}
 }
@@ -20,7 +20,7 @@ A list with the following components:
 }
 }
 \description{
-\code{summary} method for class \code{"evolvabilityBeta"}.
+\code{summary} method for class \code{'evolvabilityBeta'}.
 }
 \seealso{
 \code{\link{evolvabilityBeta}}

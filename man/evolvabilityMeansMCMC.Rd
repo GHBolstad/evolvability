@@ -13,7 +13,7 @@ must be on the form as given by \code{c(x)}, where \code{x} is a matrix. A poste
 in the slot \code{VCV} of a object of class \code{MCMCglmm} is by default on this form.}
 }
 \value{
-An object of \code{class} \code{"evolvabilityMeansMCMC"}, which is a list with the following components:
+An object of \code{class} \code{'evolvabilityMeansMCMC'}, which is a list with the following components:
 \tabular{llllll}{
 \code{post.dist} \tab\tab\tab\tab The posterior distribution of the average evolvability parameters. \cr
 \code{post.medians} \tab\tab\tab\tab The posterior medians and HPD interval of the average evolvability parameters.

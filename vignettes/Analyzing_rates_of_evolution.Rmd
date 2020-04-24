@@ -1,10 +1,10 @@
 ---
-title: "Analysing rates of evolution"
-author: "Geir Bolstad"
+title: "Analyzing rates of evolution"
+author: "Geir H. Bolstad"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Analysing rates of evolution}
+  %\VignetteIndexEntry{Analyzing rates of evolution}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
@@ -20,34 +20,33 @@ knitr::opts_chunk$set(
 library(evolvability)
 ```
 
-This vingette shows how to analyze rates of evolution using the comparative methods implemented in `rate_gls()`. This function can fit three different types of evolutionary models depending on the `model` argument. In all three models the evolutionary rate of change in the y-variable is a function of the state of the predictor x. It can be used to test hypotesis about the effect of an evolving trait (x) on the rate of evolution in a different trait (y). The different evolutionary models outlined below are described in detail in Hansen T. F., Bolstad G. H., Tsuboi M. Analyzing disparity and rates of morphological evolution with model-based phylogenetic comparative methods. *Systematic Biology*. In review.    
+This vignette shows how to analyse rates of evolution using the comparative methods implemented in `evolvability::rate_gls`. `rate_gls` can fit three different types of evolutionary models depending on its `model` argument. In all three models the evolutionary rate of change in the y-variable is a function of the state of the predictor x. These models can be used to test hypotheses about the effect of an evolving trait (x) on the rate of evolution in a different trait (y). The different evolutionary models outlined below are described in detail in Hansen T. F., Bolstad G. H., Tsuboi M. Analyzing disparity and rates of morphological evolution with model-based phylogenetic comparative methods. *Systematic Biology*. In review.    
 
-Note that sample sizes and number of simulations are kept small in the interest of computational speed.   
+Note that sample sizes and number of simulations below are kept small in the interest of computational speed. With small sample sizes the parameter estimates will be inaccurate, and when performing a bootstrap in a real analysis the number of simulations are typically 1000. Hence, the below examples are only for explaining the functionality in the `evolvability` package.
   
-To simulate data for the different evolutionary models, we first need an ultrametric phylogeny.
+To simulate data for the different evolutionary models, we first need an ultra-metric phylogeny. Here we generate a random phylogeny using the `ape` package. In a real data analysis you would use a molecular phylogeny of the species in your data set. 
 
 ```{r}
-set.seed(102)
+set.seed(113)
 tree <- ape::rtree(n = 50)
 tree <- ape::chronopl(tree, lambda = 1, age.min = 2)
 ```
 
-Chekcing wether the thre is ultrametric:
+Checking whether the phylogeny is ultrametric:
 
 ```{r, eval=TRUE}
 ape::is.ultrametric(tree)
 ```
 
+We scale the phylogeny to unit length between root and tips. This makes the parameters easier to interpret. (In our simulation this could also have been accomplished by setting `age.min = 1` in `chronopl`). 
+
 ```{r, eval=TRUE}
 tree$edge.length <- tree$edge.length/diag(ape::vcv(tree))[1]
 ```
 
-We scale the phylogeny to unit length between root and tips. This makes the parameters easier to interpret. (In our simulation this could also have been accomplised by setting age.min = 1 in `chronopl()`). 
-
 ```{r, eval = TRUE}
 plot(tree)
 ```
-
 
 # Predictor as Brownian motion 
 The first model is a model where the predictor $x$ evolves according to a Brownian motion (BM) process, while $y$ follows a Brownian motion with variance that is linear in $x$. The evolutionary model is 
@@ -56,129 +55,196 @@ $$dy = \sqrt{a + bx} dW_1 $$
 
 $$dx = \sigma dW_2 $$
 
-where $a$ is the evolutionary rate of $y$ at $x=0$, $b$ captures the influence of $x$ on the evoluitonary rate, and $dW$ is uncorrelated white noise. This model will break down when $a + bx$ becomes negative, and should be seen as an approximation that may be valid for a given range of $x$ values as spanned by the species to be used in the analysis. Using the function `simulate_rate` with `model = "predictor_BM"` we can simulate data according to this model:
-
-```{r}
-sim_data <- simulate_rate(tree, startv_x=0, sigma_x=0.25, a=2, b=1, model = "predictor_BM")
-head(sim_data)
-```
-
-The simulation gives a warning message if the rate parameter, $a + bx$, becomes negative in parts of the tree. In these instances, the rate parameter is assignd the value 0 in the simulation. As long as the number of these instances is low, this should not pose a problem.  
+where $a$ is the evolutionary rate of $y$ at $x=0$, $b$ captures the influence of $x$ on the evolutionary rate, and $dW$ is uncorrelated white noise. This model will break down when $a + bx$ becomes negative, and should be seen as an approximation that may be valid for a given range of $x$ values as spanned by the species to be used in the analysis.  
   
-We can now fit the gls model to these data. Note that $x$ and $y$ are centred on their respective phylogenetically weighted mean within the `rate_gls` funciton, and this is reflected in all the output of the model. [COMMENT: should describe what is done internally to x, maybe show the complete design matrix?]
+Using the function `simulate_rate` with `model = "predictor_BM"` we can simulate data at the tips of the phylogeny according to this model:  
 
 ```{r}
-gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, 
+sim_data <- simulate_rate(tree, startv_x=0, sigma_x=0.25, a=1, b=1, model = "predictor_BM")
+```
+
+In our simulation we have chosen the starting value (root value) of x as $0$ (`startv_x=0`) and the parameter $a$ is set to $1$ (`a=1`). This means that, the evolutionary rate of $y$ at the root is $1$. The $b$ parameter is also set to $1$ in the simulation (`b=1`). Hence, points along the phylogeny where $x$ evolves to take the value $0.5$, the rate for $y$ is given by $\sqrt{1 + 1 \times 0.5} = 1.22$, while points along the phylogeny where $x$ evolves to take the value $-0.5$, the rate of $y$ is given by $\sqrt{1 + 1 \times - 0.5} = 0.71$. For $x$, the rate of evolution, $\sigma$, is constant across the whole phylogeny, and set to `sigma_x=0.25` in the simulations.  
+
+The simulation gives a warning message if $a + bx$ becomes negative in parts of the tree. In these instances, the rate parameter of $y$, $\sqrt{a + bx}$, is assigned the value $0$ in the simulation. As long as the number of these instances is low, this should not pose a problem. We can plot the evolution of the rate of $y$ (i.e. $\sqrt{a + bx}$), as well as the values of $y$ and $x$ using the inbuilt `plot.simulate_rate` function: 
+
+```{r, fig.width=7}
+par(mfrow = c(1,3))
+plot(sim_data) # defaults to response = "rate_y" 
+plot(sim_data, response = "y")
+plot(sim_data, response = "x")
+```
+
+As shown in the above figure, the simulation is discrete and done over 1000 time steps. The $y$ and $x$ values at the tips are stored as a data frame in `sim_data$tips`.
+
+```{r}
+d <- sim_data$tips
+head(d)
+```
+
+We can now fit the gls model to these data and their phylogeny. Note that $x$ and $y$ are centered on their respective phylogenetically weighted mean within the `rate_gls` function, and this is reflected in all the output of the model.
+
+```{r}
+gls_mod <- rate_gls(x=d$x, y=d$y, species=d$species, tree, 
                     model = "predictor_BM", silent = TRUE)
-gls_mod$param
+round(gls_mod$param, 3)
 ```
 
-The parameters a, b and sigma(x)^2 are the parameters of the evolutonary model (sigma(x)^2 is the squared $\sigma$). The standard error of the estimates does not take into account the error in sigma(x)^2. Parametric boostrapping can be used to get 95% confidence intervals taking into account error in the entire process (assuming that the phylogenetic tree is true). Also in the bootstrap, there can be warning messages becasue the rate paremeter, $a + bx$, becomes negative in the simulations. As long as the number of these instances is low, this should not pose a problem. 
+The parameters `a`, `b` and `sigma(x)^2` are the parameters of the evolutionary model (`sigma(x)^2` is the squared $\sigma$). Because of the low sample size, the estimates of the parameters diverges quite a lot from their true values (the input of the simulation). Note that the analytic standard error of `a` and `b` (shown in the `SE` column) does not take into account the error in `sigma(x)^2`. Parametric bootstrapping can be used to get 95% confidence intervals taking into account error in the entire process. In the bootstrap, warning messages are given if $a + bx$ becomes negative in the simulations. Again, as long as the number of these instances is low, this should not pose a problem. 
 
 ```{r}
-bootout <- rate_gls_boot(gls_mod, n = 10, silent = TRUE)
+bootout <- rate_gls_boot(gls_mod, n = 10, silent = TRUE) 
+#NB! n must be much larger to provide reliable estimates
 ```
 
-The bootstrap output gives the original model estimates (Estimate) and the analytical standard errors (SE) in the first two columns followed by the standard deviation of the boostrap distribution for each parameter (boot_SE) and the 2.5\%, the 50\% and the 97.7\% quantiles of the bootstrap distribution:  
+The bootstrap output gives the original model estimates (`Estimate`) and the analytic standard errors (`SE`) in the first two columns followed by the standard deviation of the bootstrap distribution for each parameter (`boot_SE`) and the 2.5\%, the 50\% and the 97.7\% quantiles of the bootstrap distribution:  
 
 ```{r}
-bootout$summary
+round(bootout$summary, 3)
 ```
 
-Plotting the the generalized least squares regression with $y^2$ on the y-axis to visualize the model fit and to visualize how the variance of $y$ is changing with $x$. 
+Using the customized plotting function `plot.rate_gls` we can investigate the model fit. Having $y^2$ on the y-axis, we can visualize how the variance of $y$ is changing with $x$. The estimates of $a$ and $b$ are printed in the plot. However because the plot is for illustrating the fit of the model to the data, the regression line in the plot reflects the slope and the intercept of the gls regression from which $a$ and $b$ are inferred. (The estimated intercept and slope of the gls regression are stored in `gls_mod$Beta`.)
 
-```{r, fig.height=5, fig.width=5, eval = TRUE}
-plot(gls_mod, scale = "VAR")
+```{r, fig.height=5, fig.width=5}
+plot(gls_mod, scale = "VAR", ylab = "y^2", xlab = "x*")
 ```
 
 Alternatively we can plot the regression with with $|y|$ on the y-axis to visualize how the standard deviation of $y$ is changing with $x$. This is the default of the plot function. 
 
-```{r, fig.height=5, fig.width=5, eval = TRUE}
-plot(gls_mod) # with the default: scale == "SD"
+```{r, fig.height=5, fig.width=5}
+plot(gls_mod, ylab = "|y|", xlab = "x*") # with the default: scale = "SD"
+```
+
+Note that the predictor $x^*$ in the plot is a transformed $x$. First, $x$ is mean centered. Second, each species $x^*$ is a weighted sum of the complete $x$-vector. This is because the variance of $y$ depends on the historical values of $x$ and not its extant value. The relationship between the two can be plotted by:
+
+```{r, fig.height=5, fig.width=5}
+plot(gls_mod$data$x_original, gls_mod$data$x, xlab = "x", ylab = "x*")
 ```
 
 # Predictor as geometric Brownian motion
-The second model is a model where the predictor $x$ evolves according to a geometric Brownian motion (gBM) process, which is equivalent to Brownian motions of the logarithm of $x$, while $y$ is following a Brownian motion with a variance that is linear in $x$. The evolutionary model is 
+The second model is a model where the predictor $x$ evolves according to a geometric Brownian motion (gBM) process, which is equivalent to Brownian motions of the natural logarithm of $x$, while $y$ is following a Brownian motion with a variance that is linear in $x$. The evolutionary model is 
 
 $$dy = \sqrt{a + bx} dW_1 $$
 
 $$dx = \frac{1}{2} \sigma^2 xdt + xdW_2 $$
-where $a$ is the evolutionary rate of $y$ at $x=0$, $b$ captures the influence of $x$ on the evoluitonary rate, and $dW$ is uncorrelated white noise. This model will break down when $a + bx$ becomes negative, and should be seen as an approximation that may be valid for a given range of $x$ values as spanned by the species to be used in the analysis. However, in contrast to the above model $x$ takes positive values only, which limits the problem of negative $a + bx$.   
+where $a$ is the evolutionary rate of $y$ at $x=0$, $b$ captures the influence of $x$ on the evolutionary rate, and $dW$ is uncorrelated white noise. This model will break down when $a + bx$ becomes negative, and should be seen as an approximation that may be valid for a given range of $x$ values as spanned by the species to be used in the analysis. However, in contrast to the above model $x$ takes positive values only, which limits the problem of negative $a + bx$.  
+  
+We can simulate data according to the process using:
 
-Using the function `simulate_rate` with `model = "predictor_gBM"` we can simulate data with different parameter values.
 ```{r}
 sim_data <- simulate_rate(tree, startv_x=1, sigma_x=1, a=1, b=0.1, model = "predictor_gBM")
-head(sim_data)
-```
- 
-We can now fit the gls model to these data. Note that the model centres $y$ and divides $x$ by their phylogenetically weighted means. 
-```{r}
-gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "predictor_gBM", silent = TRUE)
-gls_mod$param
 ```
 
-The a and b are parameters of the evolutonary model of y, and sigma(x)^2 is the suared rate parameter for the Brownian motion process of log x. The standard error of the estimates does not take into account the error in sigma(x)^2. Parametric boostrapping can be used to get 95% confidence intervals taking into account error in the entire process (assuming that the phylogenetic tree is true).
+In contrast to the above model, the starting value (root value) of $x$ is set to $1$ ($x$ can only take positive values in this model). In this simulation, the evolutionary rate of $y$ at the root is $\sqrt{1 + 0.1 \times 1} = 1.05$.  
 
-```{r}
-bootout <- rate_gls_boot(gls_mod, n = 10, silent = TRUE) 
+We can plot the evolutionary dynamics by:
+
+```{r, fig.width=7}
+par(mfrow = c(1,3))
+plot(sim_data) # defaults to response = "rate_y" 
+plot(sim_data, response = "y")
+plot(sim_data, response = "x")
 ```
 
-The bootstrap output gives the model estimates (Estimate) and the analytical standard errors (SE) in the first two columns followed by the standard deviation of the boostrap distribution for each parameter (boot_SE) and the 2.5\%, the 50\% and the 97.7\% quantiles of the bootstrap distribution:  
+The values at the tips:
 
 ```{r}
-bootout$summary
+d <- sim_data$tips
+head(d)
 ```
 
-Plotting the the generalized least squares regression with $y^2$ on the y-axis (i.e. on the variance scale): 
-```{r, fig.height=5, fig.width=5, eval = TRUE}
-plot(gls_mod, scale = "VAR")
+Fitting the gls model to these data (note that in this model divides $x$ by its phylogenetically weighted mean): 
+
+```{r}
+gls_mod <- rate_gls(x=d$x, y=d$y, species=d$species, tree, 
+                    model = "predictor_gBM", silent = TRUE)
+round(gls_mod$param, 3)
 ```
 
-Alternatively we can plot the regression with with $|y|$ on the y-axis (i.e. on the standard deviation scale). This is the default of the plot function. 
-```{r, fig.height=5, fig.width=5, eval = TRUE}
-plot(gls_mod) # with the default scale == "SD"
+As in the model above, `a` and `b` are parameters of the evolutionary model of $y$, but `sigma(x)^2` is the squared rate parameter for the Brownian motion process of log $x$. 
+
+Parametric bootstrapping to get 95% confidence intervals based on the complete process:
+
+```{r}
+bootout <- rate_gls_boot(gls_mod, n = 10, silent = TRUE)
+#NB! n must be much larger to provide reliable estimates
+round(bootout$summary, 3)
+```
+
+A plot of the generalized least squares regression fit with $y^2$ on the y-axis (i.e. on the variance scale): 
+```{r, fig.height=5, fig.width=5}
+plot(gls_mod, scale = "VAR", ylab = "y^2", xlab = "x*")
+```
+
+Alternatively with $|y|$ on the y-axis (i.e. on the standard deviation scale): 
+```{r, fig.height=5, fig.width=5}
+plot(gls_mod, ylab = "|y|", xlab = "x*") # with the default: scale = "SD"
+```
+
+And a plot of the transformed x-values (x*) on the x-values at the tips:
+
+```{r, fig.height=5, fig.width=5}
+plot(gls_mod$data$x_original, gls_mod$data$x, xlab = "x", ylab = "x*")
 ```
 
 # Predictor affects rates of recent evolution
-This model stands out from the two above, in that we focus on the recent the recent evolution. The species mean trait vector is modelled as $\mathbf{y} = \mathbf{y}_{macro} + \mathbf{y}_{micro}$, where $\mathbf{y}_{macro}$ is the result of a Brownian motion process and $\mathbf{y}_{micro}$ is a microevolutionary deviation. The variance of $\mathbf{y}_{micro}$ may depend on the predictor variable:
+This model stands out from the two above in that we focus on the recent evolutionary process. The species mean trait vector is modeled as $\mathbf{y} = \mathbf{y}_{macro} + \mathbf{y}_{micro}$, where $\mathbf{y}_{macro}$ is the result of a Brownian motion process and $\mathbf{y}_{micro}$ is a micro-evolutionary deviation. The variance of $\mathbf{y}_{micro}$ may depend on the predictor variable:
 $$\mathbf{y}_{micro} \sim N(\mathbf{0}, a\mathbf{I} + diag(b\mathbf{x}))$$
-where $a$ and $b$ are parameter, $\mathbf{I}$ is the identity matrix and $\mathbf{x}$ is a vector of species-specific predictor variables. The $diag$-function applied to a vector yields a diagonal matrix with the vector along the diagonal. The model assumes that only the recent 
-value of the predictor matters, hence it is treated as a fixed effect in the regression.
-
+where $a$ and $b$ are parameter, $\mathbf{I}$ is the identity matrix and $\mathbf{x}$ is a vector of species-specific predictor variables. The $diag$-function applied to a vector yields a diagonal matrix with the vector along the diagonal. The model assumes that only the recent value of the predictor matters, hence it is treated as a fixed effect in the regression.
 
 Using the function `simulate_rate` with `model = "recent_evol"` we can simulate data with different parameter values.
 ```{r}
 sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=1, b=1, sigma_y = 1, model = "recent_evol")
-head(sim_data)
 ```
 
-We can now fit the gls model to these data. Note that the model centres $x$ and $y$ on their respective phylogenetically weighted means. Note also that the `useLFO` argument can be set to `FALSE` to speed up the algorithm (particularely useful when bootstrapping). `useLFO` is an acronym for use "Leave Focal Out", that is, should the focal species be left out when calculating the  species' mean in the algorithm. The correct way is to use TRUE, but in practice it should have little effect. 
+Here, `sigma_x` is the sampling standard deviation of $x$ and `sigma_y` is the BM rate parameter of $\mathbf{y}_{macro}$. I this mode, we don't simulate data along the phylogeny, so there is no such dynamics to plot (in contrast with the two previous models). The values at the tips:
 
 ```{r}
-gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, model = "recent_evol", useLFO = FALSE, silent = TRUE)
-gls_mod$param
+d <- sim_data$tips
+head(d)
 ```
 
-The a and b are the parameters of the evolutonary model, and sigma(x)^2 is the variance of x. The standard errors of the estimates are approximate. Parametric boostrapping can be used to get 95% confidence intervals taking into account error in the entire process 
+We can now fit the gls model to these data. Note that the model centers $x$ and $y$ on their respective phylogenetically weighted means. Note also that the `useLFO` argument can be set to `FALSE` to speed up the algorithm (particularly useful when bootstrapping). `useLFO` is an acronym for use "Leave Focal Out", that is, should the focal species be left out when calculating the species' mean in the algorithm. The correct way is to use `TRUE`, but in practice it should have little effect. 
+
+```{r}
+gls_mod <- rate_gls(x=d$x, y=d$y, species=d$species, 
+                    tree, model = "recent_evol", useLFO = FALSE, silent = TRUE)
+round(gls_mod$param, 3)
+```
+
+Again, `a` and `b` are the parameters of the evolutionary model, but `sigma(x)^2` is the sample variance of $x$, and `sigma(y)^2` is the squared BM-rate parameter of $\mathbf{y}_{macro}$. The standard errors of the estimates are approximate. Parametric bootstrapping can be used to get 95% confidence intervals taking into account error in the entire process 
 
 ```{r}
 bootout <- rate_gls_boot(gls_mod, n = 10, useLFO = FALSE, silent = TRUE) 
+round(bootout$summary, 3)
 ```
 
-The bootstrap output gives the model estimates (Estimate) and the analytical standard errors (SE) in the first two columns followed by the standard deviation of the boostrap distribution for each parameter (boot_SE) and the 2.5\%, the 50\% and the 97.7\% quantiles of the bootstrap distribution:  
-
-```{r, eval = TRUE}
-bootout$summary
-```
+$x$ is considered as a fixed effect in the bootstrap simulations, and therefor `sigma(x)^2` is constant across all bootstrap replicates.   
 
 Plotting the the generalized least squares regression with $y_{micro}^2$ on the y-axis (i.e. on the variance scale). 
-```{r, fig.height=5, fig.width=5, eval = TRUE}
+```{r, fig.height=5, fig.width=5}
 plot(gls_mod, scale = "VAR")
 ```
 
 Alternatively we can plot the regression with with $|y_{micro}|$ on the y-axis (i.e. on the standard deviation scale). This is the default of the plot function. 
-```{r, fig.height=5, fig.width=5, eval = TRUE}
+```{r, fig.height=5, fig.width=5}
 plot(gls_mod) # with the default scale == "SD"
 ```
+
+Given this model it is also possible to calculate the macro-evolutionary predictions of y using the function `macro_pred`:
+```{r, fig.height=5, fig.width=5}
+a <- gls_mod$param["a",1]
+b <- gls_mod$param["b",1]
+V_micro <- a*diag(nrow(d)) + diag(b*d$x)
+diag(V_micro)[diag(V_micro) < 0] <- 0  # Negative variances are replaced by zero
+
+sigma2_y <- gls_mod$param["sigma(y)^2",1]
+V_macro <- ape::vcv(tree)*sigma2_y
+
+y_macro_pred <- macro_pred(d$y, V=V_macro+V_micro)
+
+plot(d$y, y_macro_pred, xlab = "y", ylab = "Macro-evolutionary predictions of y")
+```
+
+
 
 

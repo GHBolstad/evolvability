@@ -14,7 +14,7 @@
 #' averages of the evolvability parameters using \code{evolavbilityBetaMCMC} on a large number of random selection 
 #' gradients. The maximum and minimum evolvability, which are also the maximum and minimum respondability and conditional 
 #' evolvability, equals the largest and smallest eigenvalue of the G-matrix, respectively.
-#' @return An object of \code{class} \code{"evolvabilityMeansMCMC"}, which is a list with the following components:
+#' @return An object of \code{class} \code{'evolvabilityMeansMCMC'}, which is a list with the following components:
 #' \tabular{llllll}{
 #' \code{post.dist} \tab\tab\tab\tab The posterior distribution of the average evolvability parameters. \cr
 #' \code{post.medians} \tab\tab\tab\tab The posterior medians and HPD interval of the average evolvability parameters.
@@ -47,38 +47,37 @@
 #' @keywords array algebra
 #' @importFrom stats median var
 #' @export
-evolvabilityMeansMCMC = function(G_mcmc){
-  X = list()
-  X$post.dist = 
-    t(apply(G_mcmc, 1,
-            function(G){
-              G = matrix(G, ncol=sqrt(length(G)))
-              e_mean = mean(eigen(G)$values)
-              e_max = max(eigen(G)$values)
-              e_min = min(eigen(G)$values)
-              Heig = 1/mean(1/eigen(G)$values)
-              Ieig = var(eigen(G)$values)/(mean(eigen(G)$values))^2
-              Ieig2 =  var(eigen(G)$values^2)/(mean(eigen(G)$values^2))^2
-              Iinveig = var(1/eigen(G)$values)/(mean(1/eigen(G)$values))^2
-              k = nrow(G)
-              c_mean = Heig*(1+(2*Iinveig)/(k+2))
-              r_mean = sqrt(mean(eigen(G)$values^2))*(1-(Ieig2/(4*(k+2))))
-              a_mean = (Heig/e_mean)*(1+2*(Ieig+Iinveig-1+(Heig/e_mean)+2*Ieig*Iinveig/(k+2))/(k+2))
-              i_mean = 1-a_mean
-              c(e_mean = e_mean, e_min = e_min, e_max = e_max, 
-                r_mean = r_mean, c_mean = c_mean, a_mean = a_mean, i_mean = i_mean)}
-    ))
-  X$post.dist = coda::as.mcmc(X$post.dist)
-  X$post.medians = cbind(median = apply(X$post.dist, 2, median), coda::HPDinterval(X$post.dist))
-  X$call = match.call()
-  class(X) = "evolvabilityMeansMCMC"
-  X
+evolvabilityMeansMCMC = function(G_mcmc) {
+    X = list()
+    X$post.dist = t(apply(G_mcmc, 1, function(G) {
+        G = matrix(G, ncol = sqrt(length(G)))
+        e_mean = mean(eigen(G)$values)
+        e_max = max(eigen(G)$values)
+        e_min = min(eigen(G)$values)
+        Heig = 1/mean(1/eigen(G)$values)
+        Ieig = var(eigen(G)$values)/(mean(eigen(G)$values))^2
+        Ieig2 = var(eigen(G)$values^2)/(mean(eigen(G)$values^2))^2
+        Iinveig = var(1/eigen(G)$values)/(mean(1/eigen(G)$values))^2
+        k = nrow(G)
+        c_mean = Heig * (1 + (2 * Iinveig)/(k + 2))
+        r_mean = sqrt(mean(eigen(G)$values^2)) * (1 - (Ieig2/(4 * (k + 2))))
+        a_mean = (Heig/e_mean) * (1 + 2 * (Ieig + Iinveig - 1 + (Heig/e_mean) + 2 * 
+            Ieig * Iinveig/(k + 2))/(k + 2))
+        i_mean = 1 - a_mean
+        c(e_mean = e_mean, e_min = e_min, e_max = e_max, r_mean = r_mean, c_mean = c_mean, 
+            a_mean = a_mean, i_mean = i_mean)
+    }))
+    X$post.dist = coda::as.mcmc(X$post.dist)
+    X$post.medians = cbind(median = apply(X$post.dist, 2, median), coda::HPDinterval(X$post.dist))
+    X$call = match.call()
+    class(X) = "evolvabilityMeansMCMC"
+    X
 }
 
 #' @export
-print.evolvabilityMeansMCMC = function(x, ...){
-  cat("Call:\n")
-  print(x$call)
-  cat("\nPosterior means and 95% HPD intervals:\n")
-  print(x$post.medians)
-} 
+print.evolvabilityMeansMCMC = function(x, ...) {
+    cat("Call:\n")
+    print(x$call)
+    cat("\nPosterior means and 95% HPD intervals:\n")
+    print(x$post.medians)
+}

@@ -15,11 +15,11 @@
 #' # Two vectors of dimension 3:
 #' randomBeta(n = 2, k = 3)  
 #' @export
-randomBeta = function(n = 1, k = 2){
-  X = matrix(rnorm(n*k), ncol = n)
-  X = t(t(X)/sqrt(colSums(X^2)))
-  rownames(X) = paste("dim", 1:k, sep="")
-  X
+randomBeta = function(n = 1, k = 2) {
+    X = matrix(rnorm(n * k), ncol = n)
+    X = t(t(X)/sqrt(colSums(X^2)))
+    rownames(X) = paste("dim", 1:k, sep = "")
+    X
 }
 
 

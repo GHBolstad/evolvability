@@ -31,7 +31,7 @@ Almer_SE(
 \code{Almer_SE} Linear mixed model for response variables with uncertainty
 }
 \examples{
-# See the vignette "Phylogenetic mixed model".
+# See the vignette 'Phylogenetic mixed model'.
 }
 \author{
 Geir H. Bolstad

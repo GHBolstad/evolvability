@@ -12,6 +12,6 @@
 #'  meanStdG(G, means)
 #' @keywords array algebra
 #' @export
-meanStdG = function(G, means){
-  G/(means%*%t(means))
+meanStdG = function(G, means) {
+    G/(means %*% t(means))
 }

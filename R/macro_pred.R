@@ -25,24 +25,22 @@
 #' macro_pred(y, V)
 #' @importFrom Matrix Matrix solve diag
 #' @export
-macro_pred <- function(y, V, useLFO = TRUE){
-  if(useLFO){# here the mean is calculated leaving out the focal species
-    X <- matrix(rep(1, length(y)-1), ncol = 1) # design matrix
-    y_mean <- as.matrix(
-      apply(cbind(y), 1, 
-            function(x){
-              j <- which(c(y)==x)
-              GLS(y = y[-j], X = X, R = V[-j,-j], coef_only = TRUE)$coef
-            }
-            )
-      )
-  } else {# not leaving out the focal species
-    X <- matrix(rep(1, length(y)), ncol = 1)
-    y_mean <-  GLS(y = y, X = X, R = V, coef_only = TRUE)$coef
-  }
-  Vinv <- Matrix::solve(V, sparse = TRUE)
-  inv_dVinv <- Matrix::Matrix(diag(x = 1/Matrix::diag(Vinv)), sparse = TRUE)
-  return(y_mean + (V-inv_dVinv)%*%Vinv%*%(y-y_mean))
+macro_pred <- function(y, V, useLFO = TRUE) {
+    if (useLFO) {
+        # here the mean is calculated leaving out the focal species
+        X <- matrix(rep(1, length(y) - 1), ncol = 1)  # design matrix
+        y_mean <- as.matrix(apply(cbind(y), 1, function(x) {
+            j <- which(c(y) == x)
+            GLS(y = y[-j], X = X, R = V[-j, -j], coef_only = TRUE)$coef
+        }))
+    } else {
+        # not leaving out the focal species
+        X <- matrix(rep(1, length(y)), ncol = 1)
+        y_mean <- GLS(y = y, X = X, R = V, coef_only = TRUE)$coef
+    }
+    Vinv <- Matrix::solve(V, sparse = TRUE)
+    inv_dVinv <- Matrix::Matrix(diag(x = 1/Matrix::diag(Vinv)), sparse = TRUE)
+    return(y_mean + (V - inv_dVinv) %*% Vinv %*% (y - y_mean))
 }
 
 

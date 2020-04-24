@@ -15,15 +15,17 @@ rate_gls_sim(object, nsim = 10)
 A list of length \code{nsim} of simulated responses.
 }
 \description{
-\code{rate_gls_sim} responses from the models defined by an object of class \code{"rate_gls"}.
+\code{rate_gls_sim} responses from the models defined by an object of class
+\code{'rate_gls'}.
 }
 \details{
-\code{rate_gls_sim} simply passes the estimates in an object of class \code{"rate_gls"} to the 
-function \code{\link{simulate_rate}} for simulating responses of the evolutionary process. It is mainly intended for 
-internal use in \code{\link{rate_gls_boot}}.
+\code{rate_gls_sim} simply passes the estimates in an object of
+  class \code{'rate_gls'} to the function \code{\link{simulate_rate}} for
+  simulating responses of the evolutionary process. It is mainly intended for
+  internal use in \code{\link{rate_gls_boot}}.
 }
 \examples{
-# See the vignette "Analysing rates of evolution".
+# See the vignette 'Analyzing rates of evolution'.
 }
 \author{
 Geir H. Bolstad

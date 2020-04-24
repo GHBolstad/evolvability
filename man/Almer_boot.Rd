@@ -20,7 +20,7 @@ complete boostrap distribution.
 \code{Almer_boot} performs a parametric bootstrap from an \code{\link{Almer}} model fit
 }
 \examples{
-# See the vignette "Phylogenetic mixed model".
+# See the vignette 'Phylogenetic mixed model'.
 }
 \author{
 Geir H. Bolstad

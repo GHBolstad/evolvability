@@ -21,35 +21,34 @@
 #' @return \code{Almer} an object of class \code{\link{merMod}}.
 #' @author Geir H. Bolstad
 #' @examples
-#' # See the vignette "Phylogenetic mixed model".
+#' # See the vignette 'Phylogenetic mixed model'.
 #' @importFrom lme4 lFormula lmerControl mkLmerDevfun optimizeLmer mkMerMod
 #' @importFrom Matrix Matrix t chol
 #' @export
-Almer <- function(formula, data = NULL, A = list(), REML = TRUE, 
-                  control = lme4::lmerControl(check.nobs.vs.nlev  = "ignore", 
-                                        check.nobs.vs.rankZ = "ignore", 
-                                        check.nobs.vs.nRE   = "ignore"),
-                  start = NULL, verbose = 0L, weights = NULL, na.action = "na.omit",
-                  offset = NULL, contrasts = NULL, devFunOnly = FALSE, ...){
-  # combine this with function with Almer_SE
-  # add a phylogeny argument
-  # add a pedigree argument
-  mc <- match.call()
-  cholA <- lapply(A, function(x) chol(x))
-  mod <- lFormula(formula, data, REML=REML, weights=weights, na.action=na.action, 
-                  offset=offset, contrasts = contrasts, control=control, ...) 
-  for(i in seq_along(cholA)){
-    j <- match(names(cholA)[i], names(mod$reTrms$cnms))
-    if(length(j)>1) stop("an A matrix can only be associated with one random effect term")
-    ranef_order <- match(rownames(mod$reTrms$Ztlist[[j]]), rownames(cholA[[i]]))
-    mod$reTrms$Ztlist[[j]] <- cholA[[i]][ranef_order,ranef_order]%*%mod$reTrms$Ztlist[[j]]
-  }
-  mod$reTrms$Zt <- do.call(rbind, mod$reTrms$Ztlist)
-  devfun <- do.call(mkLmerDevfun, mod)
-  opt <- optimizeLmer(devfun, optimizer = "Nelder_Mead", ...)
-  mod_obj <- mkMerMod(environment(devfun), opt = opt, reTrms = mod$reTrms, fr = mod$fr, mc)
-  mod_obj@call <- evalq(mc)
-  return(mod_obj)
+Almer <- function(formula, data = NULL, A = list(), REML = TRUE, control = lme4::lmerControl(check.nobs.vs.nlev = "ignore", 
+    check.nobs.vs.rankZ = "ignore", check.nobs.vs.nRE = "ignore"), start = NULL, 
+    verbose = 0L, weights = NULL, na.action = "na.omit", offset = NULL, contrasts = NULL, 
+    devFunOnly = FALSE, ...) {
+    # combine this with function with Almer_SE add a phylogeny argument add a
+    # pedigree argument
+    mc <- match.call()
+    cholA <- lapply(A, function(x) chol(x))
+    mod <- lFormula(formula, data, REML = REML, weights = weights, na.action = na.action, 
+        offset = offset, contrasts = contrasts, control = control, ...)
+    for (i in seq_along(cholA)) {
+        j <- match(names(cholA)[i], names(mod$reTrms$cnms))
+        if (length(j) > 1) 
+            stop("an A matrix can only be associated with one random effect term")
+        ranef_order <- match(rownames(mod$reTrms$Ztlist[[j]]), rownames(cholA[[i]]))
+        mod$reTrms$Ztlist[[j]] <- cholA[[i]][ranef_order, ranef_order] %*% mod$reTrms$Ztlist[[j]]
+    }
+    mod$reTrms$Zt <- do.call(rbind, mod$reTrms$Ztlist)
+    devfun <- do.call(mkLmerDevfun, mod)
+    opt <- optimizeLmer(devfun, optimizer = "Nelder_Mead", ...)
+    mod_obj <- mkMerMod(environment(devfun), opt = opt, reTrms = mod$reTrms, fr = mod$fr, 
+        mc)
+    mod_obj@call <- evalq(mc)
+    return(mod_obj)
 }
 
 #' Linear mixed model for responsvariables with uncertainty
@@ -64,27 +63,26 @@ Almer <- function(formula, data = NULL, A = list(), REML = TRUE,
 #' @return \code{Almer_SE} returns an object of class \code{\link{merMod}}.
 #' @author Geir H. Bolstad
 #' @examples
-#' # See the vignette "Phylogenetic mixed model".
+#' # See the vignette 'Phylogenetic mixed model'.
 #' @importFrom lme4 VarCorr lmerControl
 #' @export
-Almer_SE <- function(formula, SE=NULL, maxiter = 100, 
-                     control = lme4::lmerControl(check.nobs.vs.nlev  = "ignore", 
-                                                 check.nobs.vs.rankZ = "ignore", 
-                                                 check.nobs.vs.nRE   = "ignore"),
-                     ...){
-  if(is.null(SE)) stop("No SE. Use Almer instead")
-  wgth <- 1/(1+SE^2)
-  mod <- Almer(formula, weights = wgth, control = control, ...)
-  for(i in 1:maxiter){
-    rvariance <- attr(lme4::VarCorr(mod), "sc")^2
-    wgth <- 1/(1+(SE^2)/rvariance)
-    mod <- Almer(formula, weights = wgth, ...)
-    if(abs(rvariance-attr(lme4::VarCorr(mod), "sc")^2)<1e-8) break()
-  }
-  if(i == maxiter){
-    warning("Optimization of weights reached maximum number of iterations.")
-  }
-  return(mod)
+Almer_SE <- function(formula, SE = NULL, maxiter = 100, control = lme4::lmerControl(check.nobs.vs.nlev = "ignore", 
+    check.nobs.vs.rankZ = "ignore", check.nobs.vs.nRE = "ignore"), ...) {
+    if (is.null(SE)) 
+        stop("No SE. Use Almer instead")
+    wgth <- 1/(1 + SE^2)
+    mod <- Almer(formula, weights = wgth, control = control, ...)
+    for (i in 1:maxiter) {
+        rvariance <- attr(lme4::VarCorr(mod), "sc")^2
+        wgth <- 1/(1 + (SE^2)/rvariance)
+        mod <- Almer(formula, weights = wgth, ...)
+        if (abs(rvariance - attr(lme4::VarCorr(mod), "sc")^2) < 1e-08) 
+            (break)()
+    }
+    if (i == maxiter) {
+        warning("Optimization of weights reached maximum number of iterations.")
+    }
+    return(mod)
 }
 
 #' Simulate responses from \code{\link{Almer}} fit
@@ -98,26 +96,28 @@ Almer_SE <- function(formula, SE=NULL, maxiter = 100,
 #' @return \code{Almer_sim} a matrix of simulated responses, columns correspond to each simulations.
 #' @author Geir H. Bolstad
 #' @examples
-#' # See the vignette "Phylogenetic mixed model".
+#' # See the vignette 'Phylogenetic mixed model'.
 #' @importFrom lme4 VarCorr ranef fixef 
 #' @importFrom Matrix t
 #' @importFrom stats rnorm residuals
 #' @export
-Almer_sim <- function(mod, nsim = 1000){
-  samp_size_ranef <- c(sapply(ranef(mod), function(x) length(x[,1])))
-  SD <- as.data.frame(VarCorr(mod))
-  ranef_samples_list <- list()
-  for(i in names(samp_size_ranef)){
-    rn <- rnorm(samp_size_ranef[i]*nsim, 0 , SD[SD$grp == i,"sdcor"])
-    ranef_samples_list[[i]] <- matrix(rn, ncol = nsim)
-  }
-  ranef_samples <- do.call(rbind, ranef_samples_list)
-  Ranef <- do.call(cbind, apply(ranef_samples, 2, function(x) t(mod@pp$Zt)%*%x))
-  Residuals <- rnorm(length(residuals(mod))*nsim, 0 , SD[SD$grp == "Residual","sdcor"])
-  Fixef <- matrix(rep(mod@pp$X%*%fixef(mod), nsim), ncol = nsim)
-  y <- Fixef + Ranef + Residuals
-  colnames(y) <- paste("Sim", 1:nsim, sep = "_")
-  return(y)
+Almer_sim <- function(mod, nsim = 1000) {
+    samp_size_ranef <- c(sapply(ranef(mod), function(x) length(x[, 1])))
+    SD <- as.data.frame(VarCorr(mod))
+    ranef_samples_list <- list()
+    for (i in names(samp_size_ranef)) {
+        rn <- rnorm(samp_size_ranef[i] * nsim, 0, SD[SD$grp == i, "sdcor"])
+        ranef_samples_list[[i]] <- matrix(rn, ncol = nsim)
+    }
+    ranef_samples <- do.call(rbind, ranef_samples_list)
+    Ranef <- do.call(cbind, apply(ranef_samples, 2, function(x) t(mod@pp$Zt) %*% 
+        x))
+    Residuals <- rnorm(length(residuals(mod)) * nsim, 0, SD[SD$grp == "Residual", 
+        "sdcor"])
+    Fixef <- matrix(rep(mod@pp$X %*% fixef(mod), nsim), ncol = nsim)
+    y <- Fixef + Ranef + Residuals
+    colnames(y) <- paste("Sim", 1:nsim, sep = "_")
+    return(y)
 }
 
 #' Parametric bootstrap on \code{\link{Almer}} model fit
@@ -131,37 +131,31 @@ Almer_sim <- function(mod, nsim = 1000){
 #' complete boostrap distribution.
 #' @author Geir H. Bolstad
 #' @examples
-#' # See the vignette "Phylogenetic mixed model".
+#' # See the vignette 'Phylogenetic mixed model'.
 #' @importFrom lme4 VarCorr ranef fixef 
 #' @importFrom Matrix t
 #' @importFrom stats update sd quantile 
 #' @export
-Almer_boot <- function(mod, nsim = 1000){
-  y <- Almer_sim(mod, nsim)
-  dt <- mod@frame
-  boot <- apply(y, 2, function(x){
-    dt$x86eb0d23_ebe6_4b37_bbc7_1d164b2f7c26 <- x
-    update(mod, x86eb0d23_ebe6_4b37_bbc7_1d164b2f7c26 ~ ., data = dt)
-  })
-  fixef_boot <- sapply(boot, lme4::fixef)
-  if(is.vector(fixef_boot)){
-    fixef_boot <- cbind(fixef_boot)
-  }else fixef_boot <- t(fixef_boot)
-  colnames(fixef_boot) <- names(lme4::fixef(boot[[1]]))
-  
-  VarCorr_list <- lapply(boot, function(x) as.data.frame(lme4::VarCorr(x))) 
-  vcov_boot <- t(sapply(VarCorr_list, function(x) x$vcov))
-  colnames(vcov_boot) <- VarCorr_list[[1]]$grp
-  list(
-    fixef = cbind(Mean = apply(fixef_boot, 2, mean), 
-                  "Std. Err." = apply(fixef_boot, 2, sd), 
-                  "2.5%" = apply(fixef_boot, 2, quantile, probs = 0.025),
-                  "97.5%" = apply(fixef_boot, 2, quantile, probs = 0.975)
-    ),
-    vcov = cbind(Mean = apply(vcov_boot, 2, mean), 
-                 "Std. Err." = apply(vcov_boot, 2, sd), 
-                 "2.5%" = apply(vcov_boot, 2, quantile, probs = 0.025),
-                 "97.5%" = apply(vcov_boot, 2, quantile, probs = 0.975)
-    ),
-    fixef_distribution = fixef_boot, vcov_distribution = vcov_boot)
+Almer_boot <- function(mod, nsim = 1000) {
+    y <- Almer_sim(mod, nsim)
+    dt <- mod@frame
+    boot <- apply(y, 2, function(x) {
+        dt$x86eb0d23_ebe6_4b37_bbc7_1d164b2f7c26 <- x
+        update(mod, x86eb0d23_ebe6_4b37_bbc7_1d164b2f7c26 ~ ., data = dt)
+    })
+    fixef_boot <- sapply(boot, lme4::fixef)
+    if (is.vector(fixef_boot)) {
+        fixef_boot <- cbind(fixef_boot)
+    } else fixef_boot <- t(fixef_boot)
+    colnames(fixef_boot) <- names(lme4::fixef(boot[[1]]))
+    
+    VarCorr_list <- lapply(boot, function(x) as.data.frame(lme4::VarCorr(x)))
+    vcov_boot <- t(sapply(VarCorr_list, function(x) x$vcov))
+    colnames(vcov_boot) <- VarCorr_list[[1]]$grp
+    list(fixef = cbind(Mean = apply(fixef_boot, 2, mean), `Std. Err.` = apply(fixef_boot, 
+        2, sd), `2.5%` = apply(fixef_boot, 2, quantile, probs = 0.025), `97.5%` = apply(fixef_boot, 
+        2, quantile, probs = 0.975)), vcov = cbind(Mean = apply(vcov_boot, 2, mean), 
+        `Std. Err.` = apply(vcov_boot, 2, sd), `2.5%` = apply(vcov_boot, 2, quantile, 
+            probs = 0.025), `97.5%` = apply(vcov_boot, 2, quantile, probs = 0.975)), 
+        fixef_distribution = fixef_boot, vcov_distribution = vcov_boot)
 }

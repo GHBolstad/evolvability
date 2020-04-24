@@ -11,21 +11,27 @@ rate_gls_boot(object, n = 10, useLFO = TRUE, silent = FALSE)
 
 \item{n}{The number of bootsrap samples}
 
-\item{useLFO}{logical: when calulating the mean vector of the traits in the "recent_evol" analysis, should the focal species
-be left out when calculating the corresponding species' mean. The correct way is to use TRUE, but in practice it has little effect and FALSE 
-will speed up the model fit (particularely useful when bootstrapping).}
+\item{useLFO}{logical: when calulating the mean vector of the traits in the
+'recent_evol' analysis, should the focal species be left out when
+calculating the corresponding species' mean. The correct way is to use
+TRUE, but in practice it has little effect and FALSE will speed up the
+model fit (particularely useful when bootstrapping).}
 
-\item{silent}{logical: whether or not the bootstrap iterations should be printed.}
+\item{silent}{logical: whether or not the bootstrap iterations should be
+printed.}
 }
 \value{
-A list where the first slot is a table with the original estimates and SE from the GLS fit in the two first columns
-followed by the bootstrap estiamte of the SE and the 2.5\%, 50\% and 97.5\% quantiles of the boostrap distribution. The second slot is the complete distribution.
+A list where the first slot is a table with the original estimates
+  and SE from the GLS fit in the two first columns followed by the bootstrap
+  estiamte of the SE and the 2.5\%, 50\% and 97.5\% quantiles of the boostrap
+  distribution. The second slot is the complete distribution.
 }
 \description{
-\code{rate_gls_boot} performes a parametric bootstrap of a \code{\link{rate_gls}} model fit.
+\code{rate_gls_boot} performes a parametric bootstrap of a
+\code{\link{rate_gls}} model fit.
 }
 \examples{
-# See the vignette "Analysing rates of evolution".
+# See the vignette 'Analyzing rates of evolution'.
 }
 \author{
 Geir H. Bolstad

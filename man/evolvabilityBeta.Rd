@@ -14,7 +14,7 @@ evolvabilityBeta(G, Beta, means = 1)
 \item{means}{An optional vector of trait means (for internal mean standardization).}
 }
 \value{
-An object of \code{class} \code{"evolvabilityBeta"}, which is a list with the following components:
+An object of \code{class} \code{'evolvabilityBeta'}, which is a list with the following components:
 \tabular{llllll}{
 \code{Beta} \tab\tab\tab\tab The matrix of selection gradients. \cr
 \code{e} \tab\tab\tab\tab The evolvability of each selection gradient. \cr

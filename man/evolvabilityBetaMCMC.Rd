@@ -17,7 +17,7 @@ default on this form.}
 \item{post.dist}{logical: should the posterior distribution of the evolvability parameters be saved.}
 }
 \value{
-An object of \code{class} \code{"evolvabilityBetaMCMC"}, which is a list with the following components:
+An object of \code{class} \code{'evolvabilityBetaMCMC'}, which is a list with the following components:
 \tabular{llllll}{
 \code{eB} \tab\tab\tab\tab The posterior median and highest posterior density interval of evolvability for each selection gradient. \cr
 \code{rB} \tab\tab\tab\tab The posterior median and highest posterior density interval of respondability for each selection gradient. \cr

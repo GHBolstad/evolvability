@@ -22,7 +22,7 @@ This function is only included as the \code{\link{simulate.merMod}} function did
 number of random effect levels equal the number of observations.
 }
 \examples{
-# See the vignette "Phylogenetic mixed model".
+# See the vignette 'Phylogenetic mixed model'.
 }
 \author{
 Geir H. Bolstad

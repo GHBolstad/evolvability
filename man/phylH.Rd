@@ -7,7 +7,7 @@
 phylH(mod, numerator, residual = "Residual", nsim = 10)
 }
 \arguments{
-\item{mod}{An object of class \code{"merMod"}}
+\item{mod}{An object of class \code{'merMod'}}
 
 \item{numerator}{The name of phylogenetic effect level}
 
@@ -22,7 +22,7 @@ phylH(mod, numerator, residual = "Residual", nsim = 10)
 \code{phylH} calculates the phylogenetic heritability from an \code{Almer} model fit and provides associated uncertainty using parameteric bootstrapping.
 }
 \examples{
-# See the vignette "Phylogenetic mixed model".
+# See the vignette 'Phylogenetic mixed model'.
 }
 \author{
 Geir H. Bolstad

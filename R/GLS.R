@@ -22,28 +22,25 @@
 #' @author Geir H. Bolstad
 #' @importFrom stats lm.fit
 #' @export
-GLS <- function(y, X, R=NULL, L = NULL, coef_only = FALSE){
-  if(is.null(L)) L <- t(chol(R))
-  if(coef_only){
-    obj <- lm.fit(forwardsolve(L, X), forwardsolve(L, y))
-    GSSE <- sum(obj$residuals^2)    # generalized residual sum of squares
-    output <- list(coef = obj$coef, GSSE = GSSE)
-  }else{
-    X <- forwardsolve(L, X)
-    obj <- lm.fit(X, forwardsolve(L, y))
-    GSSE <- sum(obj$residuals^2)    # generalized residual sum of squares
-    sigma2 <- GSSE/obj$df.residual  # generalized residual variance
-    error_var <- c(sigma2)*solve(t(X)%*%X) # error variance matrix
-    X_int <- forwardsolve(L, matrix(rep(1, length(y)), ncol = 1)) # design matrix with only intercet
-    GSST <- sum(lm.fit(X_int, forwardsolve(L, y))$residuals^2)    # generalized total sum of squares (intercept only model)
-    output <- list(coef = cbind(Estimate = obj$coefficients, SE = sqrt(diag(error_var))),
-                R2 = 1-GSSE/GSST,
-                sigma2 = sigma2,
-                GSSE = GSSE,
-                coef_vcov = error_var
-                )
-  }
-  return(output)
+GLS <- function(y, X, R = NULL, L = NULL, coef_only = FALSE) {
+    if (is.null(L)) 
+        L <- t(chol(R))
+    if (coef_only) {
+        obj <- lm.fit(forwardsolve(L, X), forwardsolve(L, y))
+        GSSE <- sum(obj$residuals^2)  # generalized residual sum of squares
+        output <- list(coef = obj$coef, GSSE = GSSE)
+    } else {
+        X <- forwardsolve(L, X)
+        obj <- lm.fit(X, forwardsolve(L, y))
+        GSSE <- sum(obj$residuals^2)  # generalized residual sum of squares
+        sigma2 <- GSSE/obj$df.residual  # generalized residual variance
+        error_var <- c(sigma2) * solve(t(X) %*% X)  # error variance matrix
+        X_int <- forwardsolve(L, matrix(rep(1, length(y)), ncol = 1))  # design matrix with only intercet
+        GSST <- sum(lm.fit(X_int, forwardsolve(L, y))$residuals^2)  # generalized total sum of squares (intercept only model)
+        output <- list(coef = cbind(Estimate = obj$coefficients, SE = sqrt(diag(error_var))), 
+            R2 = 1 - GSSE/GSST, sigma2 = sigma2, GSSE = GSSE, coef_vcov = error_var)
+    }
+    return(output)
 }
 
 
