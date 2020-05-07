@@ -16,9 +16,11 @@ simulate_rate(
 )
 }
 \arguments{
-\item{tree}{A \code{\link{phylo}} object. Must be ultrametric and scaled to unit length.}
+\item{tree}{A \code{\link{phylo}} object. Must be ultrametric and scaled to
+unit length.}
 
-\item{startv_x}{The starting value for x (usually 0 for 'predictor_BM' and 'recent_evol', and 1 for 'predictor_gBM').}
+\item{startv_x}{The starting value for x (usually 0 for 'predictor_BM' and
+'recent_evol', and 1 for 'predictor_gBM').}
 
 \item{sigma_x}{The evolutionary rate of x.}
 
@@ -26,32 +28,71 @@ simulate_rate(
 
 \item{b}{A parameter of the evolutionary rate of y.}
 
-\item{sigma_y}{The evolutionary rate for the macroevolution of y (Brownian motion process) used in the 'recent_evolution' model.}
+\item{sigma_y}{The evolutionary rate for the macroevolution of y (Brownian
+motion process) used in the 'recent_evolution' model.}
 
-\item{x}{optional fixed values of x (only for the 'recent_evol' model), 
-must equal number of tips in the pylogeny, must correspond to the order of the tip labels.}
+\item{x}{optional fixed values of x (only for the 'recent_evol' model), must
+equal number of tips in the phylogeny, must correspond to the order of the
+tip labels.}
 
-\item{model}{either Brownaian motion model of x 'predictor_BM', 
-geometric Brownian motion model of x 'predictor_gBM', or 'recent_evol'.}
+\item{model}{either Brownian motion model of x 'predictor_BM', geometric
+Brownian motion model of x 'predictor_gBM', or 'recent_evol'.}
 }
 \value{
-\code{simulate_rate} returns list where the first slot is a data frame of x and y values for the tips, and the second slot 
-is a list with the complete dynamics (not given for model = 'recent_evol')
+\code{simulate_rate} returns list where the first slot is a data
+  frame of x and y values for the tips, and the second slot is a list with
+  the output of the complete dynamics (not given for model = 'recent_evol').
 }
 \description{
-\code{simulate_rate} Simulates three different evolutionary rates models. In the two first, 
-'predictor_BM' and 'predictor_gBM', the evolution of y follows a Brownian motion 
-with variance linear in x, while the evolution of x either follows a Brownian 
-motion or a geometric Brownian motion, respectively. In the third model, 'recent_evol', the 
-residuals of the macroevolutionary predictions of y have variance linear in x.
+\code{simulate_rate} Simulates three different evolutionary rates models. In
+the two first, 'predictor_BM' and 'predictor_gBM', the evolution of y follows
+a Brownian motion with variance linear in x, while the evolution of x either
+follows a Brownian motion or a geometric Brownian motion, respectively. In
+the third model, 'recent_evol', the residuals of the macroevolutionary
+predictions of y have variance linear in x.
 }
 \details{
-See the vignette 'Analysing rates of evolution' for examples of use. A large part of parameter space will cause negative 
-rates for y (i.e. negative a+bx). In these cases the rates are set to 0. A warning message is given if the number of such instances 
-is larger than 0.01%. It is possible to set `a='scaleme'`, if this chosen then `a` will be given the lowest possible where a+bx>0.
+See the vignette 'Analyzing rates of evolution' for an explanation
+  of the evolutionary models. The data of the tips can be analyzed with the
+  function \code{\link{rate_gls}}. Note that a large part of parameter space
+  will cause negative rates for y (i.e. negative a+bx). In these cases the
+  rates are set to 0. A warning message is given if the number of such
+  instances is larger than 0.01\%. For model 1 and 2, it is possible to set
+  `a='scaleme'`, if this chosen then `a` will be given the lowest possible
+  where a+bx>0.
 }
 \examples{
-# See the vignette 'Analysing rates of evolution'.
+# Also see the vignette 'Analyzing rates of evolution'.
+
+\dontrun{
+# Generating a tree with 50 species
+set.seed(102)
+tree <- ape::rtree(n = 50)
+tree <- ape::chronopl(tree, lambda = 1, age.min = 1)
+
+### model = 'predictor_BM' ###
+sim_data <- simulate_rate(tree, startv_x=0, sigma_x=0.25, a=1, b=1, model = 'predictor_BM')
+head(sim_data$tips)
+par(mfrow = c(1,3))
+plot(sim_data)  
+plot(sim_data, response = "y") 
+plot(sim_data, response = "x") 
+par(mfrow = c(1,1))
+
+### model = 'predictor_gBM' ###
+sim_data <- simulate_rate(tree, startv_x=1, sigma_x=1, a=1, b=0.1, model = 'predictor_gBM')
+head(sim_data$tips)
+par(mfrow = c(1,3))
+plot(sim_data)  
+plot(sim_data, response = "y") 
+plot(sim_data, response = "x") 
+par(mfrow = c(1,1))
+
+### model = 'recent_evol' ###
+sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=1, b=1, sigma_y = 1, 
+model = 'recent_evol')
+head(sim_data$tips)
+}
 }
 \author{
 Geir H. Bolstad
