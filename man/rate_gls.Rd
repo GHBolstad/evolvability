@@ -21,7 +21,7 @@ rate_gls(
 \code{y} and tips on the tree.}
 
 \item{y}{The trait values of response variable. Note that the algorithm mean
-centres y.}
+centers y.}
 
 \item{species}{A vector with the names of the species, must be equal in
 length and in the same order as \code{x} and \code{y}.}
@@ -90,8 +90,8 @@ before fitting these models.
   squared mean-centred \code{y}-values for the 'predictor_BM' and
   'predictor_gBM' models and squared deviation from the evolutionary
   predictions (see \code{\link{macro_pred}}) for the 'recent_evol' model.
-  Note that the algorithm mean centres \code{x} in the 'predictor_BM' and
-  'recent_evol' analyses, while it mean stadardized \code{x} (i.e. divided
+  Note that the algorithm mean centers \code{x} in the 'predictor_BM' and
+  'recent_evol' analyses, while it mean standardized \code{x} (i.e. divided
   \code{x} by its mean) in the 'predictor_gBM'. The evolutionary parameters a
   and b are inferred from the intercept and the slope of the GLS fit. Again,
   it is highly recommended to read Hansen et al. (in review) and the vignette
@@ -111,8 +111,8 @@ tree <- ape::chronopl(tree, lambda = 1, age.min = 1)
 
 ### model = 'predictor_BM' ###
 sim_data <- simulate_rate(tree, startv_x=0, sigma_x=0.25, a=1, b=1, model = 'predictor_BM')
-head(sim_data)
-gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, 
+head(sim_data$tips)
+gls_mod <- rate_gls(x=sim_data$tips$x, y=sim_data$tips$y, species=sim_data$tips$species, tree, 
 model = 'predictor_BM')
 gls_mod$param
 par(mfrow = c(1,2))
@@ -125,11 +125,10 @@ par(mfrow = c(1,1))
 # (this takes some minutes)
 gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000)
 gls_mod_boot$summary
-
 ### model = 'predictor_gBM' ###
 sim_data <- simulate_rate(tree, startv_x=1, sigma_x=1, a=1, b=0.1, model = 'predictor_gBM')
-head(sim_data)
-gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, 
+head(sim_data$tips)
+gls_mod <- rate_gls(x=sim_data$tips$x, y=sim_data$tips$y, species=sim_data$tips$species, tree, 
 model = 'predictor_gBM')
 gls_mod$param
 plot(gls_mod)
@@ -138,18 +137,12 @@ plot(gls_mod, scale = 'SD')  # Response shown on the standard deviation scale (d
 plot(gls_mod, scale = 'VAR') # Response shown on the variance scale, where the regression 
 # is linear.
 par(mfrow = c(1,1))
-
-# Parametric bootstrapping to get the uncertainty of the parameter estimates taking the 
-# complete process into account.
-# (this takes some minutes)
 gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000)
 gls_mod_boot$summary
-
-### model = 'recent_evol' ###
 sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=1, b=1, sigma_y = 1, 
 model = 'recent_evol')
-head(sim_data)
-gls_mod <- rate_gls(x=sim_data$x, y=sim_data$y, species=sim_data$species, tree, 
+head(sim_data$tips)
+gls_mod <- rate_gls(x=sim_data$tips$x, y=sim_data$tips$y, species=sim_data$tips$species, tree, 
 model = 'recent_evol', useLFO = FALSE)
 # useLFO = TRUE is much slower, and although more correct it should give very similar estimates
 # in most situations.
@@ -166,7 +159,7 @@ par(mfrow = c(1,1))
 # (this takes a long time)
 gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000, useLFO = FALSE)
 gls_mod_boot$summary
-#'}
+}
 }
 \references{
 Hansen T. F., Bolstad G. H., Tsuboi M. Analyzing disparity and
