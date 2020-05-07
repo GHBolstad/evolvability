@@ -14,6 +14,7 @@
   xlab = "x",
   ylab = "Response",
   col = "grey",
+  cex.legend = 1,
   ...
 )
 }
@@ -23,7 +24,8 @@
 \item{scale}{The scale of the y-axis, either the variance scale ('VAR'), that
 is y^2, or the standard deviation scale ('SD'), that is abs(y).}
 
-\item{print_param}{logical: if parameter estimates should be printed or not.}
+\item{print_param}{logical: if parameter estimates should be printed in the
+plot or not.}
 
 \item{digits_param}{The number of significant digits displayed for the
 parameters in the plots.}
@@ -38,6 +40,9 @@ r-squared.}
 \item{ylab}{as in \code{\link{plot}}.}
 
 \item{col}{as in \code{\link{plot}}.}
+
+\item{cex.legend}{A character expansion factor relative to current par("cex")
+for the printed parameters.}
 
 \item{...}{Additional arguments passed to \code{\link{plot}}.}
 }
