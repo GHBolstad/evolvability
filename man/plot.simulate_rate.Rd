@@ -24,7 +24,7 @@
 \item{...}{Additional arguments passed to \code{\link{plot}}.}
 }
 \value{
-\code{plot} A plot of the evolution of the traits x or y, or the evoluiton of the evolutionary rate of y (i.e. \eqn{\sqrt{a + bx}}) in the simulation.
+\code{plot} A plot of the evolution of the traits x or y, or the evolution of the evolutionary rate of y (i.e. \eqn{\sqrt{a + bx}}) in the simulation.
 }
 \description{
 \code{plot} method for class \code{'simulate_rate'}.
@@ -33,7 +33,7 @@
 No plot is returned if model = 'recent_evol'.
 }
 \examples{
-# See the vignette 'Analysing rates of evolution'.
+# See the vignette 'Analyzing rates of evolution'.
 }
 \author{
 Geir H. Bolstad
