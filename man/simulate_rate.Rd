@@ -39,9 +39,13 @@ tip labels.}
 Brownian motion model of x 'predictor_gBM', or 'recent_evol'.}
 }
 \value{
-\code{simulate_rate} returns list where the first slot is a data
-  frame of x and y values for the tips, and the second slot is a list with
-  the output of the complete dynamics (not given for model = 'recent_evol').
+An object of \code{class} \code{'simulate_rate'}, which is a list
+  with the following components: \tabular{llllll}{ \code{tips}
+  \tab\tab\tab\tab A data frame of x and y values for the tips. \cr
+  \code{percent_negative_roots} \tab\tab\tab\tab The percent of iterations
+  with negative roots in the rates of y (not given for model =
+  'recent_evol'). \cr \code{compl_dynamics}  \tab\tab\tab\tab A list with the
+  output of the complete dynamics (not given for model = 'recent_evol'). }
 }
 \description{
 \code{simulate_rate} Simulates three different evolutionary rates models. In
@@ -55,11 +59,11 @@ predictions of y have variance linear in x.
 See the vignette 'Analyzing rates of evolution' for an explanation
   of the evolutionary models. The data of the tips can be analyzed with the
   function \code{\link{rate_gls}}. Note that a large part of parameter space
-  will cause negative rates for y (i.e. negative a+bx). In these cases the
-  rates are set to 0. A warning message is given if the number of such
-  instances is larger than 0.01\%. For model 1 and 2, it is possible to set
-  `a='scaleme'`, if this chosen then `a` will be given the lowest possible
-  where a+bx>0.
+  will cause negative roots in the rates of y (i.e. negative a+bx). In these
+  cases the rates are set to 0. A warning message is given if the number of
+  such instances is larger than 0.1\%. For model 1 and 2, it is possible to
+  set `a='scaleme'`, if this chosen then `a` will be given the lowest
+  possible where a+bx>0.
 }
 \examples{
 # Also see the vignette 'Analyzing rates of evolution'.
@@ -74,22 +78,22 @@ tree <- ape::chronopl(tree, lambda = 1, age.min = 1)
 sim_data <- simulate_rate(tree, startv_x=0, sigma_x=0.25, a=1, b=1, model = 'predictor_BM')
 head(sim_data$tips)
 par(mfrow = c(1,3))
-plot(sim_data)  
-plot(sim_data, response = "y") 
-plot(sim_data, response = "x") 
+plot(sim_data)
+plot(sim_data, response = "y")
+plot(sim_data, response = "x")
 par(mfrow = c(1,1))
 
 ### model = 'predictor_gBM' ###
 sim_data <- simulate_rate(tree, startv_x=1, sigma_x=1, a=1, b=0.1, model = 'predictor_gBM')
 head(sim_data$tips)
 par(mfrow = c(1,3))
-plot(sim_data)  
-plot(sim_data, response = "y") 
-plot(sim_data, response = "x") 
+plot(sim_data)
+plot(sim_data, response = "y")
+plot(sim_data, response = "x")
 par(mfrow = c(1,1))
 
 ### model = 'recent_evol' ###
-sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=1, b=1, sigma_y = 1, 
+sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=1, b=1, sigma_y = 1,
 model = 'recent_evol')
 head(sim_data$tips)
 }

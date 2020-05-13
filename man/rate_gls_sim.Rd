@@ -12,7 +12,13 @@ rate_gls_sim(object, nsim = 10)
 \item{nsim}{The number of simulations.}
 }
 \value{
-A list of length \code{nsim} of simulated responses.
+An object of \code{class} \code{'simulate_rate'}, which is a list
+  with the following components: \tabular{llllll}{ \code{tips}
+  \tab\tab\tab\tab A data frame of x and y values for the tips. \cr
+  \code{percent_negative_roots} \tab\tab\tab\tab The percent of iterations
+  with negative roots in the rates of y (not given for model =
+  'recent_evol'). \cr \code{compl_dynamics}  \tab\tab\tab\tab A list with the
+  output of the complete dynamics (not given for model = 'recent_evol'). }
 }
 \description{
 \code{rate_gls_sim} responses from the models defined by an object of class

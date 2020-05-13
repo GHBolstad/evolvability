@@ -442,7 +442,13 @@ plot.rate_gls = function(x, scale = "SD", print_param = TRUE, digits_param = 2, 
 #'   class \code{'rate_gls'} to the function \code{\link{simulate_rate}} for
 #'   simulating responses of the evolutionary process. It is mainly intended for
 #'   internal use in \code{\link{rate_gls_boot}}.
-#' @return A list of length \code{nsim} of simulated responses.
+#' @return An object of \code{class} \code{'simulate_rate'}, which is a list
+#'   with the following components: \tabular{llllll}{ \code{tips}
+#'   \tab\tab\tab\tab A data frame of x and y values for the tips. \cr
+#'   \code{percent_negative_roots} \tab\tab\tab\tab The percent of iterations
+#'   with negative roots in the rates of y (not given for model =
+#'   'recent_evol'). \cr \code{compl_dynamics}  \tab\tab\tab\tab A list with the
+#'   output of the complete dynamics (not given for model = 'recent_evol'). }
 #' @author Geir H. Bolstad
 #' @examples
 #' # See the vignette 'Analyzing rates of evolution'.
@@ -455,7 +461,7 @@ rate_gls_sim <- function(object, nsim = 10) {
             a = object$param["a", 1], b = object$param["b", 1], x = ifelse(rep(object$model == 
                 "recent_evol", length(object$data$x)), c(object$data$x), NULL), sigma_y = ifelse(object$model == 
                 "recent_evol", sqrt(object$param["sigma(y)^2", 1]), NULL), model = object$model), 
-            silent = TRUE)$tips
+            silent = TRUE)
     }
     return(sim_out)
 }
@@ -491,20 +497,25 @@ rate_gls_boot <- function(object, n = 10, useLFO = TRUE, silent = FALSE) {
         boot_distribution <- matrix(NA, ncol = 4, nrow = n)
         colnames(boot_distribution) <- c("a", "b", "s2", "Rsquared")
     }
+    perc_neg <- c()
     for (i in 1:n) {
         sim_out <- rate_gls_sim(object, nsim = 1)
-        mod <- rate_gls(x = sim_out[[1]][, "x"], y = sim_out[[1]][, "y"], species = sim_out[[1]][, 
+        mod <- rate_gls(x = sim_out[[1]][[1]][, "x"], y = sim_out[[1]][[1]][, "y"], species = sim_out[[1]][[1]][, 
             "species"], tree = object$tree, startv = list(object$param["a", 1], object$param["b", 
             1]), model = object$model, silent = TRUE, useLFO = useLFO)
         boot_distribution[i, ] <- c(mod$param[, 1], mod$Rsquared)
+        perc_neg[i] <- sim_out[[1]][[2]]
         if (mod$convergence != "Convergence") 
             boot_distribution[i, ] <- NA
         if (!silent) 
             print(paste("Bootstrap iteration", i))
     }
-    return(list(summary = cbind(rbind(object$param, Rsquared = c(object$Rsquared, 
-        NA)), boot_mean = apply(boot_distribution, 2, mean, na.rm = TRUE), boot_SE = apply(boot_distribution, 
-        2, function(x) sqrt(var(x, na.rm = TRUE))), t(apply(boot_distribution, 2, 
-        function(x) quantile(x, probs = c(0.025, 0.975), na.rm = TRUE)))), boot_distribution = boot_distribution))
+    return(list(
+        summary = cbind(
+            rbind(object$param, Rsquared = c(object$Rsquared,NA)), 
+            boot_mean = apply(boot_distribution, 2, mean, na.rm = TRUE), 
+        boot_SE = apply(boot_distribution,  2, function(x) sqrt(var(x, na.rm = TRUE))), 
+        t(apply(boot_distribution, 2, function(x) quantile(x, probs = c(0.025, 0.975), na.rm = TRUE)))), 
+        boot_distribution = cbind(boot_distribution, percent_negative_roots = perc_neg)))
 }
 

@@ -24,44 +24,48 @@
 #' @details See the vignette 'Analyzing rates of evolution' for an explanation
 #'   of the evolutionary models. The data of the tips can be analyzed with the
 #'   function \code{\link{rate_gls}}. Note that a large part of parameter space
-#'   will cause negative rates for y (i.e. negative a+bx). In these cases the
-#'   rates are set to 0. A warning message is given if the number of such
-#'   instances is larger than 0.01\%. For model 1 and 2, it is possible to set
-#'   `a='scaleme'`, if this chosen then `a` will be given the lowest possible
-#'   where a+bx>0.
-#' @return \code{simulate_rate} returns list where the first slot is a data
-#'   frame of x and y values for the tips, and the second slot is a list with
-#'   the output of the complete dynamics (not given for model = 'recent_evol').
+#'   will cause negative roots in the rates of y (i.e. negative a+bx). In these
+#'   cases the rates are set to 0. A warning message is given if the number of
+#'   such instances is larger than 0.1\%. For model 1 and 2, it is possible to
+#'   set `a='scaleme'`, if this chosen then `a` will be given the lowest
+#'   possible where a+bx>0.
+#' @return An object of \code{class} \code{'simulate_rate'}, which is a list
+#'   with the following components: \tabular{llllll}{ \code{tips}
+#'   \tab\tab\tab\tab A data frame of x and y values for the tips. \cr
+#'   \code{percent_negative_roots} \tab\tab\tab\tab The percent of iterations
+#'   with negative roots in the rates of y (not given for model =
+#'   'recent_evol'). \cr \code{compl_dynamics}  \tab\tab\tab\tab A list with the
+#'   output of the complete dynamics (not given for model = 'recent_evol'). }
 #' @author Geir H. Bolstad
 #' @examples
 #' # Also see the vignette 'Analyzing rates of evolution'.
-#' 
+#'
 #' \dontrun{
 #' # Generating a tree with 50 species
 #' set.seed(102)
 #' tree <- ape::rtree(n = 50)
 #' tree <- ape::chronopl(tree, lambda = 1, age.min = 1)
-#' 
+#'
 #' ### model = 'predictor_BM' ###
 #' sim_data <- simulate_rate(tree, startv_x=0, sigma_x=0.25, a=1, b=1, model = 'predictor_BM')
 #' head(sim_data$tips)
 #' par(mfrow = c(1,3))
-#' plot(sim_data)  
-#' plot(sim_data, response = "y") 
-#' plot(sim_data, response = "x") 
+#' plot(sim_data)
+#' plot(sim_data, response = "y")
+#' plot(sim_data, response = "x")
 #' par(mfrow = c(1,1))
-#' 
+#'
 #' ### model = 'predictor_gBM' ###
 #' sim_data <- simulate_rate(tree, startv_x=1, sigma_x=1, a=1, b=0.1, model = 'predictor_gBM')
 #' head(sim_data$tips)
 #' par(mfrow = c(1,3))
-#' plot(sim_data)  
-#' plot(sim_data, response = "y") 
-#' plot(sim_data, response = "x") 
+#' plot(sim_data)
+#' plot(sim_data, response = "y")
+#' plot(sim_data, response = "x")
 #' par(mfrow = c(1,1))
-#' 
+#'
 #' ### model = 'recent_evol' ###
-#' sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=1, b=1, sigma_y = 1, 
+#' sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=1, b=1, sigma_y = 1,
 #' model = 'recent_evol')
 #' head(sim_data$tips)
 #' }
@@ -114,7 +118,7 @@ simulate_rate <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, sigma_y =
         if (model == "predictor_gBM") 
             percent_negative <- length(which((a + b * exp(unlist(x_evo))) < 0))/length(exp(unlist(x_evo))) * 
                 100
-        if (percent_negative > 0.01) 
+        if (percent_negative > 0.1) 
             warning(paste("Number of negative a + bx is ", round(percent_negative, 
                 1), "%. The term a + bx is set to zero for these values of x", sep = ""))
         
@@ -167,12 +171,14 @@ simulate_rate <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, sigma_y =
         # the variance matrix of y. Change a, b or x.')
         y <- t(chol(V)) %*% rnorm(n)
         DATA <- data.frame(species = tree$tip.label, x = x, y = y)
+        percent_negative <- NULL
         timesteps <- NULL
         x_evo <- NULL
         y_evo <- NULL
         rate_y <- NULL
     }
-    simout <- list(tips = DATA, compl_dynamics = list(timesteps = timesteps, x_evo = x_evo, 
+    simout <- list(tips = DATA, percent_negative_roots = percent_negative,
+                   compl_dynamics = list(timesteps = timesteps, x_evo = x_evo, 
         y_evo = y_evo, rate_y = rate_y))
     class(simout) <- "simulate_rate"
     return(simout)
