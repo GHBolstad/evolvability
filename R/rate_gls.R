@@ -234,19 +234,24 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
         b_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[2, 2])
     }
     if (model == "recent_evol") {
+        a_func <- function(Beta){
+            (Beta[1,1] - sigma2_y*mean(diag(solve(dVinv%*%V%*%solve(A, V%*%dVinv)))))/
+                mean(diag(solve(dVinv%*%V%*%V%*%dVinv)))
+        } 
         b_func <- function(Beta) Beta[2, 1]
         R_func <- function(a = NULL, b = NULL, V = NULL, V_micro = NULL) {
-            Vinv <- solve(V)
-            dVinv <- diag(x = diag(Vinv))
-            Q <- solve(dVinv %*% V %*% dVinv)
-            return(2 * Q * Q)
+            #return(2 * Q * Q)
+            R <- 2*Q*Q - (b^2)*U%*%(s2*I)%*%t(U) #this can give some vierd stuff with imaginary parts...
+            e <- eigen(R)
+            e$values[e$values<0] <- 1e-16 #ensuring that R is positive definite
+            R <- e$vectors%*%diag(e$values)%*%t(e$vectors)
+            return(R)
         }
         a_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[1, 1])
         b_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[2, 2])
     }
     
-    
-    
+
     # ~~~~~~~~~~~~~~~~~~~~~# The GLS model #### ~~~~~~~~~~~~~~~~~~~~~#
     
     # GLS design matrix
@@ -276,48 +281,60 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
         Vy <- coef(summary(mod_Almer))[1, 2]^2
         sigma2_y <- lme4::VarCorr(mod_Almer)$species[1]
         residvar <- attr(lme4::VarCorr(mod_Almer), "sc")^2
-        if (is.null(a)) 
+        if (is.null(a)){ 
             a <- residvar
-        if (is.null(b)) 
+        }
+        if (is.null(b)){ 
             b <- 0
-        diag_V_micro <- a + b * x
-        diag_V_micro[diag_V_micro < 0] <- 0  # Negative residual variances are replaced by zero
-        V_micro <- diag(diag_V_micro)
-        V <- sigma2_y * A + V_micro
-        Vinv <- solve(V)
-        dVinv <- diag(x = diag(Vinv))
-        a <- -mean(diag((I - 2 * solve(dVinv) %*% Vinv) %*% V_micro))
+        }
+        #this was without vector regression:
+        # diag_V_micro <- a + b * x
+        # diag_V_micro[diag_V_micro < 0] <- 0  # Negative residual variances are replaced by zero
+        # V_micro <- diag(diag_V_micro)
+        # V <- sigma2_y * A + V_micro
+        # Vinv <- solve(V)
+        # dVinv <- diag(x = diag(Vinv))
+        # a <- -mean(diag((I - 2 * solve(dVinv) %*% Vinv) %*% V_micro)) 
     }
     
     #### Iterative GLS ####
     for (i in 1:maxiter) {
         if (model == "predictor_BM" | model == "predictor_gBM") {
-            if (i == 1) {
-                R <- R_func(a = a, b = b)
-            } else {
-                R <- R_func(a = a, b = b[i - 1])
-            }
+                R <- R_func(a = a[i], b = b[i])
         } else {
             # model == 'recent_evol'
-            if (i == 1) {
-                diag_V_micro <- a + b * x
-            } else {
-                diag_V_micro <- a + b[i - 1] * x
-            }
+            # if (i == 1) {
+            #     diag_V_micro <- a + b * x
+            # } else {
+            #     diag_V_micro <- a + b[i - 1] * x
+            # }
+            # diag_V_micro[diag_V_micro < 0] <- 0  # Negative residual variances are replaced by zero
+            # V_micro <- diag(diag_V_micro)
+            # V <- sigma2_y * A + V_micro
+            # R <- R_func(V = V, V_micro = V_micro)
+            # y_predicted <- macro_pred(y = y, V = V, useLFO = useLFO)
+            # y2 <- (y - y_predicted)^2
+            diag_V_micro <- a[i] + b[i] * x
             diag_V_micro[diag_V_micro < 0] <- 0  # Negative residual variances are replaced by zero
             V_micro <- diag(diag_V_micro)
             V <- sigma2_y * A + V_micro
-            R <- R_func(V = V, V_micro = V_micro)
+            Vinv <- solve(V)
+            dVinv <- diag(x = diag(Vinv))
+            Q <- solve(dVinv %*% V %*% dVinv)
+            inv_dVinv_Vinv <- solve(dVinv, Vinv)
+            U <- inv_dVinv_Vinv*inv_dVinv_Vinv
+            X <- as.matrix(cbind(rep(1, length(x)), U%*%x)) #updating the design matrix
+            R <- R_func(b = b[i]) #using environment parameters
             y_predicted <- macro_pred(y = y, V = V, useLFO = useLFO)
             y2 <- (y - y_predicted)^2
+            
         }
         
         # GLS estimates
         mod <- GLS(y = y2, X, R, coef_only = TRUE)
         Beta <- cbind(mod$coef)
-        if (model != "recent_evol") 
-            a <- a_func(Beta)  # Not iterating over a in the 'recent_evolution' model
-        b[i] <- b_func(Beta)
+        a[i+1] <- a_func(Beta)
+        b[i+1] <- b_func(Beta)
         
         # Objective function
         obj[i] <- mod$GSSE
@@ -330,7 +347,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
             diff_1 <- obj[i - 1] - obj[i]
             diff_2 <- obj[i - 2] - obj[i]
             if (abs(diff_2) < abs(diff_1)/2) {
-                b[i] <- (b[i] + b[i - 1])/2
+                b[i+1] <- (b[i+1] + b[i - 1])/2
             }
         }
         
@@ -342,7 +359,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     
     mod <- GLS(y2, X, R)
     Beta_vcov <- mod$coef_vcov
-    param <- cbind(rbind(a, b[i], s2), rbind(a_SE_func(Beta_vcov), b_SE_func(Beta_vcov), 
+    param <- cbind(rbind(a[i+1], b[i+1], s2), rbind(a_SE_func(Beta_vcov), b_SE_func(Beta_vcov), 
         s2_SE))
     colnames(param) <- c("Estimate", "SE")
     rownames(param) <- c("a", "b", "sigma(x)^2")
@@ -363,7 +380,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     }
     
     report <- list(model = model, param = param, Rsquared = Rsquared, GLS_objective_scores = obj, 
-        b_all_iterations = b, R = R, Beta = Beta, Beta_vcov = Beta_vcov, tree = tree, 
+        a_all_iterations = a, b_all_iterations = b, R = R, Beta = Beta, Beta_vcov = Beta_vcov, tree = tree, 
         data = list(y2 = y2, x = x, y = y, x_original = x_original, y_original = y_original), 
         convergence = convergence, additional_param = c(mean_y = mean_y, Vy = Vy, 
             mean_x = mean_x, Vx = Vx))
