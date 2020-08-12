@@ -381,7 +381,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
         if (i > 1) {
             a_diff <- abs(a[i+1]-a[i])/abs(a[i])
             b_diff <- abs(b[i+1]-b[i])/abs(b[i])
-            if(max(a_diff, b_diff)<1e-08){
+            if(max(a_diff, b_diff)<1e-08 & !is.na(a_diff) & !is.na(b_diff)){
                 break()
                 }
         }
