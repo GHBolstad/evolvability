@@ -203,19 +203,34 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     s2_SE <- sqrt(2 * s2^2/(length(x) + 2))  # from Lynch and Walsh 1998 eq A1.10c 
     
     #### Internal functions ####
-    if (model == "predictor_BM") {
-        a_func <- function(Beta) Beta[1, 1] + Vy
-        b_func <- function(Beta) Beta[2, 1]
-        Q <- (A * A * A) - (1/4) * AoA %*% solve(A, AoA)  
-        R_func <- function(a = NULL, b = NULL, V = NULL, V_micro = NULL) 4 * a * 
-            Vy * A + 2 * (a^2 + b^2 * Vx) * AoA + b^2 * s2 * Q
-        a_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[1, 1])  #CAN WE GET THE UNCERTAINTY IN Vy????? approximation using Lynch and Walsh formula?
-        b_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[2, 2])
+    if (model == "predictor_BM"){
+        a_func <- function(Beta){
+            Beta[1, 1] + Vy
+        }
+        b_func <- function(Beta){
+            Beta[2, 1]  
+        }
+        Q <- (A * A * A) - (1/4) * AoA %*% solve(A, AoA)  # outside function to aviod repeating this in the loop
+        R_func <- function(a, b){
+            4 * a * Vy * A +
+             2 * (a^2 + b^2 * Vx) * AoA + 
+             b^2 * s2 * Q
+        }
+        a_SE_func <- function(Beta_vcov){
+            sqrt(Beta_vcov[1, 1])  #CAN WE GET THE UNCERTAINTY IN Vy????? approximation using Lynch and Walsh formula?  
+        } 
+        b_SE_func <- function(Beta_vcov){
+            sqrt(Beta_vcov[2, 2])  
+        } 
     }
     if (model == "predictor_gBM") {
-        a_func <- function(Beta) Beta[1, 1] + Vy  # - 2*Beta[2,1]*exp(Vx/2)*(exp(s2/2) - 1)/s2 
-        b_func <- function(Beta) Beta[2, 1]
-        # some matrix calculations to avoid repeating them in the loop ...
+        a_func <- function(Beta){
+            Beta[1, 1] + Vy  # - 2*Beta[2,1]*exp(Vx/2)*(exp(s2/2) - 1)/s2   
+        } 
+        b_func <- function(Beta){
+            Beta[2, 1]  
+        } 
+        # some matrix calculations to avoid repeating them in the loop:
         AoA <- A * A
         e_hlfVx <- exp(Vx/2)
         e_2Vx <- exp(2 * Vx)
@@ -224,10 +239,13 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
         Q1 <- 8 * e_hlfVx/s2 * A * e_hlfs2A
         Q2 <- 2 * e_2Vx/s2^2 * (8/3 * (e_2s2A - e_hlfs2A) - e_2s2A - 8/9 * e_32s2A %*% 
             solve(e_s2A, e_32s2A, tol = 1e-99))
-        # ... end matrix calculations
-        R_func <- function(a = NULL, b = NULL, V = NULL, V_micro = NULL) 4 * a * 
-            Vy * A + 8 * b * Vy * e_hlfVx/s2 * e_hlfs2A + 2 * a^2 * AoA + a * b * 
-            Q1 + b^2 * Q2
+        R_func <- function(a, b){
+            4 * a * Vy * A +
+             8 * b * Vy * e_hlfVx/s2 * e_hlfs2A +
+             2 * a^2 * AoA +
+             a * b * Q1 +
+             b^2 * Q2  
+        } 
         a_SE_func <- function(Beta_vcov) {
             sqrt(Beta_vcov[1, 1])
         }
@@ -235,20 +253,36 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     }
     if (model == "recent_evol") {
         a_func <- function(Beta){
-            (Beta[1,1] - sigma2_y*mean(diag(solve(dVinv%*%V%*%solve(A, V%*%dVinv)))))/
-                mean(diag(solve(dVinv%*%V%*%V%*%dVinv)))
+            a <- (Beta[1,1] - sigma2_y*mean(diag(U%*%A%*%U)))/mean(diag(U%*%U))
+            if(a<0) a <- 0
+            return(a)
         } 
         b_func <- function(Beta) Beta[2, 1]
-        R_func <- function(a = NULL, b = NULL, V = NULL, V_micro = NULL) {
+        R_func <- function(a, b) {
             #return(2 * Q * Q)
-            R <- 2*Q*Q - (b^2)*U%*%(s2*I)%*%t(U) #this can give some vierd stuff with imaginary parts...
+            R <- 2*(Q*Q) - (b^2)*(UU%*%(s2*I)%*%t(UU))
             e <- eigen(R)
-            e$values[e$values<0] <- 1e-16 #ensuring that R is positive definite
+            e$values[e$values<0] <- 1e-8 #ensuring that R is positive definite
             R <- e$vectors%*%diag(e$values)%*%t(e$vectors)
             return(R)
         }
-        a_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[1, 1])
+        a_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[1, 1])*(1/mean(diag(U%*%U)))
         b_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[2, 2])
+        invAplussB <- function(invA, B){
+          # Algorithm from Miller (1981, Mathematical Magazine)
+          # Assumes that B is diagonal
+          n <- dim(B)[1]
+          E <- Matrix::Matrix(0, nrow = n, ncol = n)
+          for(i in 1:n){
+            E[i,i] <- B[i,i]
+            invAxE <- invA%*%E
+            #v <- 1/(1+sum(diag(invAxE)))
+            v <- 1/(1+invAxE[i,i])
+            invA <- invA - v*invAxE%*%invA
+            E[i,i] <- 0
+          }
+          as.matrix(invA)
+        }
     }
     
 
@@ -258,7 +292,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     X <- as.matrix(cbind(rep(1, length(x)), x))
     
     #### Response variabe and initial values ####
-    obj <- NULL  # objective function scores
+    obj <- NULL    # objective function scores
     a <- startv$a  # parameter of the process
     b <- startv$b  # parameter of the process
     
@@ -277,7 +311,9 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     } else {
         # model == 'recent_evol'
         mod_Almer <- Almer(y ~ 1 + (1 | species), A = list(species = Matrix::Matrix(A, 
-            sparse = TRUE)))
+            sparse = TRUE)), control = lme4::lmerControl(check.nobs.vs.nlev = "ignore", 
+            check.nobs.vs.rankZ = "ignore", check.nobs.vs.nRE = "ignore", optimizer="bobyqa",
+            optCtrl=list(maxfun=2e5)))
         Vy <- coef(summary(mod_Almer))[1, 2]^2
         sigma2_y <- lme4::VarCorr(mod_Almer)$species[1]
         residvar <- attr(lme4::VarCorr(mod_Almer), "sc")^2
@@ -287,48 +323,47 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
         if (is.null(b)){ 
             b <- 0
         }
-        #this was without vector regression:
-        # diag_V_micro <- a + b * x
-        # diag_V_micro[diag_V_micro < 0] <- 0  # Negative residual variances are replaced by zero
-        # V_micro <- diag(diag_V_micro)
-        # V <- sigma2_y * A + V_micro
-        # Vinv <- solve(V)
-        # dVinv <- diag(x = diag(Vinv))
-        # a <- -mean(diag((I - 2 * solve(dVinv) %*% Vinv) %*% V_micro)) 
+        diag_V_micro <- a + b * x
+        diag_V_micro[diag_V_micro < 0] <- 0  # Negative variances are replaced by zero
+        V_micro <- diag(diag_V_micro)
+        V <- sigma2_y * A + V_micro
+        y_predicted <- macro_pred(y = y, V = V, useLFO = useLFO)
+        y2 <- (y - y_predicted)^2
+        Vinv <- solve(V)
+        #sigmaAinv <- Matrix::Matrix(solve(sigma2_y * A), sparse = TRUE)
+        #Vinv <- invAplussB(invA = sigmaAinv, B = V_micro)
+        dVinv <- diag(x = diag(Vinv))
+        inv_dVinv <- diag(x = 1/diag(Vinv))
+        U <- inv_dVinv%*%Vinv
+        Q <- U %*% inv_dVinv
+        UU <- U*U
+        X <- as.matrix(cbind(rep(1, length(x)), UU%*%x))
     }
+    
+    
     
     #### Iterative GLS ####
     for (i in 1:maxiter) {
-        if (model == "predictor_BM" | model == "predictor_gBM") {
-                R <- R_func(a = a[i], b = b[i])
-        } else {
-            # model == 'recent_evol'
-            # if (i == 1) {
-            #     diag_V_micro <- a + b * x
-            # } else {
-            #     diag_V_micro <- a + b[i - 1] * x
-            # }
-            # diag_V_micro[diag_V_micro < 0] <- 0  # Negative residual variances are replaced by zero
-            # V_micro <- diag(diag_V_micro)
-            # V <- sigma2_y * A + V_micro
-            # R <- R_func(V = V, V_micro = V_micro)
-            # y_predicted <- macro_pred(y = y, V = V, useLFO = useLFO)
-            # y2 <- (y - y_predicted)^2
+        if (model == "recent_evol") {
             diag_V_micro <- a[i] + b[i] * x
-            diag_V_micro[diag_V_micro < 0] <- 0  # Negative residual variances are replaced by zero
+            diag_V_micro[diag_V_micro < 0] <- 0  # Negative variances are replaced by zero
             V_micro <- diag(diag_V_micro)
             V <- sigma2_y * A + V_micro
             Vinv <- solve(V)
+            #Vinv <- invAplussB(sigmaAinv, V_micro)
             dVinv <- diag(x = diag(Vinv))
-            Q <- solve(dVinv %*% V %*% dVinv)
-            inv_dVinv_Vinv <- solve(dVinv, Vinv)
-            U <- inv_dVinv_Vinv*inv_dVinv_Vinv
-            X <- as.matrix(cbind(rep(1, length(x)), U%*%x)) #updating the design matrix
-            R <- R_func(b = b[i]) #using environment parameters
-            y_predicted <- macro_pred(y = y, V = V, useLFO = useLFO)
-            y2 <- (y - y_predicted)^2
-            
+            inv_dVinv <- diag(x = 1/diag(Vinv))
+            U <- inv_dVinv%*%Vinv
+            Q <- U %*% inv_dVinv
+            UU <- U*U
+            # X <- as.matrix(cbind(rep(1, length(x)), U%*%x)) #updating the design matrix
+            # !!!!!! NB !!!!! 
+            # in this model the design matrix changes each iteration, what x-variable to plot
+            # (in the others we plot U%*%x along the x-axis)
         }
+        
+        # Residual variance matrix
+        R <- R_func(a = a[i], b = b[i])
         
         # GLS estimates
         mod <- GLS(y = y2, X, R, coef_only = TRUE)
@@ -338,23 +373,53 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
         
         # Objective function
         obj[i] <- mod$GSSE
-        if (!silent) 
-            print(paste("Generalized sum of squares:", obj[i]))
-        
-        # Provides new starting value for b when the algorithm fluctuates between two
-        # states
-        if (i > 10) {
-            diff_1 <- obj[i - 1] - obj[i]
-            diff_2 <- obj[i - 2] - obj[i]
-            if (abs(diff_2) < abs(diff_1)/2) {
-                b[i+1] <- (b[i+1] + b[i - 1])/2
-            }
+        if (!silent){ 
+            print(paste0("a = ", a[i+1], "; b =", b[i+1]))
+            #print(paste("Generalized sum of squares:", obj[i]))
         }
         
         if (i > 1) {
-            if (obj[i] <= obj[i - 1] & obj[i - 1] - obj[i] < 1e-07) 
-                (break)()
+            a_diff <- abs(a[i+1]-a[i])/abs(a[i])
+            b_diff <- abs(b[i+1]-b[i])/abs(b[i])
+            if(max(a_diff, b_diff)<1e-08){
+                break()
+                }
         }
+        
+        # Provides new starting value for a and b if b fluctuates between two states
+        if (i > 10) {
+            diff_1 <- b[i+1] - b[i]
+            diff_2 <- b[i+1] - b[i-1]
+            if (abs(diff_2) < abs(diff_1)) {
+                a[i+1] <- (a[i+1] + a[i])/2
+                b[i+1] <- (b[i+1] + b[i])/2
+            }
+        }
+        
+        # Provides new starting value for a and b if the algorithm fluctuates between two,
+        # three or four states
+        # if (i > 10) {
+        #     diff_1 <- obj[i - 1] - obj[i]
+        #     diff_2 <- obj[i - 2] - obj[i]
+        #     diff_3 <- obj[i - 3] - obj[i]
+        #     diff_4 <- obj[i - 4] - obj[i]
+        #     if (abs(diff_2) < abs(diff_1)/2) {
+        #         a[i+1] <- (a[i+1] + a[i])/2
+        #         b[i+1] <- (b[i+1] + b[i])/2
+        #     }
+        #     if (abs(diff_3) < abs(diff_1)/2) {
+        #         a[i+1] <- (a[i+1] + a[i] + a[i-1])/3
+        #         b[i+1] <- (b[i+1] + b[i] + b[i-1])/3
+        #     }
+        #     if (abs(diff_4) < abs(diff_1)/2) {
+        #         a[i+1] <- (a[i+1] + a[i] + a[i-1] + a[i-2])/4
+        #         b[i+1] <- (b[i+1] + b[i] + b[i-1] + b[i-2])/4
+        #     }
+        # }
+        # if (i > 1) {
+        #     if (obj[i] <= obj[i - 1] & obj[i - 1] - obj[i] < 1e-07) 
+        #         (break)()
+        # }
     }
     
     mod <- GLS(y2, X, R)
@@ -518,8 +583,8 @@ rate_gls_boot <- function(object, n = 10, useLFO = TRUE, silent = FALSE) {
     for (i in 1:n) {
         sim_out <- rate_gls_sim(object, nsim = 1)
         mod <- rate_gls(x = sim_out[[1]][[1]][, "x"], y = sim_out[[1]][[1]][, "y"], species = sim_out[[1]][[1]][, 
-            "species"], tree = object$tree, startv = list(object$param["a", 1], object$param["b", 
-            1]), model = object$model, silent = TRUE, useLFO = useLFO)
+            "species"], tree = object$tree, model = object$model, silent = TRUE, useLFO = useLFO)
+        #startv = list(object$param["a", 1], object$param["b", 1]), 
         boot_distribution[i, ] <- c(mod$param[, 1], mod$Rsquared)
         perc_neg[i] <- sim_out[[1]][[2]]
         if (mod$convergence != "Convergence") 

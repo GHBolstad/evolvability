@@ -158,17 +158,13 @@ simulate_rate <- function(tree, startv_x = NULL, sigma_x = NULL, a, b, sigma_y =
         sigma_y <- sigma_y[1]
         if (is.null(x)) 
             x <- rnorm(n, startv_x, sigma_x)
-        if (is.null(sigma_y)) 
-            stop("Specify a positive sigma_y")
-        if (sigma_y <= 0) 
+        if (is.null(sigma_y) | sigma_y <= 0) 
             stop("Specify a positive sigma_y")
         Vmacro <- c(sigma_y^2) * A
         diag_Vmicro <- c(a + b * x)
         diag_Vmicro[diag_Vmicro < 0] <- 0  #Ensures that there are no negative variances
         Vmicro <- diag(x = diag_Vmicro)
         V <- Vmacro + Vmicro
-        # if(length(diag(V)[diag(V)<0])>0) stop('Negative values along the diagonal of
-        # the variance matrix of y. Change a, b or x.')
         y <- t(chol(V)) %*% rnorm(n)
         DATA <- data.frame(species = tree$tip.label, x = x, y = y)
         percent_negative <- NULL

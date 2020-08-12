@@ -7,8 +7,8 @@ knitr::opts_chunk$set(
 library(evolvability)
 
 ## -----------------------------------------------------------------------------
-set.seed(113)
-tree <- ape::rtree(n = 50)
+set.seed(200)
+tree <- ape::rtree(n = 200)
 tree <- ape::chronopl(tree, lambda = 1, age.min = 2)
 
 ## ---- eval=TRUE---------------------------------------------------------------
@@ -87,7 +87,7 @@ plot(gls_mod, ylab = "|y|", xlab = "x*") # with the default: scale = "SD"
 plot(gls_mod$data$x_original, gls_mod$data$x, xlab = "x", ylab = "x*")
 
 ## -----------------------------------------------------------------------------
-sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=1, b=1, sigma_y = 1, model = "recent_evol")
+sim_data <- simulate_rate(tree, startv_x=0, sigma_x=0.25, a=1, b=1, sigma_y = 1, model = "recent_evol")
 
 ## -----------------------------------------------------------------------------
 d <- sim_data$tips
@@ -95,11 +95,11 @@ head(d)
 
 ## -----------------------------------------------------------------------------
 gls_mod <- rate_gls(x=d$x, y=d$y, species=d$species, 
-                    tree, model = "recent_evol", useLFO = FALSE, silent = TRUE)
+                    tree, model = "recent_evol", useLFO = TRUE, silent = FALSE)
 round(gls_mod$param, 3)
 
 ## -----------------------------------------------------------------------------
-bootout <- rate_gls_boot(gls_mod, n = 10, useLFO = FALSE, silent = TRUE) 
+bootout <- rate_gls_boot(gls_mod, n = 3, useLFO = FALSE, silent = FALSE) 
 round(bootout$summary, 3)
 
 ## ---- fig.height=5, fig.width=5-----------------------------------------------

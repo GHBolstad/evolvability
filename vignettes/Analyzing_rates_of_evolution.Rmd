@@ -27,8 +27,8 @@ Note that sample sizes and number of simulations below are kept small in the int
 To simulate data for the different evolutionary models, we first need an ultra-metric phylogeny. Here we generate a random phylogeny using the `ape` package. In a real data analysis you would use a molecular phylogeny of the species in your data set. 
 
 ```{r}
-set.seed(113)
-tree <- ape::rtree(n = 50)
+set.seed(200)
+tree <- ape::rtree(n = 200)
 tree <- ape::chronopl(tree, lambda = 1, age.min = 2)
 ```
 
@@ -193,7 +193,7 @@ where $a$ and $b$ are parameter, $\mathbf{I}$ is the identity matrix and $\mathb
 
 Using the function `simulate_rate` with `model = "recent_evol"` we can simulate data with different parameter values.
 ```{r}
-sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=1, b=1, sigma_y = 1, model = "recent_evol")
+sim_data <- simulate_rate(tree, startv_x=0, sigma_x=0.25, a=1, b=1, sigma_y = 1, model = "recent_evol")
 ```
 
 Here, `sigma_x` is the sampling standard deviation of $x$ and `sigma_y` is the BM rate parameter of $\mathbf{y}_{macro}$. I this mode, we don't simulate data along the phylogeny, so there is no such dynamics to plot (in contrast with the two previous models). The values at the tips:
@@ -203,18 +203,18 @@ d <- sim_data$tips
 head(d)
 ```
 
-We can now fit the gls model to these data. Note that the model centers $x$ and $y$ on their respective phylogenetically weighted means. Note also that the `useLFO` argument can be set to `FALSE` to speed up the algorithm (particularly useful when bootstrapping). `useLFO` is an acronym for use "Leave Focal Out", that is, should the focal species be left out when calculating the species' mean in the algorithm. The correct way is to use `TRUE`, but in practice it should have little effect. 
+We can now fit the gls model to these data. Note that the model centers $x$ and $y$ on their respective phylogenetically weighted means. Note also that the `useLFO` argument can be set to `FALSE` to speed up the algorithm (particularly useful when bootstrapping). `useLFO` is an acronym for use "Leave Focal Out", and controls whether or not the focal species is left out when calculating the species' mean in the algorithm. The correct way is to use `TRUE`, but in practice it should have little effect. 
 
 ```{r}
 gls_mod <- rate_gls(x=d$x, y=d$y, species=d$species, 
-                    tree, model = "recent_evol", useLFO = FALSE, silent = TRUE)
+                    tree, model = "recent_evol", useLFO = TRUE, silent = FALSE)
 round(gls_mod$param, 3)
 ```
 
 Again, `a` and `b` are the parameters of the evolutionary model, but `sigma(x)^2` is the sample variance of $x$, and `sigma(y)^2` is the squared BM-rate parameter of $\mathbf{y}_{macro}$. The standard errors of the estimates are approximate. Parametric bootstrapping can be used to get 95% confidence intervals taking into account error in the entire process 
 
 ```{r}
-bootout <- rate_gls_boot(gls_mod, n = 10, useLFO = FALSE, silent = TRUE) 
+bootout <- rate_gls_boot(gls_mod, n = 3, useLFO = FALSE, silent = FALSE) 
 round(bootout$summary, 3)
 ```
 
