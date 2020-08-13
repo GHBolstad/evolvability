@@ -346,7 +346,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     for (i in 1:maxiter) {
         if (model == "recent_evol") {
             diag_V_micro <- a[i] + b[i] * x
-            diag_V_micro[diag_V_micro < 0] <- 0  # Negative variances are replaced by zero
+            diag_V_micro[diag_V_micro < 0] <- 1e-10  # Negative variances are replaced by small value
             V_micro <- diag(diag_V_micro)
             V <- sigma2_y * A + V_micro
             Vinv <- solve(V)
