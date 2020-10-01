@@ -11,7 +11,7 @@ rate_gls(
   tree,
   model = "predictor_BM",
   startv = list(a = NULL, b = NULL),
-  maxiter = 100,
+  maxiter = 1000,
   silent = FALSE,
   useLFO = TRUE
 )
