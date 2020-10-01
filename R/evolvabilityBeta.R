@@ -27,7 +27,7 @@
 #' @keywords array algebra
 #' @export
 evolvabilityBeta = function(G, Beta, means = 1) {
-    if (any(G[upper.tri(G)] != G[lower.tri(G)])) 
+    if (any(G[upper.tri(G)] != G[t(lower.tri(G))])) 
         stop("G is not symmetric.")
     if (means[1] == 1) 
         means = rep(1, nrow(G))
