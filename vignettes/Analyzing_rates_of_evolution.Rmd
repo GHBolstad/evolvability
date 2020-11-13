@@ -211,7 +211,7 @@ gls_mod <- rate_gls(x=d$x, y=d$y, species=d$species,
 round(gls_mod$param, 3)
 ```
 
-Again, `a` and `b` are the parameters of the evolutionary model, but `sigma(x)^2` is the sample variance of $x$, and `sigma(y)^2` is the squared BM-rate parameter of $\mathbf{y}_{macro}$. The standard errors of the estimates are approximate. Parametric bootstrapping can be used to get 95% confidence intervals taking into account error in the entire process 
+Again, `a` and `b` are the parameters of the evolutionary model, but `sigma(x)^2` is the sample variance of $x$, and `sigma(y)^2` is the squared BM-rate parameter of $\mathbf{y}_{macro}$. The standard errors of the estimates are approximate. Parametric bootstrapping can be used to get 95% confidence intervals taking into account the error of the entire process 
 
 ```{r}
 bootout <- rate_gls_boot(gls_mod, n = 3, useLFO = FALSE, silent = FALSE) 

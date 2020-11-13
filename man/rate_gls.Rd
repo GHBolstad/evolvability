@@ -11,9 +11,12 @@ rate_gls(
   tree,
   model = "predictor_BM",
   startv = list(a = NULL, b = NULL),
-  maxiter = 1000,
+  maxiter = 100,
   silent = FALSE,
-  useLFO = TRUE
+  useLFO = TRUE,
+  tol = 0.1,
+  iterate_a = TRUE,
+  oldmod = FALSE
 )
 }
 \arguments{
@@ -48,6 +51,16 @@ relevant for the 'recent_evol' model. The most correct is to use
 \code{TRUE}, but in practice it has little effect and \code{FALSE} will
 speed up the model fit (particularely useful when bootstrapping). LFO is an
 acronym for 'Leave the Focal species Out'.}
+
+\item{tol}{tolerance for convergence. The value gives the percentage 'a' and 'b'
+are allowed to change between the two last iterations before convergence is 
+reached.}
+
+\item{iterate_a}{logical: if FALSE the estimated variance of the white noise
+part of the phylogenetic mixed model is used as estimate of 'a', otherwise 
+'a' is estimated in the generalized least squares model.}
+
+\item{oldmod}{TEST of old model 3}
 }
 \value{
 An object of \code{class} \code{'rate_gls'}, which is a list with the
@@ -144,7 +157,7 @@ model = 'recent_evol')
 head(sim_data$tips)
 gls_mod <- rate_gls(x=sim_data$tips$x, y=sim_data$tips$y, species=sim_data$tips$species, tree, 
 model = 'recent_evol', useLFO = FALSE)
-# useLFO = TRUE is much slower, and although more correct it should give very similar estimates
+# useLFO = TRUE is somewhat slower, and although more correct it should give very similar estimates
 # in most situations.
 gls_mod$param
 par(mfrow = c(1,2))

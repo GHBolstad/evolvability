@@ -4,7 +4,15 @@
 \alias{rate_gls_boot}
 \title{Bootstrap of the \code{\link{rate_gls}} model fit}
 \usage{
-rate_gls_boot(object, n = 10, useLFO = TRUE, silent = FALSE)
+rate_gls_boot(
+  object,
+  n = 10,
+  useLFO = TRUE,
+  silent = FALSE,
+  maxiter = 100,
+  tol = 0.1,
+  oldmod = FALSE
+)
 }
 \arguments{
 \item{object}{The output from \code{\link{rate_gls}}.}
@@ -19,6 +27,14 @@ model fit (particularly useful when bootstrapping).}
 
 \item{silent}{logical: whether or not the bootstrap iterations should be
 printed.}
+
+\item{maxiter}{The maximum number of iterations for updating the GLS.}
+
+\item{tol:}{tolerance for convergence. The value gives the percent 'a' and 'b'
+are alowed to change between the two last iterations before convergence is 
+reached.}
+
+\item{oldmod:}{test}
 }
 \value{
 A list where the first slot is a table with the original estimates
