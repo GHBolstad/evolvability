@@ -14,9 +14,8 @@ rate_gls(
   maxiter = 100,
   silent = FALSE,
   useLFO = TRUE,
-  tol = 0.1,
-  iterate_a = TRUE,
-  oldmod = FALSE
+  tol = 0.001,
+  alternative_recent_evol_mod = FALSE
 )
 }
 \arguments{
@@ -34,8 +33,8 @@ and with total length of unit, tips must have the same names as in
 \code{species}.}
 
 \item{model}{The acronym of the evolutionary model to be fitted. There are
-three options: 'predictor_BM', 'predictor_gBM' or 'recent_evol' (see the
-vignette 'Analyzing rates of evolution').}
+three options: 'predictor_BM', 'predictor_gBM' or 'recent_evol' (see details and 
+the vignette 'Analyzing rates of evolution').}
 
 \item{startv}{A vector of optional starting values for the a and b
 parameters.}
@@ -52,15 +51,13 @@ relevant for the 'recent_evol' model. The most correct is to use
 speed up the model fit (particularely useful when bootstrapping). LFO is an
 acronym for 'Leave the Focal species Out'.}
 
-\item{tol}{tolerance for convergence. The value gives the percentage 'a' and 'b'
-are allowed to change between the two last iterations before convergence is 
-reached.}
+\item{tol}{tolerance for convergence. If the change in 'a' and 'b' is below this
+limit between the two last iteration, convergence is reached. The change is measured
+in proportion to the standard deviation of the response for 'a' and the ratio of the 
+standard deviation of the response to the standard deviation of the predictor for 'b'.}
 
-\item{iterate_a}{logical: if FALSE the estimated variance of the white noise
-part of the phylogenetic mixed model is used as estimate of 'a', otherwise 
-'a' is estimated in the generalized least squares model.}
-
-\item{oldmod}{TEST of old model 3}
+\item{alternative_recent_evol_mod}{logical: if FALSE (the default) the 'a' parameter is not
+updated during the iterations.}
 }
 \value{
 An object of \code{class} \code{'rate_gls'}, which is a list with the
@@ -100,7 +97,7 @@ before fitting these models.
 \details{
 \code{rate_gls} is an iterative generalized least squares (GLS)
   model fitting a regression where the response variable is a vector of
-  squared mean-centred \code{y}-values for the 'predictor_BM' and
+  squared mean-centered \code{y}-values for the 'predictor_BM' and
   'predictor_gBM' models and squared deviation from the evolutionary
   predictions (see \code{\link{macro_pred}}) for the 'recent_evol' model.
   Note that the algorithm mean centers \code{x} in the 'predictor_BM' and
@@ -108,7 +105,7 @@ before fitting these models.
   \code{x} by its mean) in the 'predictor_gBM'. The evolutionary parameters a
   and b are inferred from the intercept and the slope of the GLS fit. Again,
   it is highly recommended to read Hansen et al. (in review) and the vignette
-  'Analyzing rates of evolution' before fitting these models. In Hanen et al.
+  'Analyzing rates of evolution' before fitting these models. In Hansen et al.
   (in review) the three models 'predictor_BM', 'predictor_gBM' and
   'recent_evol' are referred to as 'Model 1', 'Model 2' and 'Model 3',
   respectively.

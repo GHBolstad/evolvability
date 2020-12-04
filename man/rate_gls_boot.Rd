@@ -10,8 +10,7 @@ rate_gls_boot(
   useLFO = TRUE,
   silent = FALSE,
   maxiter = 100,
-  tol = 0.1,
-  oldmod = FALSE
+  tol = 0.001
 )
 }
 \arguments{
@@ -30,11 +29,10 @@ printed.}
 
 \item{maxiter}{The maximum number of iterations for updating the GLS.}
 
-\item{tol:}{tolerance for convergence. The value gives the percent 'a' and 'b'
-are alowed to change between the two last iterations before convergence is 
-reached.}
-
-\item{oldmod:}{test}
+\item{tol}{tolerance for convergence. If the change in 'a' and 'b' is below this
+limit between the two last iteration, convergence is reached. The change is measured
+in proportion to the standard deviation of the response for 'a' and the ratio of the 
+standard deviation of the response to the standard deviation of the predictor for 'b'.}
 }
 \value{
 A list where the first slot is a table with the original estimates

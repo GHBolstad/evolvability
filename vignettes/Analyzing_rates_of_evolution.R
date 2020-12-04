@@ -99,25 +99,22 @@ gls_mod <- rate_gls(x=d$x, y=d$y, species=d$species,
 round(gls_mod$param, 3)
 
 ## -----------------------------------------------------------------------------
-bootout <- rate_gls_boot(gls_mod, n = 3, useLFO = FALSE, silent = FALSE) 
+bootout <- rate_gls_boot(gls_mod, n = 3, useLFO = FALSE, silent = TRUE) 
 round(bootout$summary, 3)
 
 ## ---- fig.height=5, fig.width=5-----------------------------------------------
-plot(gls_mod, scale = "VAR")
+plot(gls_mod, scale = "VAR", ylab = "y^2", xlab = "x*")
 
 ## ---- fig.height=5, fig.width=5-----------------------------------------------
-plot(gls_mod) # with the default scale == "SD"
+plot(gls_mod, ylab = "|y|", xlab = "x*") # with the default scale == "SD"
 
 ## ---- fig.height=5, fig.width=5-----------------------------------------------
 a <- gls_mod$param["a",1]
 b <- gls_mod$param["b",1]
 V_micro <- a*diag(nrow(d)) + diag(b*d$x)
 diag(V_micro)[diag(V_micro) < 0] <- 0  # Negative variances are replaced by zero
-
 sigma2_y <- gls_mod$param["sigma(y)^2",1]
 V_macro <- ape::vcv(tree)*sigma2_y
-
 y_macro_pred <- macro_pred(d$y, V=V_macro+V_micro)
-
 plot(d$y, y_macro_pred, xlab = "y", ylab = "Macro-evolutionary predictions of y")
 
