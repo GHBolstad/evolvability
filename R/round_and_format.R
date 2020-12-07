@@ -17,9 +17,9 @@ round_and_format <- function(x, digits = 2, sign_digits = NULL, scientific = FAL
             trim = trim)
     } else {
         x <- signif(x, digits = sign_digits)
-        x_list <- strsplit(c(as.character(format(x, scientific = FALSE))), "\\.")
+        x_list <- strsplit(c(as.character(format(abs(x), scientific = FALSE))), "\\.")
         nchar_x <- nchar(x_list[[1]])
-        if (x < 1) {
+        if (abs(x) < 1) {
             sign_digits_displayed <- nchar(x * 10^nchar_x[2])
             nsmall <- nchar_x[2] + sign_digits - sign_digits_displayed
         } else {
@@ -28,3 +28,4 @@ round_and_format <- function(x, digits = 2, sign_digits = NULL, scientific = FAL
         format(x, nsmall = nsmall, scientific = scientific, trim = trim)
     }
 }
+
