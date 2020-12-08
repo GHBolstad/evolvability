@@ -12,17 +12,81 @@
 
 <meta name="author" content="Geir H. Bolstad" />
 
-<meta name="date" content="2020-04-24" />
+<meta name="date" content="2020-12-08" />
 
 <title>Phylogenetic mixed model</title>
 
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+<style type="text/css">
+a.anchor-section {margin-left: 10px; visibility: hidden; color: inherit;}
+a.anchor-section::before {content: '#';}
+.hasAnchor:hover a.anchor-section {visibility: visible;}
+</style>
+<script>// Anchor sections v1.0 written by Atsushi Yasumoto on Oct 3rd, 2020.
+document.addEventListener('DOMContentLoaded', function() {
+  // Do nothing if AnchorJS is used
+  if (typeof window.anchors === 'object' && anchors.hasOwnProperty('hasAnchorJSLink')) {
+    return;
+  }
+
+  const h = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+
+  // Do nothing if sections are already anchored
+  if (Array.from(h).some(x => x.classList.contains('hasAnchor'))) {
+    return null;
+  }
+
+  // Use section id when pandoc runs with --section-divs
+  const section_id = function(x) {
+    return ((x.classList.contains('section') || (x.tagName === 'SECTION'))
+            ? x.id : '');
+  };
+
+  // Add anchors
+  h.forEach(function(x) {
+    const id = x.id || section_id(x.parentElement);
+    if (id === '') {
+      return null;
+    }
+    let anchor = document.createElement('a');
+    anchor.href = '#' + id;
+    anchor.classList = ['anchor-section'];
+    x.classList.add('hasAnchor');
+    x.appendChild(anchor);
+  });
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
 
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
@@ -32,14 +96,16 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(data-line-number);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -48,9 +114,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -301,113 +367,113 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Phylogenetic mixed model</h1>
 <h4 class="author">Geir H. Bolstad</h4>
-<h4 class="date">2020-04-24</h4>
+<h4 class="date">2020-12-08</h4>
 
 
 
 <div id="the-almer-function" class="section level1">
 <h1>The <code>Almer</code> function</h1>
-<p>The <code>Almer</code> function is a modification/hack of the <code>lmer</code> function in the <code>lme4</code> package to incorporate correlated effects in the random structure. The <code>Almer</code> function can be used to fit phylogenetic mixed models (an other models with correlated random effects such as “animal models”).</p>
-<p>To start with we need an ultrametric phylogeny of unit depth. We can construct this, for example, using the function <code>rtree</code> of the <code>ape</code> package.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="co"># Only a very small sample size is used </span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="co"># in the interest of computational speed:</span></a>
-<a class="sourceLine" id="cb1-3" data-line-number="3">n_species &lt;-<span class="st"> </span><span class="dv">20</span> </a>
-<a class="sourceLine" id="cb1-4" data-line-number="4">tree &lt;-<span class="st"> </span>ape<span class="op">::</span><span class="kw">rtree</span>(<span class="dt">n =</span> n_species)</a>
-<a class="sourceLine" id="cb1-5" data-line-number="5">tree &lt;-<span class="st"> </span>ape<span class="op">::</span><span class="kw">chronopl</span>(tree, <span class="dt">lambda =</span> <span class="dv">1</span>)</a></code></pre></div>
+<p>The <code>Almer</code> function is a modification/hack of the <code>lmer</code> function in the <code>lme4</code> package to incorporate correlated effects in the random structure. The <code>Almer</code> function can be used to fit phylogenetic mixed models (and other models with correlated random effects such as “animal models”).</p>
+<p>To start, we need an ultrametric phylogeny of unit depth. We can construct this, for example, using the function <code>rtree</code> of the <code>ape</code> package.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># Only a very small sample size is used </span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="co"># in the interest of computational speed:</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>n_species &lt;-<span class="st"> </span><span class="dv">20</span> </span>
+<span id="cb1-4"><a href="#cb1-4"></a>tree &lt;-<span class="st"> </span>ape<span class="op">::</span><span class="kw">rtree</span>(<span class="dt">n =</span> n_species)</span>
+<span id="cb1-5"><a href="#cb1-5"></a>tree &lt;-<span class="st"> </span>ape<span class="op">::</span><span class="kw">chronopl</span>(tree, <span class="dt">lambda =</span> <span class="dv">1</span>)</span></code></pre></div>
 <p>From this we can generate the phylogenetic relatedness matrix A.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1">A &lt;-<span class="st"> </span>Matrix<span class="op">::</span><span class="kw">Matrix</span>(ape<span class="op">::</span><span class="kw">vcv</span>(tree), <span class="dt">sparse =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
-<p>The columnames of A must be the species identifier.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw">colnames</span>(A) &lt;-<span class="st"> </span><span class="kw">rownames</span>(A) &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="st">&quot;species&quot;</span>, <span class="dv">1</span><span class="op">:</span>n_species, <span class="dt">sep =</span> <span class="st">&quot;_&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>A &lt;-<span class="st"> </span>Matrix<span class="op">::</span><span class="kw">Matrix</span>(ape<span class="op">::</span><span class="kw">vcv</span>(tree), <span class="dt">sparse =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<p>The column names of A must be the species identifier.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">colnames</span>(A) &lt;-<span class="st"> </span><span class="kw">rownames</span>(A) &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="st">&quot;species&quot;</span>, <span class="dv">1</span><span class="op">:</span>n_species, <span class="dt">sep =</span> <span class="st">&quot;_&quot;</span>)</span></code></pre></div>
 <p>From this we can simulate a Brownian motion process and add some residual noise.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1">y &lt;-<span class="st"> </span><span class="dv">5</span> <span class="op">+</span><span class="st"> </span><span class="kw">t</span>(<span class="kw">chol</span>(A))<span class="op">%*%</span><span class="kw">rnorm</span>(n_species, <span class="dv">0</span>, <span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="co"># BM process with mean = 5 and sd = 2</span></a>
-<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="st">     </span><span class="kw">rnorm</span>(n_species, <span class="dv">0</span>, <span class="dv">1</span>)                    <span class="co"># residual variation with sd = 1</span></a></code></pre></div>
-<p>For <code>Almer</code> to work, the data must have the species identifier in addition to the species means.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">dt &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">species =</span> <span class="kw">colnames</span>(A), <span class="dt">y =</span> <span class="kw">as.vector</span>(y))</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>y &lt;-<span class="st"> </span><span class="dv">5</span> <span class="op">+</span><span class="st"> </span><span class="kw">t</span>(<span class="kw">chol</span>(A))<span class="op">%*%</span><span class="kw">rnorm</span>(n_species, <span class="dv">0</span>, <span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="co"># BM process with mean = 5 and sd = 2</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="st">     </span><span class="kw">rnorm</span>(n_species, <span class="dv">0</span>, <span class="dv">1</span>)                    <span class="co"># residual variation with sd = 1</span></span></code></pre></div>
+<p>For <code>Almer</code> to work, the data must include the species identifier in addition to the species means.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>dt &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">species =</span> <span class="kw">colnames</span>(A), <span class="dt">y =</span> <span class="kw">as.vector</span>(y))</span></code></pre></div>
 <p><code>Almer</code> can then be used to estimate the means and variances of the process.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1">mod &lt;-<span class="st"> </span><span class="kw">Almer</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">A =</span> <span class="kw">list</span>(<span class="dt">species =</span> A))</a>
-<a class="sourceLine" id="cb6-2" data-line-number="2"><span class="kw">summary</span>(mod)</a>
-<a class="sourceLine" id="cb6-3" data-line-number="3"><span class="co">#&gt; Linear mixed model fit by REML ['lmerMod']</span></a>
-<a class="sourceLine" id="cb6-4" data-line-number="4"><span class="co">#&gt; Formula: y ~ 1 + (1 | species)</span></a>
-<a class="sourceLine" id="cb6-5" data-line-number="5"><span class="co">#&gt;    Data: dt</span></a>
-<a class="sourceLine" id="cb6-6" data-line-number="6"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-7" data-line-number="7"><span class="co">#&gt; REML criterion at convergence: 73.4</span></a>
-<a class="sourceLine" id="cb6-8" data-line-number="8"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-9" data-line-number="9"><span class="co">#&gt; Scaled residuals: </span></a>
-<a class="sourceLine" id="cb6-10" data-line-number="10"><span class="co">#&gt;      Min       1Q   Median       3Q      Max </span></a>
-<a class="sourceLine" id="cb6-11" data-line-number="11"><span class="co">#&gt; -1.39868 -0.67297 -0.03788  0.60876  1.61582 </span></a>
-<a class="sourceLine" id="cb6-12" data-line-number="12"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-13" data-line-number="13"><span class="co">#&gt; Random effects:</span></a>
-<a class="sourceLine" id="cb6-14" data-line-number="14"><span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span></a>
-<a class="sourceLine" id="cb6-15" data-line-number="15"><span class="co">#&gt;  species  (Intercept) 1.037    1.018   </span></a>
-<a class="sourceLine" id="cb6-16" data-line-number="16"><span class="co">#&gt;  Residual             1.579    1.256   </span></a>
-<a class="sourceLine" id="cb6-17" data-line-number="17"><span class="co">#&gt; Number of obs: 20, groups:  species, 20</span></a>
-<a class="sourceLine" id="cb6-18" data-line-number="18"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-19" data-line-number="19"><span class="co">#&gt; Fixed effects:</span></a>
-<a class="sourceLine" id="cb6-20" data-line-number="20"><span class="co">#&gt;             Estimate Std. Error t value</span></a>
-<a class="sourceLine" id="cb6-21" data-line-number="21"><span class="co">#&gt; (Intercept)   3.9966     0.5052   7.911</span></a></code></pre></div>
-<p>The <code>Almer</code> function is flexible as it is based on the lmer function, and can include additional fixed and random effects on top of the phylogenetic effects. Also, it is not restricted to phylogeny related problems, for example it can be used to estimate additive genetic variances and/or dominance variances (the argument A list can have several entries).</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>mod &lt;-<span class="st"> </span><span class="kw">Almer</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">A =</span> <span class="kw">list</span>(<span class="dt">species =</span> A))</span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="kw">summary</span>(mod)</span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="co">#&gt; Linear mixed model fit by REML [&#39;lmerMod&#39;]</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="co">#&gt; Formula: y ~ 1 + (1 | species)</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="co">#&gt;    Data: dt</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="co">#&gt; </span></span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="co">#&gt; REML criterion at convergence: 85.5</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="co">#&gt; </span></span>
+<span id="cb6-9"><a href="#cb6-9"></a><span class="co">#&gt; Scaled residuals: </span></span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="co">#&gt;     Min      1Q  Median      3Q     Max </span></span>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="co">#&gt; -1.6893 -0.5633 -0.1151  0.2288  2.0783 </span></span>
+<span id="cb6-12"><a href="#cb6-12"></a><span class="co">#&gt; </span></span>
+<span id="cb6-13"><a href="#cb6-13"></a><span class="co">#&gt; Random effects:</span></span>
+<span id="cb6-14"><a href="#cb6-14"></a><span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span></span>
+<span id="cb6-15"><a href="#cb6-15"></a><span class="co">#&gt;  species  (Intercept) 0.000    0.000   </span></span>
+<span id="cb6-16"><a href="#cb6-16"></a><span class="co">#&gt;  Residual             4.506    2.123   </span></span>
+<span id="cb6-17"><a href="#cb6-17"></a><span class="co">#&gt; Number of obs: 20, groups:  species, 20</span></span>
+<span id="cb6-18"><a href="#cb6-18"></a><span class="co">#&gt; </span></span>
+<span id="cb6-19"><a href="#cb6-19"></a><span class="co">#&gt; Fixed effects:</span></span>
+<span id="cb6-20"><a href="#cb6-20"></a><span class="co">#&gt;             Estimate Std. Error t value</span></span>
+<span id="cb6-21"><a href="#cb6-21"></a><span class="co">#&gt; (Intercept)   4.2083     0.4747   8.866</span></span></code></pre></div>
+<p>The <code>Almer</code> function is flexible (it is based on <code>lmer</code>), and can include additional fixed and random effects on top of the phylogenetic effects. Also, it is not restricted to phylogeny related problems, for example it can be used to estimate additive genetic variances and/or dominance variances (the argument <code>A</code> can have several entries).</p>
 </div>
 <div id="the-almer_se-function" class="section level1">
 <h1>The <code>Almer_SE</code> function</h1>
-<p>This function extends the Almer function by allowing the inclusion of uncertainty of the species means. To do this, we take advantage of how weights are included in the <code>lmer</code> function: the diagonal of the residual co-variance matrix is the residual variance parameter <span class="math inline">\(\sigma^2\)</span> times the vector of inverse weights. By using weights equal to <span class="math inline">\(1/(1+SE^2/\sigma^2)\)</span>, where SE is a vector of standard errors, the diagonal of the residual co-variance matrix is <span class="math inline">\(\sigma^2 + SE^2\)</span>. Because the weights includes the residual variance parameter, the function uses an iterative approach.</p>
-<p>To illustrate the approach, we start with adding some arbitrary SE values to the data</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1">dt<span class="op">$</span>SE &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="kw">nrow</span>(dt), <span class="dt">min =</span> <span class="fl">0.1</span>, <span class="dt">max =</span> <span class="fl">0.2</span>) </a></code></pre></div>
+<p>This function extends <code>Almer</code> by allowing the inclusion of the uncertainty of the species means. To do this, we take advantage of how weights are included in the <code>lmer</code> function: the diagonal of the residual co-variance matrix is the residual variance parameter <span class="math inline">\(\sigma^2\)</span> times the vector of inverse weights. By using weights equal to <span class="math inline">\(1/(1+SE^2/\sigma^2)\)</span>, where <span class="math inline">\(SE\)</span> is a vector of standard errors, the diagonal of the residual co-variance matrix is <span class="math inline">\(\sigma^2 + SE^2\)</span>. Because the weights include the residual variance parameter, the function uses an iterative approach.</p>
+<p>To illustrate the approach, we add some arbitrary SE-values to the data</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>dt<span class="op">$</span>SE &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="kw">nrow</span>(dt), <span class="dt">min =</span> <span class="fl">0.1</span>, <span class="dt">max =</span> <span class="fl">0.2</span>) </span></code></pre></div>
 <p><code>Almer_SE</code> can then be used to estimate the means and variances of the process taking the uncertainty into account.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1">mod_SE &lt;-<span class="st"> </span><span class="kw">Almer_SE</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">SE =</span> dt<span class="op">$</span>SE, <span class="dt">A =</span> <span class="kw">list</span>(<span class="dt">species =</span> A))</a>
-<a class="sourceLine" id="cb8-2" data-line-number="2"><span class="kw">summary</span>(mod_SE)</a>
-<a class="sourceLine" id="cb8-3" data-line-number="3"><span class="co">#&gt; Linear mixed model fit by REML ['lmerMod']</span></a>
-<a class="sourceLine" id="cb8-4" data-line-number="4"><span class="co">#&gt; Formula: formula</span></a>
-<a class="sourceLine" id="cb8-5" data-line-number="5"><span class="co">#&gt;    Data: ..1</span></a>
-<a class="sourceLine" id="cb8-6" data-line-number="6"><span class="co">#&gt; Weights: wgth</span></a>
-<a class="sourceLine" id="cb8-7" data-line-number="7"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb8-8" data-line-number="8"><span class="co">#&gt; REML criterion at convergence: 73.4</span></a>
-<a class="sourceLine" id="cb8-9" data-line-number="9"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb8-10" data-line-number="10"><span class="co">#&gt; Scaled residuals: </span></a>
-<a class="sourceLine" id="cb8-11" data-line-number="11"><span class="co">#&gt;      Min       1Q   Median       3Q      Max </span></a>
-<a class="sourceLine" id="cb8-12" data-line-number="12"><span class="co">#&gt; -1.39354 -0.67095 -0.03856  0.60664  1.61089 </span></a>
-<a class="sourceLine" id="cb8-13" data-line-number="13"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb8-14" data-line-number="14"><span class="co">#&gt; Random effects:</span></a>
-<a class="sourceLine" id="cb8-15" data-line-number="15"><span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span></a>
-<a class="sourceLine" id="cb8-16" data-line-number="16"><span class="co">#&gt;  species  (Intercept) 1.046    1.023   </span></a>
-<a class="sourceLine" id="cb8-17" data-line-number="17"><span class="co">#&gt;  Residual             1.548    1.244   </span></a>
-<a class="sourceLine" id="cb8-18" data-line-number="18"><span class="co">#&gt; Number of obs: 20, groups:  species, 20</span></a>
-<a class="sourceLine" id="cb8-19" data-line-number="19"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb8-20" data-line-number="20"><span class="co">#&gt; Fixed effects:</span></a>
-<a class="sourceLine" id="cb8-21" data-line-number="21"><span class="co">#&gt;             Estimate Std. Error t value</span></a>
-<a class="sourceLine" id="cb8-22" data-line-number="22"><span class="co">#&gt; (Intercept)   3.9985     0.5061     7.9</span></a></code></pre></div>
-<p>Note that the estimated residual variances represent the residual variance after correcting for the uncertainty in the means.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>mod_SE &lt;-<span class="st"> </span><span class="kw">Almer_SE</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">SE =</span> dt<span class="op">$</span>SE, <span class="dt">A =</span> <span class="kw">list</span>(<span class="dt">species =</span> A))</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="kw">summary</span>(mod_SE)</span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="co">#&gt; Linear mixed model fit by REML [&#39;lmerMod&#39;]</span></span>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="co">#&gt; Formula: formula</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a><span class="co">#&gt;    Data: ..1</span></span>
+<span id="cb8-6"><a href="#cb8-6"></a><span class="co">#&gt; Weights: wgth</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a><span class="co">#&gt; </span></span>
+<span id="cb8-8"><a href="#cb8-8"></a><span class="co">#&gt; REML criterion at convergence: 85.5</span></span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="co">#&gt; </span></span>
+<span id="cb8-10"><a href="#cb8-10"></a><span class="co">#&gt; Scaled residuals: </span></span>
+<span id="cb8-11"><a href="#cb8-11"></a><span class="co">#&gt;     Min      1Q  Median      3Q     Max </span></span>
+<span id="cb8-12"><a href="#cb8-12"></a><span class="co">#&gt; -1.6886 -0.5635 -0.1158  0.2280  2.0769 </span></span>
+<span id="cb8-13"><a href="#cb8-13"></a><span class="co">#&gt; </span></span>
+<span id="cb8-14"><a href="#cb8-14"></a><span class="co">#&gt; Random effects:</span></span>
+<span id="cb8-15"><a href="#cb8-15"></a><span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span></span>
+<span id="cb8-16"><a href="#cb8-16"></a><span class="co">#&gt;  species  (Intercept) 0.000    0.000   </span></span>
+<span id="cb8-17"><a href="#cb8-17"></a><span class="co">#&gt;  Residual             4.482    2.117   </span></span>
+<span id="cb8-18"><a href="#cb8-18"></a><span class="co">#&gt; Number of obs: 20, groups:  species, 20</span></span>
+<span id="cb8-19"><a href="#cb8-19"></a><span class="co">#&gt; </span></span>
+<span id="cb8-20"><a href="#cb8-20"></a><span class="co">#&gt; Fixed effects:</span></span>
+<span id="cb8-21"><a href="#cb8-21"></a><span class="co">#&gt;             Estimate Std. Error t value</span></span>
+<span id="cb8-22"><a href="#cb8-22"></a><span class="co">#&gt; (Intercept)   4.2096     0.4747   8.868</span></span></code></pre></div>
+<p>Note that the estimated residual variances represent the residual variance after correcting for the uncertainty in the means. Thus, this function can be useful for meta analyses.</p>
 </div>
 <div id="simulating-data-and-bootstrapping" class="section level1">
 <h1>Simulating data and bootstrapping</h1>
-<p>The <code>Almer_sim</code> function can be used to simulate the responses, in our case species means, of the fitted models of both <code>Almer</code> and <code>Almer_SE</code>. Note that the <code>simulate.merMod</code> function did not seem to work properly when the number of random effects equal the number of observations, and could therefore not be used.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1">sim_y &lt;-<span class="st"> </span><span class="kw">Almer_sim</span>(mod, <span class="dt">nsim =</span> <span class="dv">3</span>)</a>
-<a class="sourceLine" id="cb9-2" data-line-number="2">sim_y[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>,]</a>
-<a class="sourceLine" id="cb9-3" data-line-number="3"><span class="co">#&gt; 3 x 3 Matrix of class &quot;dgeMatrix&quot;</span></a>
-<a class="sourceLine" id="cb9-4" data-line-number="4"><span class="co">#&gt;      Sim_1    Sim_2     Sim_3</span></a>
-<a class="sourceLine" id="cb9-5" data-line-number="5"><span class="co">#&gt; 1 2.001039 4.849538 4.3710890</span></a>
-<a class="sourceLine" id="cb9-6" data-line-number="6"><span class="co">#&gt; 2 4.097834 3.795912 3.5212238</span></a>
-<a class="sourceLine" id="cb9-7" data-line-number="7"><span class="co">#&gt; 3 4.609442 4.842984 0.5114994</span></a></code></pre></div>
-<p>This can further be used to do bootstrapping. This is implemented in the Almer_boot function.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="co"># The number of bootstrap simulations is kept very low in the interest </span></a>
-<a class="sourceLine" id="cb10-2" data-line-number="2"><span class="co"># of computational speed. Often 1000 is used in real analyses.</span></a>
-<a class="sourceLine" id="cb10-3" data-line-number="3">Almer_boot_obj &lt;-<span class="st"> </span><span class="kw">Almer_boot</span>(mod, <span class="dt">nsim =</span> <span class="dv">10</span>) </a>
-<a class="sourceLine" id="cb10-4" data-line-number="4">Almer_boot_obj<span class="op">$</span>fixef</a>
-<a class="sourceLine" id="cb10-5" data-line-number="5"><span class="co">#&gt;                Mean Std. Err.     2.5%    97.5%</span></a>
-<a class="sourceLine" id="cb10-6" data-line-number="6"><span class="co">#&gt; (Intercept) 3.79232 0.4610938 3.123215 4.336747</span></a>
-<a class="sourceLine" id="cb10-7" data-line-number="7">Almer_boot_obj<span class="op">$</span>vcov</a>
-<a class="sourceLine" id="cb10-8" data-line-number="8"><span class="co">#&gt;               Mean Std. Err.     2.5%    97.5%</span></a>
-<a class="sourceLine" id="cb10-9" data-line-number="9"><span class="co">#&gt; species  0.8324903 1.1350233 0.000000 2.781280</span></a>
-<a class="sourceLine" id="cb10-10" data-line-number="10"><span class="co">#&gt; Residual 1.6579739 0.7944041 0.185922 2.628526</span></a></code></pre></div>
+<p>The <code>Almer_sim</code> function can be used to simulate the responses, in our case species means, of the fitted models of both <code>Almer</code> and <code>Almer_SE</code>. Note that the <code>lme4::simulate.merMod</code> function did not seem to work properly when the number of random effects equal the number of observations, and could therefore not be used.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>sim_y &lt;-<span class="st"> </span><span class="kw">Almer_sim</span>(mod, <span class="dt">nsim =</span> <span class="dv">3</span>)</span>
+<span id="cb9-2"><a href="#cb9-2"></a>sim_y[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>,]</span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="co">#&gt; 3 x 3 Matrix of class &quot;dgeMatrix&quot;</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="co">#&gt;      Sim_1    Sim_2    Sim_3</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="co">#&gt; 1 6.624368 1.594903 7.041287</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a><span class="co">#&gt; 2 5.145173 3.084921 6.458468</span></span>
+<span id="cb9-7"><a href="#cb9-7"></a><span class="co">#&gt; 3 5.956084 7.560480 5.220616</span></span></code></pre></div>
+<p>This can further be used to do bootstrapping, implemented in <code>Almer_boot</code>.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="co"># The number of bootstrap simulations is kept very low in the interest </span></span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="co"># of computational speed. Often 1000 is used in real analyses.</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>Almer_boot_obj &lt;-<span class="st"> </span><span class="kw">Almer_boot</span>(mod, <span class="dt">nsim =</span> <span class="dv">10</span>) </span>
+<span id="cb10-4"><a href="#cb10-4"></a>Almer_boot_obj<span class="op">$</span>fixef</span>
+<span id="cb10-5"><a href="#cb10-5"></a><span class="co">#&gt;                 Mean Std. Err.     2.5%    97.5%</span></span>
+<span id="cb10-6"><a href="#cb10-6"></a><span class="co">#&gt; (Intercept) 3.963601 0.5568191 3.163458 4.640822</span></span>
+<span id="cb10-7"><a href="#cb10-7"></a>Almer_boot_obj<span class="op">$</span>vcov</span>
+<span id="cb10-8"><a href="#cb10-8"></a><span class="co">#&gt;              Mean Std. Err.        2.5%    97.5%</span></span>
+<span id="cb10-9"><a href="#cb10-9"></a><span class="co">#&gt; species  1.465271  2.584920 0.00000e+00 6.562293</span></span>
+<span id="cb10-10"><a href="#cb10-10"></a><span class="co">#&gt; Residual 3.429189  2.542535 1.49837e-08 5.883723</span></span></code></pre></div>
 </div>
 <div id="phylogenetic-heritability" class="section level1">
 <h1>Phylogenetic heritability</h1>
-<p>The phylH function can be used to estimate the phylogenetic heritability of a object fitted by Almer. The 95% confidence interval is estimated by bootstrapping. The name of the numerator of the heritability, and unless the phylogenetic residual is estimated as residuals in the model fit, the name of the phylogenetic residuals also needs to be given.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1"><span class="co"># The number of bootstrap simulations is kept very low in the interest </span></a>
-<a class="sourceLine" id="cb11-2" data-line-number="2"><span class="co"># of computational speed. Often 1000 is used in real analyses.</span></a>
-<a class="sourceLine" id="cb11-3" data-line-number="3">phylH_obj &lt;-<span class="st"> </span><span class="kw">phylH</span>(mod, <span class="dt">numerator =</span> <span class="st">&quot;species&quot;</span>, <span class="dt">nsim =</span> <span class="dv">10</span>) </a>
-<a class="sourceLine" id="cb11-4" data-line-number="4">phylH_obj<span class="op">$</span>phylH</a>
-<a class="sourceLine" id="cb11-5" data-line-number="5"><span class="co">#&gt; Phylo Heritability               2.5%              97.5% </span></a>
-<a class="sourceLine" id="cb11-6" data-line-number="6"><span class="co">#&gt;          0.3964313          0.0000000          0.9452839</span></a></code></pre></div>
+<p>The <code>phylH</code> function can be used to estimate the phylogenetic heritability of a object fitted by <code>Almer</code>. The 95% confidence interval is estimated by parametric bootstrapping. Both the name of the numerator of the heritability and, unless the phylogenetic residual is estimated as residuals in the model fit, the name of the phylogenetic residuals need to be specified.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># The number of bootstrap simulations is kept very low in the interest </span></span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="co"># of computational speed. Often 1000 is used in real analyses.</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a>phylH_obj &lt;-<span class="st"> </span><span class="kw">phylH</span>(mod, <span class="dt">numerator =</span> <span class="st">&quot;species&quot;</span>, <span class="dt">nsim =</span> <span class="dv">10</span>) </span>
+<span id="cb11-4"><a href="#cb11-4"></a>phylH_obj<span class="op">$</span>phylH</span>
+<span id="cb11-5"><a href="#cb11-5"></a><span class="co">#&gt; Phylo Heritability               2.5%              97.5% </span></span>
+<span id="cb11-6"><a href="#cb11-6"></a><span class="co">#&gt;          0.0000000          0.0000000          0.9789586</span></span></code></pre></div>
 </div>
 
 
