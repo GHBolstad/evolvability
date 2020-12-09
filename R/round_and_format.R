@@ -24,6 +24,7 @@ round_and_format <- function(x, digits = 2, sign_digits = NULL, scientific = FAL
             nsmall <- nchar_x[2] + sign_digits - sign_digits_displayed
         } else {
             nsmall <- sign_digits - nchar_x[1]
+            if(nsmall<0) nsmall <- 0
         }
         format(x, nsmall = nsmall, scientific = scientific, trim = trim)
     }
