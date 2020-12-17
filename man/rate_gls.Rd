@@ -69,8 +69,7 @@ An object of \code{class} \code{'rate_gls'}, which is a list with the
   'predictor_BM' model, the BM-rate parameter for log x for the
   'predictor_gBM' model, and the variance of x for the 'recent_evolution'
   model. \cr \code{R2} \tab\tab\tab\tab The generalized R squared of the GLS
-  model fit. \cr \code{GLS_objective_score} \tab\tab\tab\tab The score of the
-  GLS objective function. \cr \code{b_all_iterations} \tab\tab\tab\tab The
+  model fit. \cr \code{b_all_iterations} \tab\tab\tab\tab The
   values for the parameter b through all iterations. \cr \code{R}
   \tab\tab\tab\tab The residual variance matrix. \cr \code{Beta}
   \tab\tab\tab\tab The intercept and slope of GLS regression. \cr
@@ -111,7 +110,7 @@ before fitting these models.
   respectively.
 }
 \examples{
-# Also see the vignette 'Analyzing rates of evolution'.
+# Also see the vignette 'Analyzing_rates_of_evolution'.
 
 \dontrun{
 # Generating a tree with 500 species

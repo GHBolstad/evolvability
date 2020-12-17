@@ -63,8 +63,7 @@
 #'   'predictor_BM' model, the BM-rate parameter for log x for the
 #'   'predictor_gBM' model, and the variance of x for the 'recent_evolution'
 #'   model. \cr \code{R2} \tab\tab\tab\tab The generalized R squared of the GLS
-#'   model fit. \cr \code{GLS_objective_score} \tab\tab\tab\tab The score of the
-#'   GLS objective function. \cr \code{b_all_iterations} \tab\tab\tab\tab The
+#'   model fit. \cr \code{b_all_iterations} \tab\tab\tab\tab The
 #'   values for the parameter b through all iterations. \cr \code{R}
 #'   \tab\tab\tab\tab The residual variance matrix. \cr \code{Beta}
 #'   \tab\tab\tab\tab The intercept and slope of GLS regression. \cr
@@ -80,7 +79,7 @@
 #'   methods. Systematic Biology. In review.
 #' @author Geir H. Bolstad
 #' @examples
-#' # Also see the vignette 'Analyzing rates of evolution'.
+#' # Also see the vignette 'Analyzing_rates_of_evolution'.
 #'
 #' \dontrun{
 #' # Generating a tree with 500 species
@@ -149,7 +148,7 @@
 #' @importFrom ape vcv
 #' @importFrom lme4 VarCorr
 #' @importFrom Matrix Matrix solve Diagonal rowSums
-#' @importFrom stats coef lm
+#' @importFrom stats coef lm lm.fit
 #' @export
 rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(a = NULL, 
     b = NULL), maxiter = 100, silent = FALSE, useLFO = TRUE, tol = 0.001, alternative_recent_evol_mod = FALSE) {
@@ -288,7 +287,6 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     X <- as.matrix(cbind(rep(1, length(x)), x))
     
     #### Response variabe and initial values ####
-    obj <- NULL    # objective function scores
     a <- startv$a  # parameter of the process
     b <- startv$b  # parameter of the process
     
@@ -335,20 +333,17 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
         inv_dVinv <- diag(x = 1/diag(Vinv))
         U <- inv_dVinv%*%Vinv
         Q <- U %*% inv_dVinv
-        UU <- U*U
+        UU <- U*U        
+        x <- c(UU%*%x)
+        X <- as.matrix(cbind(rep(1, length(x)), x))
         if(!alternative_recent_evol_mod){
-          X <- as.matrix(cbind(rep(1, length(x))))
           R <- R_func(a = a, b = b)
-          mod <- GLS(y = y2, X, R, coef_only = FALSE)$coef
+          X_int <- as.matrix(cbind(rep(1, length(x))))
+          mod <- GLS(y = y2, X_int, R, coef_only = FALSE)$coef
           a <- a_func(mod)
           a_SE <- a_SE_func(as.matrix(mod[2]))  
+          #X <- as.matrix(cbind(x))
         }        
-        x <- c(UU%*%x)
-        if(alternative_recent_evol_mod){
-          X <- as.matrix(cbind(rep(1, length(x)), x))
-        } else {
-          X <- as.matrix(cbind(x))
-        }
     }
     a_start <- a
     b_start <- b
@@ -380,8 +375,13 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
         # GLS estimates
         if(!alternative_recent_evol_mod & model=="recent_evol"){
           AA <- residvar*mean(diag(U%*%U))+sigma2_y*mean(diag(U%*%A%*%U))
-          mod <- GLS(y = y2-AA, X, R, coef_only = TRUE)
-          Beta <- cbind(c(AA, mod$coef))
+          L <- t(chol(R))
+          X_star <- forwardsolve(L, X)
+          y_star <- forwardsolve(L, y2)
+          y_star_centr <- y_star-X_star%*%c(AA, 0)
+          X_b <- cbind(X_star[,2])
+          obj <- lm.fit(X_b, y_star_centr)
+          Beta <- cbind(c(AA, obj$coefficients))
         } else {
           mod <- GLS(y = y2, X, R, coef_only = TRUE) 
           Beta <- cbind(mod$coef)
@@ -389,9 +389,6 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
         
         a[i+1] <- a_func(Beta)
         b[i+1] <- b_func(Beta)
-        
-        # Objective function
-        obj[i] <- mod$GSSE
         
         # Convergence & verbose
         a_diff <- abs(a[i+1]-a[i])/sd(y2)
@@ -429,9 +426,13 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     }
         
     if(!alternative_recent_evol_mod & model=="recent_evol"){
-      mod <- GLS(y = y2-AA, X, R)
-      Beta_vcov <- mod$coef_vcov
-      param <- cbind(rbind(a[i+1], b[i+1], s2), rbind(a_SE, sqrt(mod$coef_vcov[1,1]), s2_SE))
+      GSSE <- sum(obj$residuals^2)  # generalized residual sum of squares
+      sigma2 <- GSSE/obj$df.residual  # generalized residual variance
+      error_var <- c(sigma2) * solve(t(X_b) %*% X_b)
+      GSST <- GLS(y = y2, X_int, R, coef_only = TRUE)$GSSE # generalized total sum of squares from intercept only model
+      mod <- list(R2 = 1-GSSE/GSST)
+      Beta_vcov <- NA
+      param <- cbind(rbind(a[i+1], b[i+1], s2), rbind(a_SE, sqrt(error_var), s2_SE))
     } else {
       mod <- GLS(y2, X, R)
       Beta_vcov <- mod$coef_vcov
@@ -456,10 +457,11 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
         convergence <- "Convergence"
     }
     
-    report <- list(model = model, param = param, Rsquared = Rsquared, GLS_objective_scores = obj, 
+    report <- list(model = model, param = param, Rsquared = Rsquared, 
         a_all_iterations = a, b_all_iterations = b, R = R, Beta = Beta, Beta_vcov = Beta_vcov, tree = tree, 
         data = list(y2 = y2, x = x, y = y, x_original = x_original, y_original = y_original), 
-        convergence = convergence, alternative_recent_evol_mod = alternative_recent_evol_mod, additional_param = c(mean_y = mean_y, Vy = Vy, 
+        convergence = convergence, alternative_recent_evol_mod = alternative_recent_evol_mod, 
+        additional_param = c(mean_y = mean_y, Vy = Vy, 
             mean_x = mean_x, Vx = Vx))
     class(report) = "rate_gls"
     report$call <- match.call()
