@@ -35,7 +35,7 @@ GLS <- function(y, X, R = NULL, L = NULL, coef_only = FALSE) {
         GSSE <- sum(obj$residuals^2)  # generalized residual sum of squares
         sigma2 <- GSSE/obj$df.residual  # generalized residual variance
         error_var <- c(sigma2) * solve(t(X_star) %*% X_star)  # error variance matrix
-        X_int <- forwardsolve(L, matrix(rep(1, length(y)), ncol = 1))  # design matrix with only intercept
+        X_int <- cbind(X_star[,1]) #forwardsolve(L, matrix(rep(1, length(y)), ncol = 1))  # design matrix with only intercept
         GSST <- sum(lm.fit(X_int, forwardsolve(L, y))$residuals^2)  # generalized total sum of squares (intercept only model)
         output <- list(coef = cbind(Estimate = obj$coefficients, SE = sqrt(diag(error_var))), 
             R2 = 1 - GSSE/GSST, sigma2 = sigma2, GSSE = GSSE, coef_vcov = error_var)

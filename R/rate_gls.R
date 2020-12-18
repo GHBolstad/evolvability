@@ -173,7 +173,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     mean_y <- mod[1]
     Vy <- mod[2]^2
     
-    # mean centring
+    # mean centering
     y <- y - c(mean_y)  # note that for the residual rate model, this does not have any effect as 
     # the squared deviation from the predictions are used
     
@@ -258,8 +258,9 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
     }
     if (model == "recent_evol") {
         a_func <- function(Beta){
-            a <- (Beta[1,1] - sigma2_y*mean(diag(U%*%A%*%U)))/mean(diag(U%*%U))
-            if(a<0) a <- 0
+            a <- Beta[1,1] # !!!! NB !!!!! when the design matrix has changed!!!
+            #a <- (Beta[1,1] - sigma2_y*mean(diag(U%*%A%*%U)))/mean(diag(U%*%U))
+            #if(a<0) a <- 0
             return(a)
         } 
         b_func <- function(Beta){
@@ -269,13 +270,13 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
           R <- 2*(Q*Q) #- (b1^2)*(UU%*%(s2*I)%*%t(UU)) 
           e <- eigen(R)
           if(any(e$values<1e-8)){
-            e$values[e$values<1e-8] <- 1e-8 #ensuring that V is positive definite
+            e$values[e$values<1e-8] <- 1e-8 #ensuring that R is positive definite
             R <- e$vectors%*%diag(e$values)%*%t(e$vectors)
           }
           return(R)
         }
         a_SE_func <- function(Beta_vcov){
-            sqrt(Beta_vcov[1, 1])/mean(diag(U%*%U))  
+            sqrt(Beta_vcov[1, 1])#/mean(diag(U%*%U))  
         } 
         b_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[2, 2])
     }
@@ -308,7 +309,9 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
             sparse = TRUE)), control = lme4::lmerControl(check.nobs.vs.nlev = "ignore", 
             check.nobs.vs.rankZ = "ignore", check.nobs.vs.nRE = "ignore", optimizer="bobyqa",
             optCtrl=list(maxfun=2e5)))
-        Vy <- coef(summary(mod_Almer))[1, 2]^2
+        coef_Almer <- coef(summary(mod_Almer))
+        y <- y-coef_Almer[1,1]
+        Vy <- coef_Almer[1, 2]^2
         sigma2_y <- lme4::VarCorr(mod_Almer)$species[1]
         residvar <- attr(lme4::VarCorr(mod_Almer), "sc")^2
         if (is.null(a)){ 
@@ -317,39 +320,40 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
         if (is.null(b)){ 
             b <- 0
         }
-        diag_V_micro <- a + b * x
-        diag_V_micro[diag_V_micro < 1e-8] <- 1e-8  # Effectively zero and negative variances are replaced by small value
-        V_micro <- diag(diag_V_micro)
-        V <- sigma2_y * A + V_micro
-        e <- eigen(V)
-        if(any(e$values<1e-8)){
-          e$values[e$values<1e-8] <- 1e-8 #ensuring that V is positive definite
-          V <- e$vectors%*%diag(e$values)%*%t(e$vectors)
-        }
-        y_predicted <- macro_pred(y = y, V = V, useLFO = useLFO)
-        y2 <- (y - y_predicted)^2
-        Vinv <- chol2inv(chol(V))
-        dVinv <- diag(x = diag(Vinv))
-        inv_dVinv <- diag(x = 1/diag(Vinv))
-        U <- inv_dVinv%*%Vinv
-        Q <- U %*% inv_dVinv
-        UU <- U*U        
-        x <- c(UU%*%x)
-        X <- as.matrix(cbind(rep(1, length(x)), x))
-        if(!alternative_recent_evol_mod){
-          R <- R_func(a = a, b = b)
-          X_int <- as.matrix(cbind(rep(1, length(x))))
-          mod <- GLS(y = y2, X_int, R, coef_only = FALSE)$coef
-          a <- a_func(mod)
-          a_SE <- a_SE_func(as.matrix(mod[2]))  
-          #X <- as.matrix(cbind(x))
-        }        
+        #diag_V_micro <- a + b * x
+        #diag_V_micro[diag_V_micro < 1e-8] <- 1e-8  # Effectively zero and negative variances are replaced by small value
+        #V_micro <- diag(diag_V_micro)
+        #V <- sigma2_y * A + V_micro
+        #e <- eigen(V)
+        #if(any(e$values<1e-8)){
+        #  e$values[e$values<1e-8] <- 1e-8 #ensuring that V is positive definite
+        #  V <- e$vectors%*%diag(e$values)%*%t(e$vectors)
+        #}
+        #y_predicted <- macro_pred(y = y, V = V, useLFO = useLFO)
+        #y2 <- (y - y_predicted)^2
+        #Vinv <- chol2inv(chol(V))
+        #dVinv <- diag(x = diag(Vinv))
+        #inv_dVinv <- diag(x = 1/diag(Vinv))
+        #U1 <- inv_dVinv%*%Vinv
+        #Q <- U1 %*% inv_dVinv
+        #UU <- U1*U1        
+        #x <- c(UU%*%x)
+        #X <- as.matrix(cbind(rep(1, length(x)), x))
+        # if(!alternative_recent_evol_mod){
+        #   R <- R_func(a = a, b = b)
+        #   X_int <- as.matrix(cbind(rep(1, length(x))))
+        #   mod <- GLS(y = y2, X_int, R, coef_only = FALSE)$coef
+        #   a <- a_func(mod)
+        #   a_SE <- a_SE_func(as.matrix(mod[2]))  
+        #   #X <- as.matrix(cbind(x))
+        # }        
     }
     a_start <- a
     b_start <- b
     
     #### Iterative GLS ####
     starting_values_used <- c(1, rep(0,maxiter - 1))
+    convergence_score <- c()
     for (i in 1:maxiter) {
         if (model == "recent_evol") {
             diag_V_micro <- a_start + b_start * c(x)
@@ -364,28 +368,33 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
             Vinv <- chol2inv(chol(V))
             dVinv <- diag(x = diag(Vinv))
             inv_dVinv <- diag(x = 1/diag(Vinv))
-            U <- inv_dVinv%*%Vinv
-            Q <- U %*% inv_dVinv
-            UU <- U*U
+            U1 <- inv_dVinv%*%Vinv
+            U2 <- Vinv%*%inv_dVinv
+            Q <- U1 %*% inv_dVinv
+            UU <- U1*U1
+            x <- c(UU%*%(x_original-c(mean_x)))
+            y_predicted <- macro_pred(y = y, V = V, useLFO = useLFO)
+            y2 <- (y - y_predicted)^2 - sigma2_y*diag(U1%*%A%*%U2)
+            X <-  as.matrix(cbind(diag(U1%*%U2), x))
         }
         
         # Residual variance matrix
         R <- R_func(a = a_start, b = b_start)
       
         # GLS estimates
-        if(!alternative_recent_evol_mod & model=="recent_evol"){
-          AA <- residvar*mean(diag(U%*%U))+sigma2_y*mean(diag(U%*%A%*%U))
-          L <- t(chol(R))
-          X_star <- forwardsolve(L, X)
-          y_star <- forwardsolve(L, y2)
-          y_star_centr <- y_star-X_star%*%c(AA, 0)
-          X_b <- cbind(X_star[,2])
-          obj <- lm.fit(X_b, y_star_centr)
-          Beta <- cbind(c(AA, obj$coefficients))
-        } else {
+        #if(!alternative_recent_evol_mod & model=="recent_evol"){
+          #AA <- a[i]*mean(diag(U1%*%U2))+sigma2_y*mean(diag(U1%*%A%*%U2))
+          #L <- t(chol(R))
+          #X_star <- forwardsolve(L, X)
+          #y_star <- forwardsolve(L, y2)
+          #y_star_centr <- y_star-X_star%*%c(AA, 0)
+          #X_b <- cbind(X_star[,2])
+          #obj <- lm.fit(X_b, y_star_centr)
+          #Beta <- cbind(c(AA, obj$coefficients))
+        #} else {
           mod <- GLS(y = y2, X, R, coef_only = TRUE) 
           Beta <- cbind(mod$coef)
-        }
+        #}
         
         a[i+1] <- a_func(Beta)
         b[i+1] <- b_func(Beta)
@@ -393,14 +402,14 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
         # Convergence & verbose
         a_diff <- abs(a[i+1]-a[i])/sd(y2)
         b_diff <- abs(b[i+1]-b[i])/(sd(y2)/sd(x))
-        convergence_score <- max(a_diff, b_diff)
+        convergence_score[i] <- max(a_diff, b_diff)
         
         if (!silent){ 
-          print(paste0("i=", i, "; a=", a[i+1], "; b=", b[i+1], "; converg score=", convergence_score))
+          print(paste0("i=", i, "; a=", a[i+1], "; b=", b[i+1], "; converg score=", convergence_score[i]))
         }
         
-        if(convergence_score<tol & 
-           !is.na(convergence_score) & 
+        if(convergence_score[i]<tol & 
+           !is.na(convergence_score[i]) & 
            starting_values_used[i] == 0){ 
                 break()
         }
@@ -417,32 +426,41 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
           diff_3 <- abs(b[i+1] - b[i-2])
           diff_4 <- abs(b[i+1] - b[i-3])
           if(min(c(diff_2, diff_3, diff_4)) < diff_1*0.8) {
-            a_start <- ifelse(model == "recent_evol", residvar, runif(1, min(a[(i-2):(i+1)]), max(a[(i-2):(i+1)])))
+            #a_start <- ifelse(model == "recent_evol", residvar, runif(1, min(a[(i-2):(i+1)]), max(a[(i-2):(i+1)])))
+            a_start <- runif(1, min(a[(i-2):(i+1)]), max(a[(i-2):(i+1)]))
             b_start <- runif(1, min(b[i:((i-2)+1)]), max(b[(i-2):(i+1)]))
+            #conv <- convergence_score[starting_values_used[1:i]==0]
+            #best_startvalues <- which(convergence_score%in%sort(conv)[1:10])
+            #a_start <- runif(1, min(a[best_startvalues]), max(a[best_startvalues]))
+            #b_start <- runif(1, min(b[best_startvalues]), max(b[best_startvalues]))
             starting_values_used[i+1] <- 1
           }
        }
-
     }
         
-    if(!alternative_recent_evol_mod & model=="recent_evol"){
-      GSSE <- sum(obj$residuals^2)  # generalized residual sum of squares
-      sigma2 <- GSSE/obj$df.residual  # generalized residual variance
-      error_var <- c(sigma2) * solve(t(X_b) %*% X_b)
-      GSST <- GLS(y = y2, X_int, R, coef_only = TRUE)$GSSE # generalized total sum of squares from intercept only model
-      mod <- list(R2 = 1-GSSE/GSST)
-      Beta_vcov <- NA
-      param <- cbind(rbind(a[i+1], b[i+1], s2), rbind(a_SE, sqrt(error_var), s2_SE))
-    } else {
+    #if(!alternative_recent_evol_mod & model=="recent_evol"){
+      # GSSE <- sum(obj$residuals^2)  # generalized residual sum of squares
+      # sigma2 <- GSSE/obj$df.residual  # generalized residual variance
+      # error_var <- c(sigma2) * solve(t(X_b) %*% X_b)
+      # GSST <- GLS(y = y2, X_int, R, coef_only = TRUE)$GSSE # generalized total sum of squares from intercept only model
+      # mod <- list(R2 = 1-GSSE/GSST)
+      # Beta_vcov <- NA
+      # param <- cbind(rbind(a[i+1], b[i+1], s2), rbind(a_SE, sqrt(error_var), s2_SE))
+    #} else {
+    
       mod <- GLS(y2, X, R)
       Beta_vcov <- mod$coef_vcov
       param <- cbind(rbind(a[i+1], b[i+1], s2), rbind(a_SE_func(Beta_vcov), 
           b_SE_func(Beta_vcov), s2_SE))
-    }
+    #}
     colnames(param) <- c("Estimate", "SE")
     rownames(param) <- c("a", "b", "sigma(x)^2")
     
+    intercept_plot <- mod$coef[1,1]
+    
     if (model == "recent_evol") {
+        y2 <- (y - y_predicted)^2
+        intercept_plot <- a[i+1]*mean(diag(U1%*%U2))+sigma2_y*mean(diag(U1%*%A%*%U2))
         param <- rbind(param, cbind(sigma2_y, NA))
         rownames(param)[4] <- "sigma(y)^2"
     }
@@ -462,7 +480,7 @@ rate_gls <- function(x, y, species, tree, model = "predictor_BM", startv = list(
         data = list(y2 = y2, x = x, y = y, x_original = x_original, y_original = y_original), 
         convergence = convergence, alternative_recent_evol_mod = alternative_recent_evol_mod, 
         additional_param = c(mean_y = mean_y, Vy = Vy, 
-            mean_x = mean_x, Vx = Vx))
+            mean_x = mean_x, Vx = Vx, intercept_plot=intercept_plot))
     class(report) = "rate_gls"
     report$call <- match.call()
     report
@@ -503,7 +521,7 @@ plot.rate_gls = function(x, scale = "SD", print_param = TRUE, digits_param = 2, 
     main = "GLS regression", xlab = "x", ylab = "Response", col = "grey", cex.legend = 1, ...) {
     mod <- x
     x <- seq(min(mod$data$x), max(mod$data$x), length.out = 100)
-    y <- mod$Beta[1] + mod$Beta[2] * x
+    y <- mod$additional_param["intercept_plot"] + mod$Beta[2] * x
     if (scale == "SD") {
         y <- try(sqrt(y))
     }
@@ -620,3 +638,4 @@ rate_gls_boot <- function(object, n = 10, useLFO = TRUE, silent = FALSE, maxiter
         t(apply(boot_distribution, 2, function(x) quantile(x, probs = c(0.025, 0.975), na.rm = TRUE)))), 
         boot_distribution = cbind(boot_distribution, percent_negative_roots = perc_neg)))
 }
+
