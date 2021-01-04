@@ -16,7 +16,7 @@ Almer_SE(
 \arguments{
 \item{formula}{as in \code{\link{lmer}}.}
 
-\item{SE}{A vector of standard errors associated with the response variable.}
+\item{SE}{A vector of standard errors associated with the response variable. NB! Must have column name "SE" in the data.}
 
 \item{maxiter}{The maximum number of iterations.}
 

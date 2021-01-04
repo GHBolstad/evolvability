@@ -56,7 +56,7 @@ Almer <- function(formula, data = NULL, A = list(), REML = TRUE, control = lme4:
 #' \code{Almer_SE} Linear mixed model for response variables with uncertainty
 #' 
 #' @param formula as in \code{\link{lmer}}.
-#' @param SE A vector of standard errors associated with the response variable.
+#' @param SE A vector of standard errors associated with the response variable. NB! Must have column name "SE" in the data.
 #' @param maxiter The maximum number of iterations.
 #' @param control as in \code{\link{lmer}}.
 #' @param ... Further optional arguments, see \code{\link{Almer}}.
@@ -68,8 +68,8 @@ Almer <- function(formula, data = NULL, A = list(), REML = TRUE, control = lme4:
 #' @export
 Almer_SE <- function(formula, SE = NULL, maxiter = 100, control = lme4::lmerControl(check.nobs.vs.nlev = "ignore", 
     check.nobs.vs.rankZ = "ignore", check.nobs.vs.nRE = "ignore"), ...) {
-    if (is.null(SE)) 
-        stop("No SE. Use Almer instead")
+    if (is.null(SE)) stop("No SE. Use Almer instead")
+    mc <- match.call()
     wgth <- 1/(1 + SE^2)
     mod <- Almer(formula, weights = wgth, control = control, ...)
     for (i in 1:maxiter) {
@@ -82,6 +82,8 @@ Almer_SE <- function(formula, SE = NULL, maxiter = 100, control = lme4::lmerCont
     if (i == maxiter) {
         warning("Optimization of weights reached maximum number of iterations.")
     }
+    mod@call <- evalq(mc)
+    mod@frame$SE <- SE
     return(mod)
 }
 
@@ -114,6 +116,7 @@ Almer_sim <- function(mod, nsim = 1000) {
         x))
     Residuals <- rnorm(length(residuals(mod)) * nsim, 0, SD[SD$grp == "Residual", 
         "sdcor"])
+    if(any(names(mod@frame)%in%"SE")) Residuals <- Residuals + rnorm(nrow(mod@frame), 0, sd=mod@frame$SE)
     Fixef <- matrix(rep(mod@pp$X %*% fixef(mod), nsim), ncol = nsim)
     y <- Fixef + Ranef + Residuals
     colnames(y) <- paste("Sim", 1:nsim, sep = "_")

@@ -8,7 +8,8 @@ library(evolvability)
 ## -----------------------------------------------------------------------------
 # Only a very small sample size is used 
 # in the interest of computational speed:
-n_species <- 20 
+set.seed(57)
+n_species <- 50 
 tree <- ape::rtree(n = n_species)
 tree <- ape::chronopl(tree, lambda = 1)
 
@@ -30,7 +31,7 @@ mod <- Almer(y ~ 1 + (1|species), data = dt, A = list(species = A))
 summary(mod)
 
 ## -----------------------------------------------------------------------------
-dt$SE <- runif(nrow(dt), min = 0.1, max = 0.2) 
+dt$SE <- runif(nrow(dt), min = 0.01, max = 0.02) 
 
 ## -----------------------------------------------------------------------------
 mod_SE <- Almer_SE(y ~ 1 + (1|species), data = dt, SE = dt$SE, A = list(species = A))

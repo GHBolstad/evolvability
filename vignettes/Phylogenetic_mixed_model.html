@@ -12,7 +12,7 @@
 
 <meta name="author" content="Geir H. Bolstad" />
 
-<meta name="date" content="2020-12-08" />
+<meta name="date" content="2021-01-04" />
 
 <title>Phylogenetic mixed model</title>
 
@@ -367,7 +367,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Phylogenetic mixed model</h1>
 <h4 class="author">Geir H. Bolstad</h4>
-<h4 class="date">2020-12-08</h4>
+<h4 class="date">2021-01-04</h4>
 
 
 
@@ -377,9 +377,10 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>To start, we need an ultrametric phylogeny of unit depth. We can construct this, for example, using the function <code>rtree</code> of the <code>ape</code> package.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># Only a very small sample size is used </span></span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="co"># in the interest of computational speed:</span></span>
-<span id="cb1-3"><a href="#cb1-3"></a>n_species &lt;-<span class="st"> </span><span class="dv">20</span> </span>
-<span id="cb1-4"><a href="#cb1-4"></a>tree &lt;-<span class="st"> </span>ape<span class="op">::</span><span class="kw">rtree</span>(<span class="dt">n =</span> n_species)</span>
-<span id="cb1-5"><a href="#cb1-5"></a>tree &lt;-<span class="st"> </span>ape<span class="op">::</span><span class="kw">chronopl</span>(tree, <span class="dt">lambda =</span> <span class="dv">1</span>)</span></code></pre></div>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">set.seed</span>(<span class="dv">57</span>)</span>
+<span id="cb1-4"><a href="#cb1-4"></a>n_species &lt;-<span class="st"> </span><span class="dv">50</span> </span>
+<span id="cb1-5"><a href="#cb1-5"></a>tree &lt;-<span class="st"> </span>ape<span class="op">::</span><span class="kw">rtree</span>(<span class="dt">n =</span> n_species)</span>
+<span id="cb1-6"><a href="#cb1-6"></a>tree &lt;-<span class="st"> </span>ape<span class="op">::</span><span class="kw">chronopl</span>(tree, <span class="dt">lambda =</span> <span class="dv">1</span>)</span></code></pre></div>
 <p>From this we can generate the phylogenetic relatedness matrix A.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>A &lt;-<span class="st"> </span>Matrix<span class="op">::</span><span class="kw">Matrix</span>(ape<span class="op">::</span><span class="kw">vcv</span>(tree), <span class="dt">sparse =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
 <p>The column names of A must be the species identifier.</p>
@@ -396,51 +397,50 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb6-4"><a href="#cb6-4"></a><span class="co">#&gt; Formula: y ~ 1 + (1 | species)</span></span>
 <span id="cb6-5"><a href="#cb6-5"></a><span class="co">#&gt;    Data: dt</span></span>
 <span id="cb6-6"><a href="#cb6-6"></a><span class="co">#&gt; </span></span>
-<span id="cb6-7"><a href="#cb6-7"></a><span class="co">#&gt; REML criterion at convergence: 85.5</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="co">#&gt; REML criterion at convergence: 209.4</span></span>
 <span id="cb6-8"><a href="#cb6-8"></a><span class="co">#&gt; </span></span>
 <span id="cb6-9"><a href="#cb6-9"></a><span class="co">#&gt; Scaled residuals: </span></span>
-<span id="cb6-10"><a href="#cb6-10"></a><span class="co">#&gt;     Min      1Q  Median      3Q     Max </span></span>
-<span id="cb6-11"><a href="#cb6-11"></a><span class="co">#&gt; -1.6893 -0.5633 -0.1151  0.2288  2.0783 </span></span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="co">#&gt;      Min       1Q   Median       3Q      Max </span></span>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="co">#&gt; -1.57466 -0.59782 -0.02876  0.49887  1.75585 </span></span>
 <span id="cb6-12"><a href="#cb6-12"></a><span class="co">#&gt; </span></span>
 <span id="cb6-13"><a href="#cb6-13"></a><span class="co">#&gt; Random effects:</span></span>
 <span id="cb6-14"><a href="#cb6-14"></a><span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span></span>
-<span id="cb6-15"><a href="#cb6-15"></a><span class="co">#&gt;  species  (Intercept) 0.000    0.000   </span></span>
-<span id="cb6-16"><a href="#cb6-16"></a><span class="co">#&gt;  Residual             4.506    2.123   </span></span>
-<span id="cb6-17"><a href="#cb6-17"></a><span class="co">#&gt; Number of obs: 20, groups:  species, 20</span></span>
+<span id="cb6-15"><a href="#cb6-15"></a><span class="co">#&gt;  species  (Intercept) 1.862    1.364   </span></span>
+<span id="cb6-16"><a href="#cb6-16"></a><span class="co">#&gt;  Residual             2.443    1.563   </span></span>
+<span id="cb6-17"><a href="#cb6-17"></a><span class="co">#&gt; Number of obs: 50, groups:  species, 50</span></span>
 <span id="cb6-18"><a href="#cb6-18"></a><span class="co">#&gt; </span></span>
 <span id="cb6-19"><a href="#cb6-19"></a><span class="co">#&gt; Fixed effects:</span></span>
 <span id="cb6-20"><a href="#cb6-20"></a><span class="co">#&gt;             Estimate Std. Error t value</span></span>
-<span id="cb6-21"><a href="#cb6-21"></a><span class="co">#&gt; (Intercept)   4.2083     0.4747   8.866</span></span></code></pre></div>
+<span id="cb6-21"><a href="#cb6-21"></a><span class="co">#&gt; (Intercept)   5.0252     0.4654    10.8</span></span></code></pre></div>
 <p>The <code>Almer</code> function is flexible (it is based on <code>lmer</code>), and can include additional fixed and random effects on top of the phylogenetic effects. Also, it is not restricted to phylogeny related problems, for example it can be used to estimate additive genetic variances and/or dominance variances (the argument <code>A</code> can have several entries).</p>
 </div>
 <div id="the-almer_se-function" class="section level1">
 <h1>The <code>Almer_SE</code> function</h1>
 <p>This function extends <code>Almer</code> by allowing the inclusion of the uncertainty of the species means. To do this, we take advantage of how weights are included in the <code>lmer</code> function: the diagonal of the residual co-variance matrix is the residual variance parameter <span class="math inline">\(\sigma^2\)</span> times the vector of inverse weights. By using weights equal to <span class="math inline">\(1/(1+SE^2/\sigma^2)\)</span>, where <span class="math inline">\(SE\)</span> is a vector of standard errors, the diagonal of the residual co-variance matrix is <span class="math inline">\(\sigma^2 + SE^2\)</span>. Because the weights include the residual variance parameter, the function uses an iterative approach.</p>
 <p>To illustrate the approach, we add some arbitrary SE-values to the data</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>dt<span class="op">$</span>SE &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="kw">nrow</span>(dt), <span class="dt">min =</span> <span class="fl">0.1</span>, <span class="dt">max =</span> <span class="fl">0.2</span>) </span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>dt<span class="op">$</span>SE &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="kw">nrow</span>(dt), <span class="dt">min =</span> <span class="fl">0.01</span>, <span class="dt">max =</span> <span class="fl">0.02</span>) </span></code></pre></div>
 <p><code>Almer_SE</code> can then be used to estimate the means and variances of the process taking the uncertainty into account.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>mod_SE &lt;-<span class="st"> </span><span class="kw">Almer_SE</span>(y <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>species), <span class="dt">data =</span> dt, <span class="dt">SE =</span> dt<span class="op">$</span>SE, <span class="dt">A =</span> <span class="kw">list</span>(<span class="dt">species =</span> A))</span>
 <span id="cb8-2"><a href="#cb8-2"></a><span class="kw">summary</span>(mod_SE)</span>
 <span id="cb8-3"><a href="#cb8-3"></a><span class="co">#&gt; Linear mixed model fit by REML [&#39;lmerMod&#39;]</span></span>
-<span id="cb8-4"><a href="#cb8-4"></a><span class="co">#&gt; Formula: formula</span></span>
-<span id="cb8-5"><a href="#cb8-5"></a><span class="co">#&gt;    Data: ..1</span></span>
-<span id="cb8-6"><a href="#cb8-6"></a><span class="co">#&gt; Weights: wgth</span></span>
-<span id="cb8-7"><a href="#cb8-7"></a><span class="co">#&gt; </span></span>
-<span id="cb8-8"><a href="#cb8-8"></a><span class="co">#&gt; REML criterion at convergence: 85.5</span></span>
-<span id="cb8-9"><a href="#cb8-9"></a><span class="co">#&gt; </span></span>
-<span id="cb8-10"><a href="#cb8-10"></a><span class="co">#&gt; Scaled residuals: </span></span>
-<span id="cb8-11"><a href="#cb8-11"></a><span class="co">#&gt;     Min      1Q  Median      3Q     Max </span></span>
-<span id="cb8-12"><a href="#cb8-12"></a><span class="co">#&gt; -1.6886 -0.5635 -0.1158  0.2280  2.0769 </span></span>
-<span id="cb8-13"><a href="#cb8-13"></a><span class="co">#&gt; </span></span>
-<span id="cb8-14"><a href="#cb8-14"></a><span class="co">#&gt; Random effects:</span></span>
-<span id="cb8-15"><a href="#cb8-15"></a><span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span></span>
-<span id="cb8-16"><a href="#cb8-16"></a><span class="co">#&gt;  species  (Intercept) 0.000    0.000   </span></span>
-<span id="cb8-17"><a href="#cb8-17"></a><span class="co">#&gt;  Residual             4.482    2.117   </span></span>
-<span id="cb8-18"><a href="#cb8-18"></a><span class="co">#&gt; Number of obs: 20, groups:  species, 20</span></span>
-<span id="cb8-19"><a href="#cb8-19"></a><span class="co">#&gt; </span></span>
-<span id="cb8-20"><a href="#cb8-20"></a><span class="co">#&gt; Fixed effects:</span></span>
-<span id="cb8-21"><a href="#cb8-21"></a><span class="co">#&gt;             Estimate Std. Error t value</span></span>
-<span id="cb8-22"><a href="#cb8-22"></a><span class="co">#&gt; (Intercept)   4.2096     0.4747   8.868</span></span></code></pre></div>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="co">#&gt; Formula: y ~ 1 + (1 | species)</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a><span class="co">#&gt;    Data: dt</span></span>
+<span id="cb8-6"><a href="#cb8-6"></a><span class="co">#&gt; </span></span>
+<span id="cb8-7"><a href="#cb8-7"></a><span class="co">#&gt; REML criterion at convergence: 209.4</span></span>
+<span id="cb8-8"><a href="#cb8-8"></a><span class="co">#&gt; </span></span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="co">#&gt; Scaled residuals: </span></span>
+<span id="cb8-10"><a href="#cb8-10"></a><span class="co">#&gt;      Min       1Q   Median       3Q      Max </span></span>
+<span id="cb8-11"><a href="#cb8-11"></a><span class="co">#&gt; -1.57461 -0.59779 -0.02875  0.49885  1.75577 </span></span>
+<span id="cb8-12"><a href="#cb8-12"></a><span class="co">#&gt; </span></span>
+<span id="cb8-13"><a href="#cb8-13"></a><span class="co">#&gt; Random effects:</span></span>
+<span id="cb8-14"><a href="#cb8-14"></a><span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span></span>
+<span id="cb8-15"><a href="#cb8-15"></a><span class="co">#&gt;  species  (Intercept) 1.862    1.365   </span></span>
+<span id="cb8-16"><a href="#cb8-16"></a><span class="co">#&gt;  Residual             2.443    1.563   </span></span>
+<span id="cb8-17"><a href="#cb8-17"></a><span class="co">#&gt; Number of obs: 50, groups:  species, 50</span></span>
+<span id="cb8-18"><a href="#cb8-18"></a><span class="co">#&gt; </span></span>
+<span id="cb8-19"><a href="#cb8-19"></a><span class="co">#&gt; Fixed effects:</span></span>
+<span id="cb8-20"><a href="#cb8-20"></a><span class="co">#&gt;             Estimate Std. Error t value</span></span>
+<span id="cb8-21"><a href="#cb8-21"></a><span class="co">#&gt; (Intercept)   5.0252     0.4654    10.8</span></span></code></pre></div>
 <p>Note that the estimated residual variances represent the residual variance after correcting for the uncertainty in the means. Thus, this function can be useful for meta analyses.</p>
 </div>
 <div id="simulating-data-and-bootstrapping" class="section level1">
@@ -450,20 +450,20 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb9-2"><a href="#cb9-2"></a>sim_y[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>,]</span>
 <span id="cb9-3"><a href="#cb9-3"></a><span class="co">#&gt; 3 x 3 Matrix of class &quot;dgeMatrix&quot;</span></span>
 <span id="cb9-4"><a href="#cb9-4"></a><span class="co">#&gt;      Sim_1    Sim_2    Sim_3</span></span>
-<span id="cb9-5"><a href="#cb9-5"></a><span class="co">#&gt; 1 6.624368 1.594903 7.041287</span></span>
-<span id="cb9-6"><a href="#cb9-6"></a><span class="co">#&gt; 2 5.145173 3.084921 6.458468</span></span>
-<span id="cb9-7"><a href="#cb9-7"></a><span class="co">#&gt; 3 5.956084 7.560480 5.220616</span></span></code></pre></div>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="co">#&gt; 1 5.171605 7.314536 3.453942</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a><span class="co">#&gt; 2 1.901284 3.038564 6.394652</span></span>
+<span id="cb9-7"><a href="#cb9-7"></a><span class="co">#&gt; 3 6.275471 6.200653 9.409682</span></span></code></pre></div>
 <p>This can further be used to do bootstrapping, implemented in <code>Almer_boot</code>.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="co"># The number of bootstrap simulations is kept very low in the interest </span></span>
 <span id="cb10-2"><a href="#cb10-2"></a><span class="co"># of computational speed. Often 1000 is used in real analyses.</span></span>
 <span id="cb10-3"><a href="#cb10-3"></a>Almer_boot_obj &lt;-<span class="st"> </span><span class="kw">Almer_boot</span>(mod, <span class="dt">nsim =</span> <span class="dv">10</span>) </span>
 <span id="cb10-4"><a href="#cb10-4"></a>Almer_boot_obj<span class="op">$</span>fixef</span>
 <span id="cb10-5"><a href="#cb10-5"></a><span class="co">#&gt;                 Mean Std. Err.     2.5%    97.5%</span></span>
-<span id="cb10-6"><a href="#cb10-6"></a><span class="co">#&gt; (Intercept) 3.963601 0.5568191 3.163458 4.640822</span></span>
+<span id="cb10-6"><a href="#cb10-6"></a><span class="co">#&gt; (Intercept) 4.984573 0.4847826 4.465023 5.788567</span></span>
 <span id="cb10-7"><a href="#cb10-7"></a>Almer_boot_obj<span class="op">$</span>vcov</span>
-<span id="cb10-8"><a href="#cb10-8"></a><span class="co">#&gt;              Mean Std. Err.        2.5%    97.5%</span></span>
-<span id="cb10-9"><a href="#cb10-9"></a><span class="co">#&gt; species  1.465271  2.584920 0.00000e+00 6.562293</span></span>
-<span id="cb10-10"><a href="#cb10-10"></a><span class="co">#&gt; Residual 3.429189  2.542535 1.49837e-08 5.883723</span></span></code></pre></div>
+<span id="cb10-8"><a href="#cb10-8"></a><span class="co">#&gt;              Mean Std. Err.     2.5%    97.5%</span></span>
+<span id="cb10-9"><a href="#cb10-9"></a><span class="co">#&gt; species  2.103980  1.820257 0.000000 4.758393</span></span>
+<span id="cb10-10"><a href="#cb10-10"></a><span class="co">#&gt; Residual 2.475891  1.672111 0.136031 5.004038</span></span></code></pre></div>
 </div>
 <div id="phylogenetic-heritability" class="section level1">
 <h1>Phylogenetic heritability</h1>
@@ -473,7 +473,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb11-3"><a href="#cb11-3"></a>phylH_obj &lt;-<span class="st"> </span><span class="kw">phylH</span>(mod, <span class="dt">numerator =</span> <span class="st">&quot;species&quot;</span>, <span class="dt">nsim =</span> <span class="dv">10</span>) </span>
 <span id="cb11-4"><a href="#cb11-4"></a>phylH_obj<span class="op">$</span>phylH</span>
 <span id="cb11-5"><a href="#cb11-5"></a><span class="co">#&gt; Phylo Heritability               2.5%              97.5% </span></span>
-<span id="cb11-6"><a href="#cb11-6"></a><span class="co">#&gt;          0.0000000          0.0000000          0.9789586</span></span></code></pre></div>
+<span id="cb11-6"><a href="#cb11-6"></a><span class="co">#&gt;          0.4324541          0.0000000          0.8836447</span></span></code></pre></div>
 </div>
 
 
