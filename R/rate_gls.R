@@ -538,7 +538,6 @@ rate_gls_boot <- function(object, n = 10, useLFO = TRUE, silent = FALSE, maxiter
         mod <- rate_gls(x = sim_out[[1]][[1]][, "x"], y = sim_out[[1]][[1]][, "y"], species = sim_out[[1]][[1]][, 
             "species"], tree = object$tree, model = object$model, maxiter = maxiter, silent = TRUE, useLFO = useLFO, 
             tol = tol)
-        #startv = list(object$param["a", 1], object$param["b", 1]), 
         boot_distribution[i, ] <- c(mod$param[, 1], mod$Rsquared)
         perc_neg[i] <- sim_out[[1]][[2]]
         if (mod$convergence != "Convergence") 

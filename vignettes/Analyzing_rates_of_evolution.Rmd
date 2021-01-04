@@ -27,7 +27,7 @@ Note that sample sizes and number of simulations below are kept small in the int
 To simulate data for the different evolutionary models, we first need an ultra-metric phylogeny. Here we generate a random phylogeny using the `ape` package. In a real data analysis you would use a molecular phylogeny of the species in your data set. 
 
 ```{r}
-set.seed(50)
+set.seed(51)
 tree <- ape::rtree(n = 50)
 tree <- ape::chronopl(tree, lambda = 1, age.min = 2)
 ```

@@ -7,8 +7,8 @@ knitr::opts_chunk$set(
 library(evolvability)
 
 ## -----------------------------------------------------------------------------
-set.seed(200)
-tree <- ape::rtree(n = 200)
+set.seed(51)
+tree <- ape::rtree(n = 50)
 tree <- ape::chronopl(tree, lambda = 1, age.min = 2)
 
 ## ---- eval=TRUE---------------------------------------------------------------
@@ -46,7 +46,7 @@ bootout <- rate_gls_boot(gls_mod, n = 10, silent = TRUE)
 round(bootout$summary, 3)
 
 ## ---- fig.height=5, fig.width=5-----------------------------------------------
-plot(gls_mod, scale = "VAR", ylab = "y^2", xlab = "x*")
+plot(gls_mod, scale = "VAR", ylab = expression(y^2), xlab = "x*")
 
 ## ---- fig.height=5, fig.width=5-----------------------------------------------
 plot(gls_mod, ylab = "|y|", xlab = "x*") # with the default: scale = "SD"
@@ -78,7 +78,7 @@ bootout <- rate_gls_boot(gls_mod, n = 10, silent = TRUE)
 round(bootout$summary, 3)
 
 ## ---- fig.height=5, fig.width=5-----------------------------------------------
-plot(gls_mod, scale = "VAR", ylab = "y^2", xlab = "x*")
+plot(gls_mod, scale = "VAR", ylab = expression(y^2), xlab = "x*")
 
 ## ---- fig.height=5, fig.width=5-----------------------------------------------
 plot(gls_mod, ylab = "|y|", xlab = "x*") # with the default: scale = "SD"
@@ -99,14 +99,17 @@ gls_mod <- rate_gls(x=d$x, y=d$y, species=d$species,
 round(gls_mod$param, 3)
 
 ## -----------------------------------------------------------------------------
-bootout <- rate_gls_boot(gls_mod, n = 3, useLFO = FALSE, silent = TRUE) 
+bootout <- rate_gls_boot(gls_mod, n = 10, useLFO = FALSE, silent = TRUE) 
 round(bootout$summary, 3)
 
 ## ---- fig.height=5, fig.width=5-----------------------------------------------
-plot(gls_mod, scale = "VAR", ylab = "y^2", xlab = "x*")
+plot(gls_mod, scale = "VAR", ylab = expression(y^2), xlab = "x*")
 
 ## ---- fig.height=5, fig.width=5-----------------------------------------------
 plot(gls_mod, ylab = "|y|", xlab = "x*") # with the default scale == "SD"
+
+## ---- fig.height=5, fig.width=5-----------------------------------------------
+plot(gls_mod$data$x_original, gls_mod$data$x, xlab = "x", ylab = "x*")
 
 ## ---- fig.height=5, fig.width=5-----------------------------------------------
 a <- gls_mod$param["a",1]

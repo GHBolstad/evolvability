@@ -74,7 +74,7 @@ An object of \code{class} \code{'rate_gls'}, which is a list with the
   \cr \code{tree} \tab\tab\tab\tab The phylogenetic tree. 
   \cr \code{data} \tab\tab\tab\tab The data used in the GLS regression. 
   \cr \code{convergence} \tab\tab\tab\tab Whether the algorithm converged or not.
-  \cr \code{additional_param} \tab\tab\tab\tab Some additional parameter estimates, mainly used for testing. 
+  \cr \code{additional_param} \tab\tab\tab\tab Some additional parameter estimates. 
   \cr \code{call} \tab\tab\tab\tab The function call. 
   }
 }
@@ -87,7 +87,7 @@ Brownian motion with variance linear in x, while the evolution of x either
 follows a Brownian motion or a geometric Brownian motion, respectively. In
 the third model, 'recent_evol', the residuals of the macroevolutionary
 predictions of y have variance linear in x. It is highly recommended  to read
-Hansen et al. (in review) and the vignette 'Analyzing rates of evolution'
+Hansen et al. (in review) and \code{vignette("Analyzing_rates_of_evolution")}
 before fitting these models.
 }
 \details{
