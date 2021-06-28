@@ -12,14 +12,16 @@ Almer_sim(mod, nsim = 1000)
 \item{nsim}{The number of simulations.}
 }
 \value{
-\code{Almer_sim} a matrix of simulated responses, columns correspond to each simulations.
+\code{Almer_sim} a matrix of simulated responses, columns correspond
+  to each simulations.
 }
 \description{
 \code{Almer_sim} Simulate responses from an \code{\link{Almer}} model fit.
 }
 \details{
-This function is only included as the \code{\link{simulate.merMod}} function did not seem to work properly when the 
-number of random effect levels equal the number of observations.
+This function is only included as the \code{\link{simulate.merMod}}
+  function did not seem to work properly when the number of random effect
+  levels equal the number of observations.
 }
 \examples{
 # See the vignette 'Phylogenetic mixed model'.

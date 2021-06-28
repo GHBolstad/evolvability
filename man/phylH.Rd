@@ -16,10 +16,14 @@ phylH(mod, numerator, residual = "Residual", nsim = 10)
 \item{nsim}{number of bootstraps}
 }
 \value{
-\code{phylH} returns a list with the REML estimate, the 95\% confidence interval from the parametric bootstrap, and the bootstrap samples.
+\code{phylH} returns a list with the REML estimate, the 95\%
+  confidence interval from the parametric bootstrap, and the bootstrap
+  samples.
 }
 \description{
-\code{phylH} calculates the phylogenetic heritability from an \code{Almer} model fit and provides associated uncertainty using parameteric bootstrapping.
+\code{phylH} calculates the phylogenetic heritability from an \code{Almer}
+model fit and provides associated uncertainty using parametric
+bootstrapping.
 }
 \examples{
 # See the vignette 'Phylogenetic mixed model'.

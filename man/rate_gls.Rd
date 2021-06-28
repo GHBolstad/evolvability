@@ -147,11 +147,13 @@ gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000)
 gls_mod_boot$summary
 
 ### model = 'predictor_gBM' ###
-sim_data <- simulate_rate(tree, startv_x = 1, sigma_x = 1, a = 1, b = 1, 
-model = "predictor_gBM")
+sim_data <- simulate_rate(tree,
+  startv_x = 1, sigma_x = 1, a = 1, b = 1,
+  model = "predictor_gBM"
+)
 head(sim_data$tips)
 gls_mod <- rate_gls(
-  x = sim_data$tips$x, y = sim_data$tips$y, species = sim_data$tips$species, 
+  x = sim_data$tips$x, y = sim_data$tips$y, species = sim_data$tips$species,
   tree, model = "predictor_gBM"
 )
 gls_mod$param
@@ -164,7 +166,7 @@ plot(gls_mod, scale = "VAR", cex.legend = 0.8)
 # is linear.
 par(mfrow = c(1, 1))
 
-# Parametric bootstrapping to get the uncertainty of the parameter estimates 
+# Parametric bootstrapping to get the uncertainty of the parameter estimates
 # taking the complete process into account. (This takes some minutes.)
 gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000)
 gls_mod_boot$summary
@@ -176,7 +178,7 @@ sim_data <- simulate_rate(tree,
 )
 head(sim_data$tips)
 gls_mod <- rate_gls(
-  x = sim_data$tips$x, y = sim_data$tips$y, species = sim_data$tips$species, 
+  x = sim_data$tips$x, y = sim_data$tips$y, species = sim_data$tips$species,
   tree, model = "recent_evol", useLFO = FALSE
 )
 # useLFO = TRUE is somewhat slower, and although more correct it should give
@@ -190,8 +192,8 @@ plot(gls_mod, scale = "VAR", cex.legend = 0.8)
 # linear.
 par(mfrow = c(1, 1))
 
-# Parametric bootstrapping to get the uncertainty of the parameter estimates 
-# taking the complete process into account. Note that x is considered as 
+# Parametric bootstrapping to get the uncertainty of the parameter estimates
+# taking the complete process into account. Note that x is considered as
 # fixed effect. (This takes a long time.)
 gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000, useLFO = FALSE)
 gls_mod_boot$summary

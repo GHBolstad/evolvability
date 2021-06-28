@@ -11,21 +11,8 @@ evolvabilityMeans(G, means = 1)
 
 \item{means}{An optional vector of trait means, for mean standardization.}
 }
-\description{
-\code{evolvabilityMeans} calculates the average (unconditional) evolvability (e), respondability (r), 
-conditional evolvability (c), autonomy (a) and integration (i) of a additive-genetic variance matrix 
-using the approximation formulas described in Hansen and Houle (2008, 2009).
-}
-\details{
-The formulas for calculating the evolvability parameters are approximations, 
-except for the formula for unconditional evolvability which is exact. The bias of the 
-approximations depends on the dimensionality of the G-matrix, with higher bias for few 
-dimensions (see Hansen and Houle 2008). In most instances we recommend to estimate the 
-averages of the evolvability parameters using \code{evolavbilityBeta} on a large number 
-of random selection gradients. The maximum and minimum evolvability, which are also the 
-maximum and minimum respondability and conditional evolvability, equals the largest and 
-smallest eigenvalue of the G-matrix, respectively.
-#' @return A vector with the following components:
+\value{
+A vector with the following components:
 \tabular{llllll}{
 \code{e_mean} \tab\tab\tab\tab The average (unconditional) evolvability. \cr
 \code{e_min} \tab\tab\tab\tab The minimum evolvability. \cr
@@ -36,12 +23,32 @@ smallest eigenvalue of the G-matrix, respectively.
 \code{i_mean} \tab\tab\tab\tab The average integration.
 }
 }
+\description{
+\code{evolvabilityMeans} calculates the average (unconditional) evolvability
+(e), respondability (r), conditional evolvability (c), autonomy (a) and
+integration (i) of a additive-genetic variance matrix using the approximation
+formulas described in Hansen and Houle (2008, 2009).
+}
+\details{
+The equations for calculating the evolvability parameters are
+  approximations, except for the minimum, maximum and unconditional
+  evolvability which are exact. The bias of the approximations depends on the
+  dimensionality of the G-matrix, with higher bias for few dimensions (see
+  Hansen and Houle 2008). For low dimensional G-matrices, we recommend
+  estimating the averages of the evolvability parameters using
+  \code{evolavbilityBetaMCMC} over many random selection gradients (
+  \code{randomBeta}). The maximum and minimum evolvability, which
+  are also the maximum and minimum respondability and conditional
+  evolvability, equals the largest and smallest eigenvalue of the G-matrix,
+  respectively.
+}
 \examples{
- G = matrix(c(1, 1, 0, 1, 2, 1, 0, 1, 2), ncol = 3)
- evolvabilityMeans(G)
+G <- matrix(c(1, 1, 0, 1, 2, 1, 0, 1, 2), ncol = 3)
+evolvabilityMeans(G)
 }
 \references{
-Hansen, T. F. & Houle, D. (2008) Measuring and comparing evolvability and constraint in multivariate characters. J. Evol. Biol. 21:1201-1219. \cr
+Hansen, T. F. & Houle, D. (2008) Measuring and comparing evolvability and
+ constraint in multivariate characters. J. Evol. Biol. 21:1201-1219. \cr
 Hansen, T. F. & Houle, D. (2009) Corrigendum. J. Evol. Biol. 22:913-915.
 }
 \author{

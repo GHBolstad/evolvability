@@ -17,17 +17,21 @@ round_and_format(
 
 \item{digits}{Number of decimal places.}
 
-\item{sign_digits}{Number of significant digits (if given this overrides \code{digits}).}
+\item{sign_digits}{Number of significant digits (if given this overrides
+\code{digits}).}
 
-\item{scientific}{logical: whether encoding should be in scientific notation or not.}
+\item{scientific}{logical: whether encoding should be in scientific notation or
+not.}
 
-\item{trim}{logical: if leading blanks for justification to common width should be excluded or not.}
+\item{trim}{logical: if leading blanks for justification to common width should
+be excluded or not.}
 }
 \value{
 Rounded and formatted values as characters.
 }
 \description{
-\code{round_and_format} rounds and formats a numeric vector. This is useful for providing output for tables or plots in a standardized format.
+\code{round_and_format} rounds and formats a numeric vector. This is useful for
+ providing output for tables or plots in a standardized format.
 }
 \author{
 Geir H. Bolstad

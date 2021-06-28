@@ -11,11 +11,14 @@ GLS(y, X, R = NULL, L = NULL, coef_only = FALSE)
 
 \item{X}{design matrix}
 
-\item{R}{residual covariance or correlation matrix (can be sparse), ignored if \code{L} is provided.}
+\item{R}{residual covariance or correlation matrix (can be sparse), ignored
+if \code{L} is provided.}
 
-\item{L}{lower triangular matrix of the cholescky decomposition of \code{R} (optional).}
+\item{L}{lower triangular matrix of the cholescky decomposition of \code{R}
+(optional).}
 
-\item{coef_only}{reduces the output of the model to the estimated coefficients (and the generalized residual sums of squares) only.}
+\item{coef_only}{reduces the output of the model to the estimated
+coefficients (and the generalized residual sums of squares) only.}
 }
 \value{
 \code{GLS} a \code{\link{list}} of
@@ -23,18 +26,23 @@ GLS(y, X, R = NULL, L = NULL, coef_only = FALSE)
 \item{\code{coef}: a table of estimates and standard errors}
 \item{\code{R2}: the R-squared of the model fit}
 \item{\code{sigma2}: the residual variance}
-\item{\code{GSSE}: the generalized residual sum of squares (objective function score)}
+\item{\code{GSSE}: the generalized residual sum of squares (objective function
+ score)}
 \item{\code{coef_vcov}: the error variance matrix of the estimates}
 }
 }
 \description{
-\code{GLS} utilizes \code{lm.fit} and Cholesky decomposition to fit a generalized least squares regression
+\code{GLS} utilizes \code{lm.fit} and Cholesky decomposition to fit a
+generalized least squares regression
 }
 \details{
-Note that the size of \code{R} does not matter (i.e. if \code{R} is multiplied by a scalar, the
-results don't change). Note also that the R-squared is estimated as 1-GSSE/GSST, where GSSE is the generalized
-residual sum of squares (i.e. the objective function score of the model) and GSST is the generalized total sum of 
-squares (i.e. the objective function score of the model when only the intercept is included in the model)
+Note that the size of \code{R} does not matter (i.e. if \code{R} is
+  multiplied by a scalar, the results don't change). Note also that the
+  R-squared is estimated as 1-GSSE/GSST, where GSSE is the generalized
+  residual sum of squares (i.e. the objective function score of the model)
+  and GSST is the generalized total sum of squares (i.e. the objective
+  function score of the model when only the intercept is included in the
+  model)
 }
 \author{
 Geir H. Bolstad

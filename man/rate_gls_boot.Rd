@@ -29,23 +29,25 @@ printed.}
 
 \item{maxiter}{The maximum number of iterations for updating the GLS.}
 
-\item{tol}{tolerance for convergence. If the change in 'a' and 'b' is below this
-limit between the two last iteration, convergence is reached. The change is measured
-in proportion to the standard deviation of the response for 'a' and the ratio of the
-standard deviation of the response to the standard deviation of the predictor for 'b'.}
+\item{tol}{tolerance for convergence. If the change in 'a' and 'b' is below
+this limit between the two last iteration, convergence is reached. The
+change is measured in proportion to the standard deviation of the response
+for 'a' and the ratio of the standard deviation of the response to the
+standard deviation of the predictor for 'b'.}
 }
 \value{
 A list where the first slot is a table with the original estimates
   and SE from the GLS fit in the two first columns followed by the bootstrap
-  estimate of the SE and the 2.5\%, 50\% and 97.5\% quantiles of the bootstrap
-  distribution. The second slot contains the complete distribution.
+  estimate of the SE and the 2.5\%, 50\% and 97.5\% quantiles of the
+  bootstrap distribution. The second slot contains the complete distribution.
 }
 \description{
 \code{rate_gls_boot} performs  a parametric bootstrap of a
 \code{\link{rate_gls}} model fit.
 }
 \examples{
-# See the vignette 'Analyzing rates of evolution' and in the help page of \code{\link{rate_gls}}.
+# See the vignette 'Analyzing rates of evolution' and in the help 
+# page of rate_gls.
 }
 \author{
 Geir H. Bolstad

@@ -120,11 +120,13 @@
 #' gls_mod_boot$summary
 #'
 #' ### model = 'predictor_gBM' ###
-#' sim_data <- simulate_rate(tree, startv_x = 1, sigma_x = 1, a = 1, b = 1, 
-#' model = "predictor_gBM")
+#' sim_data <- simulate_rate(tree,
+#'   startv_x = 1, sigma_x = 1, a = 1, b = 1,
+#'   model = "predictor_gBM"
+#' )
 #' head(sim_data$tips)
 #' gls_mod <- rate_gls(
-#'   x = sim_data$tips$x, y = sim_data$tips$y, species = sim_data$tips$species, 
+#'   x = sim_data$tips$x, y = sim_data$tips$y, species = sim_data$tips$species,
 #'   tree, model = "predictor_gBM"
 #' )
 #' gls_mod$param
@@ -137,7 +139,7 @@
 #' # is linear.
 #' par(mfrow = c(1, 1))
 #'
-#' # Parametric bootstrapping to get the uncertainty of the parameter estimates 
+#' # Parametric bootstrapping to get the uncertainty of the parameter estimates
 #' # taking the complete process into account. (This takes some minutes.)
 #' gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000)
 #' gls_mod_boot$summary
@@ -149,7 +151,7 @@
 #' )
 #' head(sim_data$tips)
 #' gls_mod <- rate_gls(
-#'   x = sim_data$tips$x, y = sim_data$tips$y, species = sim_data$tips$species, 
+#'   x = sim_data$tips$x, y = sim_data$tips$y, species = sim_data$tips$species,
 #'   tree, model = "recent_evol", useLFO = FALSE
 #' )
 #' # useLFO = TRUE is somewhat slower, and although more correct it should give
@@ -163,8 +165,8 @@
 #' # linear.
 #' par(mfrow = c(1, 1))
 #'
-#' # Parametric bootstrapping to get the uncertainty of the parameter estimates 
-#' # taking the complete process into account. Note that x is considered as 
+#' # Parametric bootstrapping to get the uncertainty of the parameter estimates
+#' # taking the complete process into account. Note that x is considered as
 #' # fixed effect. (This takes a long time.)
 #' gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000, useLFO = FALSE)
 #' gls_mod_boot$summary
@@ -187,7 +189,8 @@ rate_gls <-
            maxiter = 100,
            silent = FALSE,
            useLFO = TRUE,
-           tol = 0.001) {
+           tol = 0.001
+  ) {
 
     #### Phylogenetic relatedness matrix ####
     if (!ape::is.ultrametric(tree)) {
@@ -231,7 +234,7 @@ rate_gls <-
       mean_x <- exp(mod$coef[1])
       s2 <- mod$sigma2
       Vs2 <- 2 * (s2^2) / (length(x) + 2) # var(s2)
-      x <- x / c(mean_x) - exp((s2 - Vx) / 2) # The centering is done on the 
+      x <- x / c(mean_x) - exp((s2 - Vx) / 2) # The centering is done on the
       # theoretical mean
 
       inv_s2 <- 1 / s2
@@ -252,11 +255,11 @@ rate_gls <-
       #      (e_32s2A - 1) %*% solve_e_s2A %*% (A * A * e_s2A) +
       #      2 * (0.5 + inv_s2) * (e_32s2A - 1) %*% solve_e_s2A %*%
       #      (A * e_s2A) - 3 * (A * e_32s2A) %*% solve_e_s2A %*% (A * e_s2A) +
-      #      2 * (e_32s2A - 1) %*% solve_e_s2A %*% (A * e_s2A) %*% 
+      #      2 * (e_32s2A - 1) %*% solve_e_s2A %*% (A * e_s2A) %*%
       #      solve_e_s2A %*% (A * e_s2A)) %*% solve_e_s2A
-      # # x <- c(2/s2 * x - (4/3)*exp(-s2/2)/s2*(e_32s2A-1) %*% 
+      # # x <- c(2/s2 * x - (4/3)*exp(-s2/2)/s2*(e_32s2A-1) %*%
       # # solve(e_s2A-1, x) + Vs2*H%*%x)
-      # x <- c((2/s2 * I - (4/3) * exp(-s2/2)/s2 * (e_32s2A - 1) %*% 
+      # x <- c((2/s2 * I - (4/3) * exp(-s2/2)/s2 * (e_32s2A - 1) %*%
       #         solve_e_s2A + Vs2 * H) %*% x)
       # e_32s2A <- e_32s2A - 1
       # e_s2A <-  e_s2A - 1
@@ -268,14 +271,14 @@ rate_gls <-
       x <- x - c(mean_x)
     }
     s2 <- c(s2)
-    s2_SE <- sqrt(2 * (s2^2) / (length(x) + 2)) # from Lynch and Walsh 1998 eq 
+    s2_SE <- sqrt(2 * (s2^2) / (length(x) + 2)) # from Lynch and Walsh 1998 eq
     # A1.10c
 
     #### Internal functions ####
     if (model == "predictor_BM") {
       a_func <- function(Beta) Beta[1, 1] + Vy
       b_func <- function(Beta) Beta[2, 1]
-      Q <- (A * A * A) - (1 / 4) * AoA %*% solve(A, AoA) # outside function 
+      Q <- (A * A * A) - (1 / 4) * AoA %*% solve(A, AoA) # outside function
       # to avoid repeating this in the loop
       R_func <- function(a, b) {
         4 * a * Vy * A +
@@ -298,12 +301,13 @@ rate_gls <-
       # }
 
       a_func <- function(Beta) {
-        a <- Beta[1, 1] + Vy - c(2 * b_func(Beta) * exp(Vx / 2) * (exp(s2 / 2) - 1) * inv_s2)
+        a <- Beta[1, 1] + Vy - 
+          c(2 * b_func(Beta) * exp(Vx / 2) * (exp(s2 / 2) - 1) * inv_s2)
         return(a)
       }
       # Hack to correct for error in s2:
       # a_func <- function(Beta){
-      #  a <- Beta[1, 1] + Vy - c(2*Beta[2, 1]*exp(Vx/2)*((exp(s2/2)-1)*inv_s2 + 
+      #  a <- Beta[1, 1] + Vy - c(2*Beta[2, 1]*exp(Vx/2)*((exp(s2/2)-1)*inv_s2 +
       #               Vs2*((s2^2 - 4*s2 + 8)*exp(s2/2)-8)/(8*s2^3)))
       #  return(a)
       # }
@@ -315,9 +319,9 @@ rate_gls <-
       e_hlfs2A <- exp(s2 / 2 * A) - 1
       e_2s2A <- exp(2 * s2 * A) - 1
       Q1 <- 8 * e_hlfVx * inv_s2 * A * e_hlfs2A
-      Q2 <- 2 * e_2Vx * inv_s4 * 
-        (8 / 3 * (e_2s2A - e_hlfs2A) - e_2s2A - 8 / 9 * e_32s2A %*% 
-           solve(e_s2A, e_32s2A))
+      Q2 <- 2 * e_2Vx * inv_s4 *
+        (8 / 3 * (e_2s2A - e_hlfs2A) - e_2s2A - 8 / 9 * e_32s2A %*%
+          solve(e_s2A, e_32s2A))
 
       R_func <- function(a, b) {
         if (a < 0) a <- 0 # forces a to be 0 or positive
@@ -346,7 +350,7 @@ rate_gls <-
         R <- 2 * (Q * Q)
         e <- eigen(R)
         if (any(e$values < 1e-8)) {
-          e$values[e$values < 1e-8] <- 1e-8 # ensures a positive definite R 
+          e$values[e$values < 1e-8] <- 1e-8 # ensures a positive definite R
           R <- e$vectors %*% diag(e$values) %*% t(e$vectors)
         }
         return(R)
@@ -362,8 +366,8 @@ rate_gls <-
     X <- as.matrix(cbind(rep(1, length(x)), x))
 
     #### Response variable and initial values ####
-    a <- startv$a 
-    b <- startv$b 
+    a <- startv$a
+    b <- startv$b
 
     if (model == "predictor_BM" | model == "predictor_gBM") {
       y2 <- y^2 # The response variable
@@ -375,19 +379,23 @@ rate_gls <-
         }
         if (is.null(b)) {
           b <- 0
-        } 
+        }
       }
       R <- matrix(nrow = nrow(A), ncol = ncol(A))
     } else {
       # model == 'recent_evol'
-      mod_Almer <- Almer(y ~ 1 + (1 | species), 
-          A = list(species = Matrix::Matrix(A, sparse = TRUE)), 
-          control = lme4::lmerControl(check.nobs.vs.nlev = "ignore",
-          check.nobs.vs.rankZ = "ignore", check.nobs.vs.nRE = "ignore", 
-          optimizer = "bobyqa", optCtrl = list(maxfun = 2e5)))
+      mod_Almer <- 
+        Almer(y ~ 1 + (1 | species),
+          A = list(species = Matrix::Matrix(A, sparse = TRUE)),
+          control = lme4::lmerControl(
+            check.nobs.vs.nlev = "ignore",
+            check.nobs.vs.rankZ = "ignore", check.nobs.vs.nRE = "ignore",
+            optimizer = "bobyqa", optCtrl = list(maxfun = 2e5)
+          )
+        )
       coef_Almer <- coef(summary(mod_Almer))
       y <- y - coef_Almer[1, 1] # centering on mean of y
-      Vy <- coef_Almer[1, 2]^2  # error variance in mean of y
+      Vy <- coef_Almer[1, 2]^2 # error variance in mean of y
       sigma2_y <- lme4::VarCorr(mod_Almer)$species[1] # species variance
       if (is.null(a)) {
         residvar <- attr(lme4::VarCorr(mod_Almer), "sc")^2 # residual variance
@@ -406,7 +414,7 @@ rate_gls <-
     for (i in 1:maxiter) {
       if (model == "recent_evol") {
         diag_V_micro <- a_start + b_start * (x_original - c(mean_x))
-        diag_V_micro[diag_V_micro < 1e-8] <- 1e-8 # Effectively zero or 
+        diag_V_micro[diag_V_micro < 1e-8] <- 1e-8 # Effectively zero or
         # negative variances are replaced by small value.
         V_micro <- diag(c(diag_V_micro))
         V <- sigma2_y * A + V_micro
@@ -443,8 +451,10 @@ rate_gls <-
       convergence_score[i] <- max(a_diff, b_diff)
 
       if (!silent) {
-        print(paste0("i=", i, "; a=", a[i + 1], "; b=", b[i + 1], 
-                     "; converg score=", convergence_score[i]))
+        print(paste0(
+          "i=", i, "; a=", a[i + 1], "; b=", b[i + 1],
+          "; converg score=", convergence_score[i]
+        ))
       }
 
       if (convergence_score[i] < tol &
@@ -473,16 +483,18 @@ rate_gls <-
     }
     mod <- GLS(y2, X, R)
     Beta_vcov <- mod$coef_vcov
-    param <- cbind(rbind(a[i + 1], b[i + 1], s2), 
-                   rbind(a_SE_func(Beta_vcov), b_SE_func(Beta_vcov), s2_SE))
+    param <- 
+      cbind(rbind(a[i + 1], b[i + 1], s2),
+            rbind(a_SE_func(Beta_vcov), b_SE_func(Beta_vcov), s2_SE)
+            )
     colnames(param) <- c("Estimate", "SE")
     rownames(param) <- c("a", "b", "sigma(x)^2")
     intercept_plot <- mod$coef[1, 1]
     Rsquared <- mod$R2
     if (model == "recent_evol") {
       y2 <- (y - y_predicted)^2
-      intercept_plot <- a[i + 1] * mean(diag(U1 %*% U2)) + sigma2_y * 
-        mean(diag(U1 %*% A %*% U2))
+      intercept_plot <- 
+        a[i + 1] * mean(diag(U1 %*% U2)) + sigma2_y * mean(diag(U1 %*% A %*% U2))
       param <- rbind(param, cbind(sigma2_y, NA))
       rownames(param)[4] <- "sigma(y)^2"
     }
@@ -492,16 +504,32 @@ rate_gls <-
     } else {
       convergence <- "Convergence"
     }
-    report <- list(
-      model = model, param = param, Rsquared = Rsquared,
-      a_all_iterations = a, b_all_iterations = b, R = R, Beta = Beta, 
-      Beta_vcov = Beta_vcov, tree = tree, 
-      data = list(y2 = y2, x = x, y = y, x_original = x_original, 
-                  y_original = y_original),
-      convergence = convergence,
-      additional_param = c(mean_y = mean_y, Vy = Vy, mean_x = mean_x, 
-                           Vx = Vx, intercept_plot = intercept_plot)
-    )
+    report <- 
+      list(model = model, 
+           param = param, 
+           Rsquared = Rsquared,
+           a_all_iterations = a, 
+           b_all_iterations = b, 
+           R = R, 
+           Beta = Beta,
+           Beta_vcov = Beta_vcov, 
+           tree = tree,
+           data = 
+             list(y2 = y2, 
+                  x = x, 
+                  y = y, 
+                  x_original = x_original,
+                  y_original = y_original
+                  ),
+           convergence = convergence,
+           additional_param = 
+             c(mean_y = mean_y, 
+               Vy = Vy, 
+               mean_x = mean_x,
+               Vx = Vx, 
+               intercept_plot = intercept_plot
+               )
+           )
     class(report) <- "rate_gls"
     report$call <- match.call()
     report
@@ -538,10 +566,19 @@ rate_gls <-
 #' @author Geir H. Bolstad
 #' @importFrom graphics plot lines legend
 #' @export
-plot.rate_gls <- function(x, scale = "SD", print_param = TRUE, digits_param = 2, 
-                          digits_rsquared = 1, main = "GLS regression", 
-                          xlab = "x", ylab = "Response", col = "grey", 
-                          cex.legend = 1, ...) {
+plot.rate_gls <- 
+  function(x, 
+           scale = "SD", 
+           print_param = TRUE, 
+           digits_param = 2,
+           digits_rsquared = 1, 
+           main = "GLS regression",
+           xlab = "x", 
+           ylab = "Response", 
+           col = "grey",
+           cex.legend = 1, 
+           ...
+   ) {
   mod <- x
   x <- seq(min(mod$data$x), max(mod$data$x), length.out = 100)
   y <- mod$additional_param["intercept_plot"] + mod$Beta[2] * x
@@ -549,31 +586,50 @@ plot.rate_gls <- function(x, scale = "SD", print_param = TRUE, digits_param = 2,
     y <- try(sqrt(y))
   }
   if (scale == "VAR") {
-    plot(mod$data$x, mod$data$y2, main = main, xlab = xlab, ylab = ylab, 
-         col = col, ...)
+    plot(mod$data$x, mod$data$y2,
+      main = main, xlab = xlab, ylab = ylab,
+      col = col, ...)
   }
   if (scale == "SD") {
     plot(mod$data$x, sqrt(mod$data$y2),
       main = main, xlab = xlab, ylab = ylab,
-      col = col, ...
-    )
+      col = col, ...)
   }
   lines(x, y)
   if (print_param) {
-    n1 <- nchar(strsplit(round_and_format(mod$param["a", 1], sign_digits = digits_param), ".", fixed = TRUE)[[1]][2])
-    n2 <- nchar(strsplit(round_and_format(mod$param["b", 1], sign_digits = digits_param), ".", fixed = TRUE)[[1]][2])
-    legend("topleft",
-      legend = c(as.expression(bquote(italic(a) == .(round_and_format(mod$param["a", 1],
-        sign_digits = digits_param
-      )) ~ "\u00B1" ~ .(round_and_format(mod$param["a", 2],
-        digits = n1
-      )) ~ ~ ~ italic(b) == .(round_and_format(mod$param["b", 1],
-        sign_digits = digits_param
-      )) ~ "\u00B1" ~ .(round_and_format(mod$param["b", 2],
-        digits = n2
-      )))), as.expression(bquote(italic(R)^2 ==
-        .(round_and_format(100 * mod$Rsquared, digits_rsquared)) ~ "%"))), box.lty = 0,
-      bg = "transparent", xjust = 0, cex = cex.legend
+    n1 <- 
+      nchar(
+        strsplit(
+          x = round_and_format(mod$param["a", 1], sign_digits = digits_param), 
+          split = ".", 
+          fixed = TRUE
+          )[[1]][2]
+        )
+    n2 <- 
+      nchar(
+        strsplit(
+          x = round_and_format(mod$param["b", 1], sign_digits = digits_param), 
+          split = ".", 
+          fixed = TRUE
+          )[[1]][2]
+        )
+    legend(
+      "topleft",
+      legend = 
+        c(as.expression(bquote(
+          italic(a) == .(round_and_format(mod$param["a", 1], 
+            sign_digits = digits_param)) ~ "\u00B1" ~ 
+            .(round_and_format(mod$param["a", 2], digits = n1)) ~ ~ ~ 
+          italic(b) == .(round_and_format(mod$param["b", 1], 
+            sign_digits = digits_param)) ~ "\u00B1" ~ 
+            .(round_and_format(mod$param["b", 2],digits = n2)))), 
+          as.expression(bquote(italic(R)^2 == .(round_and_format(100 * 
+            mod$Rsquared, digits_rsquared)) ~ "%"))
+          ), 
+      box.lty = 0, 
+      bg = "transparent", 
+      xjust = 0, 
+      cex = cex.legend
     )
   }
 }
@@ -608,15 +664,20 @@ rate_gls_sim <- function(object, nsim = 10) {
     }
   }
   for (i in 1:nsim) {
-    sim_out[[i]] <- try(simulate_rate(
-      tree = object$tree, startv_x = ifelse(object$model ==
-        "predictor_gBM", 1, 0), sigma_x = sqrt(object$param["sigma(x)^2", 1]),
-      a = object$param["a", 1], b = object$param["b", 1], x = ifelse(rep(object$model ==
-        "recent_evol", length(object$data$x)), c(object$data$x), NULL), sigma_y = ifelse(object$model ==
-        "recent_evol", sqrt(object$param["sigma(y)^2", 1]), NULL), model = object$model
-    ),
-    silent = TRUE
-    )
+    sim_out[[i]] <- 
+      try(simulate_rate(tree = object$tree, 
+                        startv_x = ifelse(object$model == "predictor_gBM", 1, 0),
+                        sigma_x = sqrt(object$param["sigma(x)^2", 1]),
+                        a = object$param["a", 1], 
+                        b = object$param["b", 1], 
+                        x = ifelse(rep(object$model == "recent_evol", 
+                          length(object$data$x)), c(object$data$x), NULL), 
+                        sigma_y = ifelse(object$model == "recent_evol", 
+                           sqrt(object$param["sigma(y)^2", 1]), NULL), 
+                        model = object$model
+            ),
+          silent = TRUE
+        )
   }
   return(sim_out)
 }
@@ -636,23 +697,33 @@ rate_gls_sim <- function(object, nsim = 10) {
 #' @param silent logical: whether or not the bootstrap iterations should be
 #'   printed.
 #' @param maxiter The maximum number of iterations for updating the GLS.
-#' @param tol tolerance for convergence. If the change in 'a' and 'b' is below this
-#'   limit between the two last iteration, convergence is reached. The change is measured
-#'   in proportion to the standard deviation of the response for 'a' and the ratio of the
-#'   standard deviation of the response to the standard deviation of the predictor for 'b'.
+#' @param tol tolerance for convergence. If the change in 'a' and 'b' is below
+#'   this limit between the two last iteration, convergence is reached. The
+#'   change is measured in proportion to the standard deviation of the response
+#'   for 'a' and the ratio of the standard deviation of the response to the
+#'   standard deviation of the predictor for 'b'.
 #' @return A list where the first slot is a table with the original estimates
 #'   and SE from the GLS fit in the two first columns followed by the bootstrap
-#'   estimate of the SE and the 2.5\%, 50\% and 97.5\% quantiles of the bootstrap
-#'   distribution. The second slot contains the complete distribution.
+#'   estimate of the SE and the 2.5\%, 50\% and 97.5\% quantiles of the
+#'   bootstrap distribution. The second slot contains the complete distribution.
 #' @author Geir H. Bolstad
-#' @examples
-#' # See the vignette 'Analyzing rates of evolution' and in the help page of \code{\link{rate_gls}}.
+#' @examples 
+#' # See the vignette 'Analyzing rates of evolution' and in the help 
+#' # page of rate_gls.
 #' @importFrom stats var quantile
 #' @export
-rate_gls_boot <- function(object, n = 10, useLFO = TRUE, silent = FALSE, maxiter = 100, tol = 0.001) {
+rate_gls_boot <- 
+  function(object, 
+           n = 10, 
+           useLFO = TRUE, 
+           silent = FALSE, 
+           maxiter = 100, 
+           tol = 0.001
+  ) {
   if (object$model == "recent_evol") {
     boot_distribution <- matrix(NA, ncol = 5, nrow = n)
-    colnames(boot_distribution) <- c("a", "b", "sigma2_x", "sigma2_y", "Rsquared")
+    colnames(boot_distribution) <- 
+      c("a", "b", "sigma2_x", "sigma2_y", "Rsquared")
   } else {
     boot_distribution <- matrix(NA, ncol = 4, nrow = n)
     colnames(boot_distribution) <- c("a", "b", "s2", "Rsquared")
@@ -660,13 +731,17 @@ rate_gls_boot <- function(object, n = 10, useLFO = TRUE, silent = FALSE, maxiter
   perc_neg <- c()
   for (i in 1:n) {
     sim_out <- rate_gls_sim(object, nsim = 1)
-    mod <- rate_gls(
-      x = sim_out[[1]][[1]][, "x"], y = sim_out[[1]][[1]][, "y"], species = sim_out[[1]][[1]][
-        ,
-        "species"
-      ], tree = object$tree, model = object$model, maxiter = maxiter, silent = TRUE, useLFO = useLFO,
-      tol = tol
-    )
+    mod <- 
+      rate_gls(x = sim_out[[1]][[1]][, "x"], 
+               y = sim_out[[1]][[1]][, "y"], 
+               species = sim_out[[1]][[1]][, "species"], 
+               tree = object$tree, 
+               model = object$model, 
+               maxiter = maxiter, 
+               silent = TRUE, 
+               useLFO = useLFO,
+               tol = tol
+      )
     boot_distribution[i, ] <- c(mod$param[, 1], mod$Rsquared)
     perc_neg[i] <- sim_out[[1]][[2]]
     if (mod$convergence != "Convergence") {
@@ -676,14 +751,21 @@ rate_gls_boot <- function(object, n = 10, useLFO = TRUE, silent = FALSE, maxiter
       print(paste("Bootstrap iteration", i))
     }
   }
-  return(list(
-    summary = cbind(
-      rbind(object$param, Rsquared = c(object$Rsquared, NA)),
-      boot_mean = apply(boot_distribution, 2, mean, na.rm = TRUE),
-      boot_median = apply(boot_distribution, 2, median, na.rm = TRUE),
-      boot_SD = apply(boot_distribution, 2, sd, na.rm = TRUE),
-      t(apply(boot_distribution, 2, function(x) quantile(x, probs = c(0.025, 0.975), na.rm = TRUE)))
-    ),
-    boot_distribution = cbind(boot_distribution, percent_negative_roots = perc_neg)
-  ))
+  return(
+    list(
+      summary = 
+        cbind(
+          rbind(object$param, 
+                Rsquared = c(object$Rsquared, NA)),
+          boot_mean = apply(boot_distribution, 2, mean, na.rm = TRUE),
+          boot_median = apply(boot_distribution, 2, median, na.rm = TRUE),
+          boot_SD = apply(boot_distribution, 2, sd, na.rm = TRUE),
+          t(apply(boot_distribution, 2, function(x) quantile(x, 
+             probs = c(0.025, 0.975), na.rm = TRUE)))
+          ),
+      boot_distribution = 
+        cbind(boot_distribution, 
+              percent_negative_roots = perc_neg)
+      )
+    )
 }

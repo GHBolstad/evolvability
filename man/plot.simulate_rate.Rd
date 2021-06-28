@@ -15,7 +15,8 @@
 \arguments{
 \item{x}{An object of class \code{'simulate_rate'}.}
 
-\item{response}{The variable for the y-axis of the plot, can be 'rate_y', 'y', or 'x'.}
+\item{response}{The variable for the y-axis of the plot, can be 'rate_y',
+'y', or 'x'.}
 
 \item{xlab}{A label for the x axis.}
 
@@ -24,7 +25,9 @@
 \item{...}{Additional arguments passed to \code{\link{plot}}.}
 }
 \value{
-\code{plot} A plot of the evolution of the traits x or y, or the evolution of the evolutionary rate of y (i.e. \eqn{\sqrt{a + bx}}) in the simulation.
+\code{plot} A plot of the evolution of the traits x or y, or the
+ evolution of the evolutionary rate of y (i.e. \eqn{\sqrt{a + bx}}) in the
+ simulation.
 }
 \description{
 \code{plot} method for class \code{'simulate_rate'}.

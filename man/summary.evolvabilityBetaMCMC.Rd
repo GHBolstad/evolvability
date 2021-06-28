@@ -2,7 +2,8 @@
 % Please edit documentation in R/evolvabilityBetaMCMC.R
 \name{summary.evolvabilityBetaMCMC}
 \alias{summary.evolvabilityBetaMCMC}
-\title{Summarizing posterior distribution of evolvability parameters over a set of selection gradients}
+\title{Summarizing posterior distribution of evolvability parameters over a set of
+selection gradients}
 \usage{
 \method{summary}{evolvabilityBetaMCMC}(object, ...)
 }
@@ -12,11 +13,14 @@
 \item{...}{additional arguments affecting the summary produced.}
 }
 \value{
-A list with the following components: 
+A list with the following components:
 \tabular{llllll}{
-  \code{Averages} \tab\tab\tab\tab The averages of the evolvability parameters over all selection gradients. \cr
-  \code{Minimum} \tab\tab\tab\tab The minimum (given by the posterior median) of the evolvability parameters over all selection gradients. \cr
-  \code{Maximum} \tab\tab\tab\tab The maximum (given by the posterior median) of the evolvability parameters over all selection gradients.
+  \code{Averages} \tab\tab\tab\tab The averages of the evolvability parameters
+   over all selection gradients. \cr
+  \code{Minimum} \tab\tab\tab\tab The minimum (given by the posterior median)
+   of the evolvability parameters over all selection gradients. \cr
+  \code{Maximum} \tab\tab\tab\tab The maximum (given by the posterior median)
+   of the evolvability parameters over all selection gradients.
 }
 }
 \description{

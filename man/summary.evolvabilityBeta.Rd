@@ -14,9 +14,12 @@
 \value{
 A list with the following components:
 \tabular{llllll}{
-\code{Averages} \tab\tab\tab\tab The averages of the evolvability parameters over all selection gradients. \cr
-\code{Minimum} \tab\tab\tab\tab The minimum of the evolvability parameters over all selection gradients. \cr
-\code{Maximum} \tab\tab\tab\tab The maximum of the evolvability parameters over all selection gradients. 
+\code{Averages} \tab\tab\tab\tab The averages of the evolvability parameters 
+over all selection gradients. \cr
+\code{Minimum} \tab\tab\tab\tab The minimum of the evolvability parameters 
+over all selection gradients. \cr
+\code{Maximum} \tab\tab\tab\tab The maximum of the evolvability parameters 
+over all selection gradients.
 }
 }
 \description{

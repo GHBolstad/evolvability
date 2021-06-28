@@ -12,21 +12,22 @@ randomBeta(n = 1, k = 2)
 \item{k}{Number of dimensions.}
 }
 \value{
-\code{randomBeta} returns a matrix where the vectors are stacked column wise.
+\code{randomBeta} returns a matrix where the vectors are stacked column
+wise.
 }
 \description{
-\code{randomBeta} generates unit length vectors (selection gradients) 
+\code{randomBeta} generates unit length vectors (selection gradients)
 uniformly distributed in a k-dimensional hypersphere.
 }
 \details{
-\code{randomBeta} exploits the spherical symmetry of a multidimensional 
-Gaussian density function. Each element of each vector is randomly sampled 
+\code{randomBeta} exploits the spherical symmetry of a multidimensional
+Gaussian density function. Each element of each vector is randomly sampled
 from a univariate Gaussian distribution with zero mean and unit variance. The
 vector is then divided by its norm to standardize it to unit length.
 }
 \examples{
 # Two vectors of dimension 3:
-randomBeta(n = 2, k = 3)  
+randomBeta(n = 2, k = 3)
 }
 \author{
 Geir H. Bolstad
