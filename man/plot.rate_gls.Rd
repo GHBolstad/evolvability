@@ -55,7 +55,7 @@ for the printed parameters.}
 \details{
 Plots the gls rate regression fitted by the \code{\link{rate_gls}}
   function. The regression line gives the expected variance or standard
-  deviation (depending on scale).The regression is linear on the variance
+  deviation (depending on scale). The regression is linear on the variance
   scale.
 }
 \examples{

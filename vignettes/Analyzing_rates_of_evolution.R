@@ -7,8 +7,8 @@ knitr::opts_chunk$set(
 library(evolvability)
 
 ## -----------------------------------------------------------------------------
-set.seed(51)
-tree <- ape::rtree(n = 50)
+set.seed(999)
+tree <- ape::rtree(n = 20)
 tree <- ape::chronopl(tree, lambda = 1, age.min = 2)
 
 ## ---- eval=TRUE---------------------------------------------------------------
@@ -39,8 +39,7 @@ gls_mod <- rate_gls(x=d$x, y=d$y, species=d$species, tree,
 round(gls_mod$param, 3)
 
 ## -----------------------------------------------------------------------------
-bootout <- rate_gls_boot(gls_mod, n = 10, silent = TRUE) 
-#NB! n must be much larger to provide reliable estimates
+bootout <- rate_gls_boot(gls_mod, n = 5, silent = TRUE)
 
 ## -----------------------------------------------------------------------------
 round(bootout$summary, 3)
@@ -55,7 +54,8 @@ plot(gls_mod, ylab = "|y|", xlab = "x*") # with the default: scale = "SD"
 plot(gls_mod$data$x_original, gls_mod$data$x, xlab = "x", ylab = "x*")
 
 ## -----------------------------------------------------------------------------
-sim_data <- simulate_rate(tree, startv_x=1, sigma_x=1, a=1, b=0.1, model = "predictor_gBM")
+set.seed(703) 
+sim_data <- simulate_rate(tree, startv_x=1, sigma_x=1, a=1, b=1, model = "predictor_gBM")
 
 ## ---- fig.width=7-------------------------------------------------------------
 par(mfrow = c(1,3))
@@ -73,8 +73,7 @@ gls_mod <- rate_gls(x=d$x, y=d$y, species=d$species, tree,
 round(gls_mod$param, 3)
 
 ## -----------------------------------------------------------------------------
-bootout <- rate_gls_boot(gls_mod, n = 10, silent = TRUE)
-#NB! n must be much larger to provide reliable estimates
+bootout <- rate_gls_boot(gls_mod, n = 5, silent = TRUE)
 round(bootout$summary, 3)
 
 ## ---- fig.height=5, fig.width=5-----------------------------------------------
@@ -87,6 +86,7 @@ plot(gls_mod, ylab = "|y|", xlab = "x*") # with the default: scale = "SD"
 plot(gls_mod$data$x_original, gls_mod$data$x, xlab = "x", ylab = "x*")
 
 ## -----------------------------------------------------------------------------
+set.seed(708)
 sim_data <- simulate_rate(tree, startv_x=0, sigma_x=0.25, a=1, b=1, sigma_y = 1, model = "recent_evol")
 
 ## -----------------------------------------------------------------------------
@@ -95,11 +95,11 @@ head(d)
 
 ## -----------------------------------------------------------------------------
 gls_mod <- rate_gls(x=d$x, y=d$y, species=d$species, 
-                    tree, model = "recent_evol", useLFO = TRUE, silent = FALSE)
+                    tree, model = "recent_evol", useLFO = TRUE, silent = TRUE)
 round(gls_mod$param, 3)
 
 ## -----------------------------------------------------------------------------
-bootout <- rate_gls_boot(gls_mod, n = 10, useLFO = FALSE, silent = TRUE) 
+bootout <- rate_gls_boot(gls_mod, n = 5, useLFO = FALSE, silent = TRUE) 
 round(bootout$summary, 3)
 
 ## ---- fig.height=5, fig.width=5-----------------------------------------------
@@ -112,12 +112,19 @@ plot(gls_mod, ylab = "|y|", xlab = "x*") # with the default scale == "SD"
 plot(gls_mod$data$x_original, gls_mod$data$x, xlab = "x", ylab = "x*")
 
 ## ---- fig.height=5, fig.width=5-----------------------------------------------
+# First, extract the relevant parameters:
 a <- gls_mod$param["a",1]
 b <- gls_mod$param["b",1]
-V_micro <- a*diag(nrow(d)) + diag(b*d$x)
-diag(V_micro)[diag(V_micro) < 0] <- 0  # Negative variances are replaced by zero
 sigma2_y <- gls_mod$param["sigma(y)^2",1]
+
+# Second, compute micro-evolutionary variance matrix:
+V_micro <- a*diag(nrow(d)) + diag(b*d$x)
+diag(V_micro)[diag(V_micro) < 0] <- 0  # (Negative variances are replaced by zero)
+
+# Third, compute macro-evolutionary variance matrix:
 V_macro <- ape::vcv(tree)*sigma2_y
+
+# Last, use macro_pred() to calculate the predictions: 
 y_macro_pred <- macro_pred(d$y, V=V_macro+V_micro)
 plot(d$y, y_macro_pred, xlab = "y", ylab = "Macro-evolutionary predictions of y")
 

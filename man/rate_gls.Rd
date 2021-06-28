@@ -32,8 +32,8 @@ and with total length of unit, tips must have the same names as in
 \code{species}.}
 
 \item{model}{The acronym of the evolutionary model to be fitted. There are
-three options: 'predictor_BM', 'predictor_gBM' or 'recent_evol' (see details and 
-the vignette 'Analyzing rates of evolution').}
+three options: 'predictor_BM', 'predictor_gBM' or 'recent_evol' (see
+details and the vignette 'Analyzing rates of evolution').}
 
 \item{startv}{A vector of optional starting values for the a and b
 parameters.}
@@ -47,35 +47,44 @@ of squares for each iteration.}
 calculating the corresponding species' means. Note that this is only
 relevant for the 'recent_evol' model. The most correct is to use
 \code{TRUE}, but in practice it has little effect and \code{FALSE} will
-speed up the model fit (particularely useful when bootstrapping). LFO is an
+speed up the model fit (particularly useful when bootstrapping). LFO is an
 acronym for 'Leave the Focal species Out'.}
 
-\item{tol}{tolerance for convergence. If the change in 'a' and 'b' is below this
-limit between the two last iteration, convergence is reached. The change is measured
-in proportion to the standard deviation of the response for 'a' and the ratio of the 
-standard deviation of the response to the standard deviation of the predictor for 'b'.}
+\item{tol}{tolerance for convergence. If the change in 'a' and 'b' is below
+this limit between the two last iteration, convergence is reached. The
+change is measured in proportion to the standard deviation of the response
+for 'a' and the ratio of the standard deviation of the response to the
+standard deviation of the predictor for 'b'.}
 }
 \value{
 An object of \code{class} \code{'rate_gls'}, which is a list with the
-  following components: \tabular{llllll}{ 
-      \code{model} \tab\tab\tab\tab The name of the model ('predictor_BM', 'predictor_gBM' or 'recent_evolution').
+  following components: \tabular{llllll}{
+  \code{model} \tab\tab\tab\tab The name of the model ('predictor_BM',
+  'predictor_gBM' or 'recent_evolution').
   \cr \code{param} \tab\tab\tab\tab The focal parameter estimates and their
   standard errors, where 'a' and 'b' are parameters of the evolutionary
   models, and 'sigma(x)^2' is the BM-rate parameter of x for the
   'predictor_BM' model, the BM-rate parameter for log x for the
   'predictor_gBM' model, and the variance of x for the 'recent_evolution'
-  model. 
-  \cr \code{Rsquared} \tab\tab\tab\tab The generalized R squared of the GLS model fit. 
-  \cr \code{a_all_iterations} \tab\tab\tab\tab The values for the parameter a in all iterations. 
-  \cr \code{b_all_iterations} \tab\tab\tab\tab The values for the parameter b in all iterations. 
-  \cr \code{R} \tab\tab\tab\tab The residual variance matrix. 
-  \cr \code{Beta} \tab\tab\tab\tab The intercept and slope of GLS regression (response is y2 and explanatory variable is x). 
-  \cr \code{Beta_vcov} \tab\tab\tab\tab The error variance matrix of \code{Beta}.
-  \cr \code{tree} \tab\tab\tab\tab The phylogenetic tree. 
-  \cr \code{data} \tab\tab\tab\tab The data used in the GLS regression. 
-  \cr \code{convergence} \tab\tab\tab\tab Whether the algorithm converged or not.
-  \cr \code{additional_param} \tab\tab\tab\tab Some additional parameter estimates. 
-  \cr \code{call} \tab\tab\tab\tab The function call. 
+  model.
+  \cr \code{Rsquared} \tab\tab\tab\tab The generalized R squared of the GLS
+  model fit.
+  \cr \code{a_all_iterations} \tab\tab\tab\tab The values for the parameter a
+  in all iterations.
+  \cr \code{b_all_iterations} \tab\tab\tab\tab The values for the parameter b
+  in all iterations.
+  \cr \code{R} \tab\tab\tab\tab The residual variance matrix.
+  \cr \code{Beta} \tab\tab\tab\tab The intercept and slope of GLS regression
+  (response is y2 and explanatory variable is x).
+  \cr \code{Beta_vcov} \tab\tab\tab\tab The error variance matrix of
+  \code{Beta}.
+  \cr \code{tree} \tab\tab\tab\tab The phylogenetic tree.
+  \cr \code{data} \tab\tab\tab\tab The data used in the GLS regression.
+  \cr \code{convergence} \tab\tab\tab\tab Whether the algorithm converged or
+  not.
+  \cr \code{additional_param} \tab\tab\tab\tab Some additional parameter
+  estimates.
+  \cr \code{call} \tab\tab\tab\tab The function call.
   }
 }
 \description{
@@ -100,16 +109,14 @@ before fitting these models.
   'recent_evol' analyses, while it mean standardized \code{x} (i.e. divided
   \code{x} by its mean) in the 'predictor_gBM'. The evolutionary parameters a
   and b are inferred from the intercept and the slope of the GLS fit. Again,
-  it is highly recommended to read Hansen et al. (in review) and 
-  \code{vignette("Analyzing_rates_of_evolution")} before fitting these models. 
-  In Hansen et al.
-  (in review) the three models 'predictor_BM', 'predictor_gBM' and
-  'recent_evol' are referred to as 'Model 1', 'Model 2' and 'Model 3',
-  respectively.
+  it is highly recommended to read Hansen et al. (in review) and
+  \code{vignette("Analyzing_rates_of_evolution")} before fitting these
+  models. In Hansen et al. (in review) the three models 'predictor_BM',
+  'predictor_gBM' and 'recent_evol' are referred to as 'Model 1', 'Model 2'
+  and 'Model 3', respectively.
 }
 \examples{
 # Also see the vignette 'Analyzing_rates_of_evolution'.
-
 \dontrun{
 # Generating a tree with 500 species
 set.seed(102)
@@ -117,56 +124,75 @@ tree <- ape::rtree(n = 500)
 tree <- ape::chronopl(tree, lambda = 1, age.min = 1)
 
 ### model = 'predictor_BM' ###
-sim_data <- simulate_rate(tree, startv_x=0, sigma_x=0.25, a=1, b=1, model = 'predictor_BM')
+sim_data <- simulate_rate(tree,
+  startv_x = 0, sigma_x = 0.25, a = 1, b = 1, model =
+    "predictor_BM"
+)
 head(sim_data$tips)
-gls_mod <- rate_gls(x=sim_data$tips$x, y=sim_data$tips$y, species=sim_data$tips$species, tree, 
-model = 'predictor_BM')
+gls_mod <- rate_gls(
+  x = sim_data$tips$x, y = sim_data$tips$y,
+  species = sim_data$tips$species, tree, model = "predictor_BM"
+)
 gls_mod$param
-par(mfrow = c(1,2))
-plot(gls_mod, scale = 'SD')  # Response shown on the standard deviation scale (default).
-plot(gls_mod, scale = 'VAR') # Response shown on the variance scale, where the regression 
-# is linear.
-par(mfrow = c(1,1))
-# Parametric bootstrapping to get the uncertainty of the parameter estimates taking the 
-# complete process into account.
+par(mfrow = c(1, 2))
+# Response shown on the standard deviation scale (default):
+plot(gls_mod, scale = "SD", cex.legend = 0.8)
+# Response shown on the variance scale, where the regression is linear:
+plot(gls_mod, scale = "VAR", cex.legend = 0.8)
+par(mfrow = c(1, 1))
+# Parametric bootstrapping to get the uncertainty of the parameter estimates
+# taking the complete process into account.
 # (this takes some minutes)
 gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000)
 gls_mod_boot$summary
 
 ### model = 'predictor_gBM' ###
-sim_data <- simulate_rate(tree, startv_x=1, sigma_x=1, a=1, b=0.1, model = 'predictor_gBM')
+sim_data <- simulate_rate(tree, startv_x = 1, sigma_x = 1, a = 1, b = 1, 
+model = "predictor_gBM")
 head(sim_data$tips)
-gls_mod <- rate_gls(x=sim_data$tips$x, y=sim_data$tips$y, species=sim_data$tips$species, tree, 
-model = 'predictor_gBM')
+gls_mod <- rate_gls(
+  x = sim_data$tips$x, y = sim_data$tips$y, species = sim_data$tips$species, 
+  tree, model = "predictor_gBM"
+)
 gls_mod$param
 plot(gls_mod)
-par(mfrow = c(1,2))
-plot(gls_mod, scale = 'SD')  # Response shown on the standard deviation scale (default).
-plot(gls_mod, scale = 'VAR') # Response shown on the variance scale, where the regression 
+par(mfrow = c(1, 2))
+# Response shown on the standard deviation scale (default):
+plot(gls_mod, scale = "SD", cex.legend = 0.8)
+# Response shown on the variance scale, where the regression is linear:
+plot(gls_mod, scale = "VAR", cex.legend = 0.8)
 # is linear.
-par(mfrow = c(1,1))
+par(mfrow = c(1, 1))
 
+# Parametric bootstrapping to get the uncertainty of the parameter estimates 
+# taking the complete process into account. (This takes some minutes.)
 gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000)
 gls_mod_boot$summary
 
-sim_data <- simulate_rate(tree, startv_x=0, sigma_x=1, a=1, b=1, sigma_y = 1, 
-model = 'recent_evol')
+### model = 'recent_evol' ###
+sim_data <- simulate_rate(tree,
+  startv_x = 0, sigma_x = 1, a = 1, b = 1, sigma_y = 1,
+  model = "recent_evol"
+)
 head(sim_data$tips)
-gls_mod <- rate_gls(x=sim_data$tips$x, y=sim_data$tips$y, species=sim_data$tips$species, tree, 
-model = 'recent_evol', useLFO = FALSE)
-# useLFO = TRUE is somewhat slower, and although more correct it should give very similar estimates
-# in most situations.
+gls_mod <- rate_gls(
+  x = sim_data$tips$x, y = sim_data$tips$y, species = sim_data$tips$species, 
+  tree, model = "recent_evol", useLFO = FALSE
+)
+# useLFO = TRUE is somewhat slower, and although more correct it should give
+# very similar estimates in most situations.
 gls_mod$param
-par(mfrow = c(1,2))
-plot(gls_mod, scale = 'SD')  # Response shown on the standard deviation scale (default).
-plot(gls_mod, scale = 'VAR') # Response shown on the variance scale, where the regression is
+par(mfrow = c(1, 2))
+# Response shown on the standard deviation scale (default):
+plot(gls_mod, scale = "SD", cex.legend = 0.8)
+# Response shown on the variance scale, where the regression is linear:
+plot(gls_mod, scale = "VAR", cex.legend = 0.8)
 # linear.
-par(mfrow = c(1,1))
+par(mfrow = c(1, 1))
 
-# Parametric bootstrapping to get the uncertainty of the parameter estimates taking the 
-# complete process into account.
-# Note that x is considered as fixed effect.
-# (this takes a long time)
+# Parametric bootstrapping to get the uncertainty of the parameter estimates 
+# taking the complete process into account. Note that x is considered as 
+# fixed effect. (This takes a long time.)
 gls_mod_boot <- rate_gls_boot(gls_mod, n = 1000, useLFO = FALSE)
 gls_mod_boot$summary
 }

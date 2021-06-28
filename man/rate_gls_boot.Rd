@@ -31,7 +31,7 @@ printed.}
 
 \item{tol}{tolerance for convergence. If the change in 'a' and 'b' is below this
 limit between the two last iteration, convergence is reached. The change is measured
-in proportion to the standard deviation of the response for 'a' and the ratio of the 
+in proportion to the standard deviation of the response for 'a' and the ratio of the
 standard deviation of the response to the standard deviation of the predictor for 'b'.}
 }
 \value{
