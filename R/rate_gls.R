@@ -182,15 +182,14 @@ rate_gls <-
            species,
            tree,
            model = "predictor_BM",
-           startv = list(
-             a = NULL,
-             b = NULL
-           ),
+           startv = list(a = NULL,
+                         b = NULL
+                         ),
            maxiter = 100,
            silent = FALSE,
            useLFO = TRUE,
            tol = 0.001
-  ) {
+          ) {
 
     #### Phylogenetic relatedness matrix ####
     if (!ape::is.ultrametric(tree)) {
@@ -271,7 +270,7 @@ rate_gls <-
       x <- x - c(mean_x)
     }
     s2 <- c(s2)
-    s2_SE <- sqrt(2 * (s2^2) / (length(x) + 2)) # from Lynch and Walsh 1998 eq
+    s2_SE <- sqrt(2 * (s2^2) / (length(x) + 2)) # from Lynch and Walsh 1998 eq.
     # A1.10c
 
     #### Internal functions ####
