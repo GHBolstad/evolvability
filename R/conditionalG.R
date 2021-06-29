@@ -7,14 +7,15 @@
 #'   condition on or a vector with several column numbers (integers).
 #' @details The function is motivated by the conditional evolvability, but in a
 #'   multivariate setting. It can be used on any symmetric positive definite
-#'   variance matrix. In the computation, the matrix is first rotated so that
-#'   the all traits, but the one specified by the `condition_on` vector, are
-#'   uncorrelated. Second, the \code{evolvabilityBeta} function is used to
-#'   extract the conditional evolvabilities of the diagonal. Third, the traits
-#'   specified by the `condition_on` vector are removed and the resulting
-#'   sub-matrix is rotated back to reflect the original traits in `G`. The
-#'   returned variance matrix is a sub-matrix of `G` that contain the variance
-#'   that is independent of the traits specified by `condition_on`.
+#'   variance matrix. In the computation, the matrix `G` is first rotated so
+#'   that all traits except for the sub-matrix of the traits specified by the
+#'   `condition_on` vector, which is not rotated. Second, the
+#'   \code{evolvabilityBeta} function is used to extract the conditional
+#'   evolvabilities of the diagonal. This is stored as a diagonal matrix and the
+#'   traits specified by the `condition_on` vector are removed before it is
+#'   rotated back to the original trait space. The returned variance matrix is a
+#'   sub-matrix of `G` that contain the variance that is independent of the
+#'   traits specified by `condition_on`.
 #' @return A matrix that is a sub-matrix of G conditional on the non-included traits.
 #' @author Geir H. Bolstad
 #' @examples
