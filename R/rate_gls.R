@@ -22,7 +22,7 @@
 #'   \code{species}.
 #' @param model The acronym of the evolutionary model to be fitted. There are
 #'   three options: 'predictor_BM', 'predictor_gBM' or 'recent_evol' (see
-#'   details and the vignette 'Analyzing rates of evolution').
+#'   details).
 #' @param startv A vector of optional starting values for the a and b
 #'   parameters.
 #' @param maxiter The maximum number of iterations for updating the GLS.
@@ -89,7 +89,7 @@
 #'   methods. Systematic Biology. In review.
 #' @author Geir H. Bolstad
 #' @examples
-#' # Also see the vignette 'Analyzing_rates_of_evolution'.
+#' # Also see vignette("Analyzing_rates_of_evolution").
 #' \dontrun{
 #' # Generating a tree with 500 species
 #' set.seed(102)
@@ -414,7 +414,7 @@ rate_gls <-
       if (model == "recent_evol") {
         diag_V_micro <- a_start + b_start * (x_original - c(mean_x))
         diag_V_micro[diag_V_micro < 1e-8] <- 1e-8 # Effectively zero or
-        # negative variances are replaced by small value.
+        # negative variances are replaced by a small value.
         V_micro <- diag(c(diag_V_micro))
         V <- sigma2_y * A + V_micro
         e <- eigen(V)
@@ -596,32 +596,28 @@ plot.rate_gls <-
   }
   lines(x, y)
   if (print_param) {
-    n1 <- 
-      nchar(
-        strsplit(
-          x = round_and_format(mod$param["a", 1], sign_digits = digits_param), 
-          split = ".", 
-          fixed = TRUE
-          )[[1]][2]
-        )
-    n2 <- 
-      nchar(
-        strsplit(
-          x = round_and_format(mod$param["b", 1], sign_digits = digits_param), 
-          split = ".", 
-          fixed = TRUE
-          )[[1]][2]
-        )
+    n_decimals <- function(x){
+      n <- nchar(
+            strsplit(
+              x = round_and_format(x, sign_digits = digits_param), 
+              split = ".", 
+              fixed = TRUE
+            )[[1]][2]
+          )
+      if (is.na(n)) n <- 0
+      return(n)
+    }
+    n1 <- min(n_decimals(mod$param["a", 1]), n_decimals(mod$param["a", 2]))
+    n2 <- min(n_decimals(mod$param["b", 1]), n_decimals(mod$param["b", 2]))
     legend(
       "topleft",
       legend = 
         c(as.expression(bquote(
-          italic(a) == .(round_and_format(mod$param["a", 1], 
-            sign_digits = digits_param)) ~ "\u00B1" ~ 
-            .(round_and_format(mod$param["a", 2], digits = n1)) ~ ~ ~ 
-          italic(b) == .(round_and_format(mod$param["b", 1], 
-            sign_digits = digits_param)) ~ "\u00B1" ~ 
-            .(round_and_format(mod$param["b", 2],digits = n2)))), 
+          italic(a) == .(round_and_format(mod$param["a", 1], digits = n1)) 
+            ~ "\u00B1" ~ .(round_and_format(mod$param["a", 2], digits = n1))
+            ~ ~ ~ 
+          italic(b) == .(round_and_format(mod$param["b", 1], digits = n2))
+            ~ "\u00B1" ~ .(round_and_format(mod$param["b", 2], digits = n2)))), 
           as.expression(bquote(italic(R)^2 == .(round_and_format(100 * 
             mod$Rsquared, digits_rsquared)) ~ "%"))
           ), 
@@ -629,7 +625,7 @@ plot.rate_gls <-
       bg = "transparent", 
       xjust = 0, 
       cex = cex.legend
-    )
+      )
   }
 }
 
