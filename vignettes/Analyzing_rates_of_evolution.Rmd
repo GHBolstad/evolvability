@@ -101,7 +101,7 @@ The bootstrap output, below, gives the GKS estimates (`Estimate`) and its analyt
 round(bootout$summary, 3)
 ```
 
-Using the customized plotting function `plot.rate_gls` we can investigate the model fit. Having $y^2$ on the y-axis, we can visualize how the variance of $y$ is changing with $x$. The estimates of $a$ and $b$ are printed in the plot. However because the plot is for illustrating the fit of the model to the data, and the intercept of the regression line is not equal to $a$, but  the intercept as defined in equation 3 in Hansen et al. 2021 (stored as the first element in `gls_mod$Beta`). The slope of the regression, however, is the parameter $b$, as the plotted x-variable is transformed (see below).
+Using the customized plotting function `plot.rate_gls` we can investigate the model fit. Having $y^2$ on the y-axis, we can visualize how the variance of $y$ is changing with $x$. The estimates of $a$ and $b$ are printed in the plot. However because the plot is for illustrating the fit of the model to the data, and the intercept of the regression line is not equal to $a$, but  the intercept as defined in equation 3 in Hansen et al. 2021 (stored as the first element in `gls_mod$Beta`). The intercept of the plotted line includes components of variance in $y$ arising from estimation error, which are controlled for in the estimation of $a$. The slope of the regression, however, is the parameter $b$, as the plotted x-variable is transformed (see below).
 
 ```{r, fig.height=5, fig.width=5}
 plot(gls_mod, scale = "VAR", ylab = expression(y^2), xlab = "x*")
@@ -174,14 +174,14 @@ A plot of the generalized least squares regression fit with $y^2$ on the y-axis 
 plot(gls_mod, scale = "VAR", ylab = expression(y^2), xlab = "x*")
 ```
 
-As with Model 1 the regression line in the plot does not have $a$ as intercept. Instead, the intercept used in the plot is given by the first term of equation 7 in Hansen et al. 2021. The slope of the regression is given by the parameter $b$ because the explanatory variable plotted is a transformed x-variable. 
+As with Model 1 the regression line in the plot does not have $a$ as intercept. Instead, the intercept used in the plot is given by the first term of equation 7 in Hansen et al. 2021. The intercept of the regression is the variance in $y$ at the theoretical clade mean (i.e. at x* = 0), where the variance of $y$ includes components due to estimation error. The slope of the regression is given by the parameter $b$ as the explanatory variable plotted is a x-variable transformed by the design matrix. 
    
 Alternatively with $|y|$ on the y-axis (i.e. on the standard deviation scale): 
 ```{r, fig.height=5, fig.width=5}
 plot(gls_mod, ylab = "|y|", xlab = "x*") # with the default: scale = "SD"
 ```
 
-And a plot of the transformed x-values ($x^*$) on the x-values at the tips. This is because the variance of $y$ depends on the historical values of $x$ and not its extant value (the transformed x-values are calculated by first standardizing and centering the original x-variable and then employing the second term in equation 7 in Hansen et al. 2021):
+And a plot of the transformed x-values ($x^*$) on the x-values at the tips. This is because the variance of $y$ depends on the historical values of $x$ and not its extant value (the transformed x-values are calculated by first standardizing on the root value and centering on the theoretical clade mean before employing the second term in equation 7 in Hansen et al. 2021):
 
 ```{r, fig.height=5, fig.width=5}
 plot(gls_mod$data$x_original, gls_mod$data$x, xlab = "x", ylab = "x*")

@@ -117,11 +117,11 @@ a <- gls_mod$param["a",1]
 b <- gls_mod$param["b",1]
 sigma2_y <- gls_mod$param["sigma(y)^2",1]
 
-# Second, compute micro-evolutionary variance matrix:
+# Second, compute microevolutionary variance matrix:
 V_micro <- a*diag(nrow(d)) + diag(b*d$x)
 diag(V_micro)[diag(V_micro) < 0] <- 0  # (Negative variances are replaced by zero)
 
-# Third, compute macro-evolutionary variance matrix:
+# Third, compute macroevolutionary variance matrix:
 V_macro <- ape::vcv(tree)*sigma2_y
 
 # Last, use macro_pred() to calculate the predictions: 
