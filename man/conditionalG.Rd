@@ -2,34 +2,27 @@
 % Please edit documentation in R/conditionalG.R
 \name{conditionalG}
 \alias{conditionalG}
-\title{Computing a conditional sub matrix of G}
+\title{Computing a conditional sub-matrix of G}
 \usage{
 conditionalG(G, condition_on = NULL)
 }
 \arguments{
 \item{G}{A variance matrix (must be symmetric and positive definite).}
 
-\item{condition_on}{Either an integer with the column number on which to
-condition on or a vector with several column numbers (integers).}
+\item{condition_on}{Either an integer with the column number indicating which
+trait to condition on or a vector with several column numbers (integers).}
 }
 \value{
-A matrix that is a sub-matrix of G conditional on the non-included traits.
+A matrix that is a sub-matrix of the input matrix conditional on the
+  non-included traits.
 }
 \description{
 \code{conditinoalG} calculates a conditional variance matrix.
 }
 \details{
-The function is motivated by the conditional evolvability, but in a
-  multivariate setting. It can be used on any symmetric positive definite
-  variance matrix. In the computation, the matrix `G` is first rotated so
-  that all traits except for the sub-matrix of the traits specified by the
-  `condition_on` vector, which is not rotated. Second, the
-  \code{evolvabilityBeta} function is used to extract the conditional
-  evolvabilities of the diagonal. This is stored as a diagonal matrix and the
-  traits specified by the `condition_on` vector are removed before it is
-  rotated back to the original trait space. The returned variance matrix is a
-  sub-matrix of `G` that contain the variance that is independent of the
-  traits specified by `condition_on`.
+The function calculates a sub-matrix of \code{G} conditional on the
+  traits defined by the the \code{condition_on} vector. The function is based
+  on equation 3 in Hansen et al. (2003).
 }
 \examples{
 # Constructing a G-matrix:
@@ -40,14 +33,21 @@ G <- matrix(c(
   1, 1, 1, 3
 ), ncol = 4)
 
-# Computing a conditional 2x2 sub-matrix by conditioning on trait 1 and 3:
-G_sub_conditional <- conditionalG(G, condition_on = c(1, 3))
+# Computing a conditional 2x2 sub-matrix by conditioning on
+# trait 3 and 4:
+G_sub_conditional <- conditionalG(G, condition_on = c(3, 4))
+G_sub_conditional
 
-# The average evolvabilities of this matrix can then be compared can than be
-# compared to the average evolvabilities of the corresponding unconditional
-# sub matrix of G:
+# The average evolvabilities of this matrix can then be
+# compared can than be compared to the average evolvabilities
+# of the corresponding unconditional sub-matrix of G:
 evolvabilityMeans(G_sub_conditional)
-evolvabilityMeans(G[-c(1, 3), -c(1, 3)])
+evolvabilityMeans(G[-c(3, 4), -c(3, 4)])
+}
+\references{
+Hansen TF, Armbruster WS, Carlsson ML & Pelabon C. 2003.
+  Evolvability and genetic constraint in Dalechampia blossoms: genetic
+  correlations and conditional evolvability. J. Exp. Zool. 296B:23-39.
 }
 \author{
 Geir H. Bolstad
