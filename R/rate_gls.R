@@ -597,13 +597,15 @@ plot.rate_gls <-
   lines(x, y)
   if (print_param) {
     n_decimals <- function(x){
-      nchar(
+      n <- nchar(
         strsplit(
           x = round_and_format(x, sign_digits = digits_param), 
           split = ".", 
           fixed = TRUE
         )[[1]][2]
       )
+      if (is.na(n)) n <- 0
+      return(n)
     }
     n1 <- min(n_decimals(mod$param["a", 1]), n_decimals(mod$param["a", 2]))
     n2 <- min(n_decimals(mod$param["b", 1]), n_decimals(mod$param["b", 2]))
