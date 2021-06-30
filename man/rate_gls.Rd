@@ -33,7 +33,7 @@ and with total length of unit, tips must have the same names as in
 
 \item{model}{The acronym of the evolutionary model to be fitted. There are
 three options: 'predictor_BM', 'predictor_gBM' or 'recent_evol' (see
-details and the vignette 'Analyzing rates of evolution').}
+details).}
 
 \item{startv}{A vector of optional starting values for the a and b
 parameters.}
@@ -116,7 +116,7 @@ before fitting these models.
   and 'Model 3', respectively.
 }
 \examples{
-# Also see the vignette 'Analyzing_rates_of_evolution'.
+# Also see vignette("Analyzing_rates_of_evolution").
 \dontrun{
 # Generating a tree with 500 species
 set.seed(102)
