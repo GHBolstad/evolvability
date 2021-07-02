@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 library(evolvability)
 ```
 
-This vignette shows how to analyze rates of evolution using the comparative methods implemented in `evolvability::rate_gls`. `rate_gls` can fit three different types of evolutionary models depending on its `model` argument. In all three models the evolutionary rate of change in the y-variable is a function of the state of the predictor x. These models can be used to test hypotheses about the effect of an evolving trait (x) on the rate of evolution in a different trait (y). The different evolutionary models outlined below are described in detail in Hansen T. F., Bolstad G. H., Tsuboi M. Analyzing disparity and rates of morphological evolution with model-based phylogenetic comparative methods. *Systematic Biology*. In review.    
+This vignette shows how to analyze rates of evolution using the comparative methods implemented in `evolvability::rate_gls`. The function `rate_gls` can fit three different types of evolutionary models depending on its `model` argument. In all three models the evolutionary rate of change in the y-variable is a function of the state of the predictor x. These models can be used to test hypotheses about the effect of an evolving trait (x) on the rate of evolution in a different trait (y). The different evolutionary models outlined below are described in detail in Hansen TF, Bolstad GH, Tsuboi M. 2021. Analyzing disparity and rates of morphological evolution with model-based phylogenetic comparative methods. *Systematic Biology*. In review.    
 
 Note that sample sizes and number of simulations below are kept small in the interest of computational speed. With small sample sizes the parameter estimates will be inaccurate, and when performing a bootstrap in a real analysis the number of simulations is typically 1000. Hence, the below examples are only for explaining the functionality in the `evolvability` package.
   
@@ -49,13 +49,13 @@ plot(tree)
 ```
 
 # Predictor as Brownian motion 
-The first model is a model where the predictor $x$ evolves according to a Brownian motion (BM) process, while $y$ follows a Brownian motion with variance that is linear in $x$. The evolutionary model is 
+The first model is a model where the predictor $x$ evolves according to a Brownian motion (BM) process, while $y$ follows a Brownian motion with variance that is linear in $x$. This is referred to as model 1 in Hansen et al. (2021). The evolutionary model is 
 
 $$dy = \sqrt{a + bx} dW_1 $$
 
 $$dx = \sigma dW_2 $$
 
-where $a$ is the evolutionary rate of $y$ at $x=0$, $b$ captures the influence of $x$ on the evolutionary rate, and $dW_i$ are two uncorrelated white noise processes. This model will break down when $a + bx$ becomes negative and should be seen as an approximation that may be valid for a given range of $x$ values as spanned by the species to be used in the analysis.  
+where $a$ is the evolutionary rate of $y$ at $x=0$, $b$ captures the influence of $x$ on the evolutionary rate, and the $dW_i$ are two uncorrelated white noise processes. This model will break down when $a + bx$ becomes negative and should be seen as an approximation that may be valid for a given range of $x$ values as spanned by the species to be used in the analysis.  
   
 Using the function `simulate_rate` with `model = "predictor_BM"` we can simulate data at the tips of the phylogeny according to this model:  
 
@@ -81,7 +81,7 @@ d <- sim_data$tips
 head(d)
 ```
 
-We can now fit the GLS model to these data and their phylogeny: 
+We can now fit the GLS (generalized least squares) model to these data and their phylogeny: 
 
 ```{r}
 gls_mod <- rate_gls(x=d$x, y=d$y, species=d$species, tree, 
@@ -95,7 +95,7 @@ This output gives the GLS estimates of the parameters of the evolutionary model 
 bootout <- rate_gls_boot(gls_mod, n = 5, silent = TRUE)
 ```
 
-The bootstrap output, below, gives the GKS estimates (`Estimate`) and its analytic standard errors (`SE`) in the first two columns followed by the mean, the median and the standard deviation (`boot_SD`) of the bootstrap distribution for each parameter, followed by the 2.5\% and the 97.7\% quantiles. The bootstrap standard deviation is an estimate of the standard error of the parameter. Note that number of bootstrap samples, `n`, must be much larger to give reliable estimates.  
+The bootstrap output, below, gives the GLS estimates (`Estimate`) and its analytic standard errors (`SE`) in the first two columns followed by the mean, the median and the standard deviation (`boot_SD`) of the bootstrap distribution for each parameter, followed by the 2.5\% and the 97.7\% quantiles. The bootstrap standard deviation is an estimate of the standard error of the parameter. Note that number of bootstrap samples, `n`, must be much larger to give reliable estimates.  
 
 ```{r}
 round(bootout$summary, 3)
@@ -107,7 +107,7 @@ Using the customized plotting function `plot.rate_gls` we can investigate the mo
 plot(gls_mod, scale = "VAR", ylab = expression(y^2), xlab = "x*")
 ```
       
-Alternatively, we can plot the regression with $|y|$ on the y-axis to visualize how the standard deviation of $y$ is changing with $x$. This is the default of the plot function. 
+Alternatively, we can plot the regression with $|y|=\sqrt{y^2}$ on the y-axis to visualize how the standard deviation of $y$ is changing with $x$. This is the default of the plot function. 
 
 ```{r, fig.height=5, fig.width=5}
 plot(gls_mod, ylab = "|y|", xlab = "x*") # with the default: scale = "SD"
@@ -120,12 +120,12 @@ plot(gls_mod$data$x_original, gls_mod$data$x, xlab = "x", ylab = "x*")
 ```
 
 # Predictor as geometric Brownian motion
-The second model is a model where the predictor $x$ evolves according to a geometric Brownian motion (gBM) process, which is equivalent to Brownian motions of the natural logarithm of $x$, while $y$ is following a Brownian motion with a variance that is linear in $x$. The evolutionary model is 
+The second model is a model where the predictor $x$ evolves according to a geometric Brownian motion (gBM) process, which is equivalent to Brownian motions of the natural logarithm of $x$, while $y$ is following a Brownian motion with a variance that is linear in $x$. This is referred to as model 2 in Hansen et al. (2021). The evolutionary model is 
 
 $$dy = \sqrt{a + bx} dW_1 $$
 
-$$dx = \frac{1}{2} \sigma^2 xdt + xdW_2 $$
-where $a$ is the evolutionary rate of $y$ at $x=0$, $b$ captures the influence of $x$ on the evolutionary rate, and $dW_i$ are two uncorrelated white noise processes. This model will break down when $a + bx$ becomes negative and should be seen as an approximation that may be valid for a given range of $x$ values as spanned by the species to be used in the analysis. However, in contrast to the above model $x$ takes positive values only, which limits the problem of negative $a + bx$.  
+$$dx = \frac{1}{2} \sigma^2 xdt + \sigma xdW_2 $$
+where $a$ is the evolutionary rate of $y$ at $x=0$, $b$ captures the influence of $x$ on the evolutionary rate, and the $dW_i$ are two uncorrelated white noise processes. This model will break down when $a + bx$ becomes negative and should be seen as an approximation that may be valid for a given range of $x$ values as spanned by the species to be used in the analysis. However, in contrast to the above model $x$ takes positive values only, which limits the problem of negative $a + bx$.  
   
 We can simulate data according to the process using:
 
@@ -176,7 +176,7 @@ plot(gls_mod, scale = "VAR", ylab = expression(y^2), xlab = "x*")
 
 As with Model 1 the regression line in the plot does not have $a$ as intercept. Instead, the intercept used in the plot is given by the first term of equation 7 in Hansen et al. 2021. The intercept of the regression is the variance in $y$ at the theoretical clade mean (i.e. at x* = 0), where the variance of $y$ includes components due to estimation error. The slope of the regression is given by the parameter $b$ as the explanatory variable plotted is a x-variable transformed by the design matrix. 
    
-Alternatively with $|y|$ on the y-axis (i.e. on the standard deviation scale): 
+Alternatively with $|y|$ on the y-axis (i.e. on the standard-deviation scale): 
 ```{r, fig.height=5, fig.width=5}
 plot(gls_mod, ylab = "|y|", xlab = "x*") # with the default: scale = "SD"
 ```
@@ -190,7 +190,7 @@ plot(gls_mod$data$x_original, gls_mod$data$x, xlab = "x", ylab = "x*")
 # Predictor affects rates of recent evolution
 This model stands out from the two above in that we focus on the recent evolutionary process. The species mean trait vector is modeled as $\mathbf{y} = \mathbf{y}_{macro} + \mathbf{y}_{micro}$, where $\mathbf{y}_{macro}$ is the result of a Brownian motion process and $\mathbf{y}_{micro}$ is a micro-evolutionary deviation. The variance of $\mathbf{y}_{micro}$ may depend on the predictor variable:
 $$\mathbf{y}_{micro} \sim N(\mathbf{0}, a\mathbf{I} + diag(b\mathbf{x}))$$
-where $a$ and $b$ are parameter, $\mathbf{I}$ is the identity matrix and $\mathbf{x}$ is a vector of species-specific predictor variables. The $diag$-function applied to a vector yields a diagonal matrix with the vector along the diagonal. The model assumes that only the recent value of the predictor matters, hence it is treated as a fixed effect in the regression.
+where $a$ and $b$ are parameter, $\mathbf{I}$ is the identity matrix and $\mathbf{x}$ is a vector of species-specific predictor variables. The $diag$-function applied to a vector yields a diagonal matrix with the vector along the diagonal. The model assumes that only the recent value of the predictor matters, hence it is treated as a fixed effect in the regression. This is referred to as model 3 in Hansen et al. (2021). 
 
 Using the function `simulate_rate` with `model = "recent_evol"` we can simulate data with different parameter values.
 ```{r}
@@ -198,7 +198,7 @@ set.seed(708)
 sim_data <- simulate_rate(tree, startv_x=0, sigma_x=0.25, a=1, b=1, sigma_y = 1, model = "recent_evol")
 ```
 
-Here, `sigma_x` is the sample standard deviation of $x$ and `sigma_y` is the BM rate parameter of $\mathbf{y}_{macro}$. In this model, we don't simulate data along the phylogeny, so there is no such dynamics to plot. The values at the tips:
+Here, `sigma_x` is the sample standard deviation of $x$ and `sigma_y` is the BM rate parameter of $\mathbf{y}_{macro}$. In this model, we do not simulate data along the phylogeny, so there is no such dynamics to plot. The values at the tips:
 
 ```{r}
 d <- sim_data$tips
@@ -241,7 +241,7 @@ Plot of the transformed x-values ($x^*$) on the x-values at the tips (the transf
 plot(gls_mod$data$x_original, gls_mod$data$x, xlab = "x", ylab = "x*")
 ```
 
-Given this model it is also possible to calculate the macro-evolutionary predictions of y using the function `macro_pred`, which is based on equation 10 in Hansen et al. (2021):
+Given this model it is also possible to calculate the macroevolutionary predictions of y using the function `macro_pred`, which is based on equation 10 in Hansen et al. (2021):
 
 ```{r, fig.height=5, fig.width=5}
 # First, extract the relevant parameters:
@@ -262,6 +262,6 @@ plot(d$y, y_macro_pred, xlab = "y", ylab = "Macro-evolutionary predictions of y"
 ```
 
 # References
-Hansen T. F., Bolstad G. H., Tsuboi M. Analyzing disparity and rates of morphological evolution with model-based phylogenetic comparative methods. *Systematic Biology*. 2021.  
+Hansen TF, Bolstad GH, Tsuboi M. 2021. Analyzing disparity and rates of morphological evolution with model-based phylogenetic comparative methods. *Systematic Biology*. In review.
 
 
