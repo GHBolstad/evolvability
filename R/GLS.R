@@ -7,7 +7,7 @@
 #' @param X design matrix
 #' @param R residual covariance or correlation matrix (can be sparse), ignored
 #'   if \code{L} is provided.
-#' @param L lower triangular matrix of the cholescky decomposition of \code{R}
+#' @param L lower triangular matrix of the Cholesky decomposition of \code{R}
 #'   (optional).
 #' @param coef_only reduces the output of the model to the estimated
 #'   coefficients (and the generalized residual sums of squares) only.

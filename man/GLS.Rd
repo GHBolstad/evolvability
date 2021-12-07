@@ -14,7 +14,7 @@ GLS(y, X, R = NULL, L = NULL, coef_only = FALSE)
 \item{R}{residual covariance or correlation matrix (can be sparse), ignored
 if \code{L} is provided.}
 
-\item{L}{lower triangular matrix of the cholescky decomposition of \code{R}
+\item{L}{lower triangular matrix of the Cholesky decomposition of \code{R}
 (optional).}
 
 \item{coef_only}{reduces the output of the model to the estimated

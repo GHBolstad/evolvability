@@ -37,6 +37,7 @@
 #' G <- matrix(c(1, 1, 0, 1, 2, 1, 0, 1, 2), ncol = 3)
 #' evolvabilityMeans(G)
 #' @keywords array algebra
+#' @importFrom stats var
 #' @export
 evolvabilityMeans <- function(G, means = 1) {
   if (any(G[upper.tri(G)] != G[t(lower.tri(G))])) {

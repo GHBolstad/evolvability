@@ -10,7 +10,7 @@
 #'   on equation 3 in Hansen et al. (2003).
 #' @return A matrix that is a sub-matrix of the input matrix conditional on the
 #'   non-included traits.
-#' @references Hansen TF, Armbruster WS, Carlsson ML & Pelabon C. 2003.
+#' @references Hansen TF, Armbruster WS, Carlsson ML & Pélabon C. 2003.
 #'   Evolvability and genetic constraint in Dalechampia blossoms: genetic
 #'   correlations and conditional evolvability. J. Exp. Zool. 296B:23-39.
 #' @author Geir H. Bolstad
