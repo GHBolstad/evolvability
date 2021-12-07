@@ -2,7 +2,7 @@
 % Please edit documentation in R/Almer.R
 \name{Almer_SE}
 \alias{Almer_SE}
-\title{Linear mixed model for responsvariables with uncertainty}
+\title{Linear mixed model for response variables with uncertainty}
 \usage{
 Almer_SE(
   formula,

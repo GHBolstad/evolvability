@@ -5,7 +5,7 @@
 #' animal models. The function is based on the \code{\link{lme4}} package and is
 #' very similar to \code{\link{lmer}}, apart from the A argument.
 #'
-#' @param A an optional named list of sparce matrices. The names must correspond
+#' @param A an optional named list of sparse matrices. The names must correspond
 #'   to the names of the random effects in the formula argument. All levels of
 #'   the random effect should appear as row and column names for the matrices.
 #' @param formula as in \code{\link{lmer}}.
@@ -79,7 +79,7 @@ Almer <- function(formula,
   return(mod_obj)
 }
 
-#' Linear mixed model for responsvariables with uncertainty
+#' Linear mixed model for response variables with uncertainty
 #'
 #' \code{Almer_SE} Linear mixed model for response variables with uncertainty
 #'
@@ -177,7 +177,7 @@ Almer_sim <- function(mod, nsim = 1000) {
 #'   and vcov_distribution, where the two first entries includes the means,
 #'   standard deviations, and quantiles of the fixed effects means and
 #'   (co)variances, respectively, and the two latter includes the complete
-#'   boostrap distribution.
+#'   bootstrap distribution.
 #' @author Geir H. Bolstad
 #' @examples
 #' # See the vignette 'Phylogenetic mixed model'.

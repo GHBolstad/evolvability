@@ -26,7 +26,7 @@ Almer(
 
 \item{data}{as in \code{\link{lmer}}.}
 
-\item{A}{an optional named list of sparce matrices. The names must correspond
+\item{A}{an optional named list of sparse matrices. The names must correspond
 to the names of the random effects in the formula argument. All levels of
 the random effect should appear as row and column names for the matrices.}
 

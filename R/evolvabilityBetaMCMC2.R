@@ -57,6 +57,7 @@
 #'   evolvabilityBetaMCMC2(G_mcmc, Beta_mcmc = Beta.mcmc, post.dist = TRUE)
 #' }
 #' @keywords array algebra multivariate
+#' @importFrom stats median
 #' @export
 evolvabilityBetaMCMC2 <- function(G_mcmc, Beta_mcmc, post.dist = FALSE) {
   G_Beta <- cbind(G_mcmc, Beta_mcmc)

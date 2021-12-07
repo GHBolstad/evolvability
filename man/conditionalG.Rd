@@ -45,7 +45,7 @@ evolvabilityMeans(G_sub_conditional)
 evolvabilityMeans(G[-c(3, 4), -c(3, 4)])
 }
 \references{
-Hansen TF, Armbruster WS, Carlsson ML & Pelabon C. 2003.
+Hansen TF, Armbruster WS, Carlsson ML & Pélabon C. 2003.
   Evolvability and genetic constraint in Dalechampia blossoms: genetic
   correlations and conditional evolvability. J. Exp. Zool. 296B:23-39.
 }

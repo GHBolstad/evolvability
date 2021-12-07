@@ -16,7 +16,7 @@ Almer_boot(mod, nsim = 1000)
   and vcov_distribution, where the two first entries includes the means,
   standard deviations, and quantiles of the fixed effects means and
   (co)variances, respectively, and the two latter includes the complete
-  boostrap distribution.
+  bootstrap distribution.
 }
 \description{
 \code{Almer_boot} performs a parametric bootstrap from an \code{\link{Almer}}
