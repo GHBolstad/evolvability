@@ -50,7 +50,7 @@
 #'   and b are inferred from the intercept and the slope of the GLS fit. Again,
 #'   it is highly recommended to read Hansen et al. (in review) and
 #'   \code{vignette("Analyzing_rates_of_evolution")} before fitting these
-#'   models. In Hansen et al. (in review) the three models 'predictor_BM',
+#'   models. In Hansen et al. (2021) the three models 'predictor_BM',
 #'   'predictor_gBM' and 'recent_evol' are referred to as 'Model 1', 'Model 2'
 #'   and 'Model 3', respectively.
 #' @return An object of \code{class} \code{'rate_gls'}, which is a list with the
@@ -86,7 +86,7 @@
 #'
 #' @references Hansen TF, Bolstad GH, Tsuboi M. 2021. Analyzing disparity and rates 
 #' of morphological evolution with model-based phylogenetic comparative methods. 
-#' *Systematic Biology*. syab079. <https://doi.org/10.1093/sysbio/syab079> 
+#' *Systematic Biology*. syab079. <doi:10.1093/sysbio/syab079> 
 #' @author Geir H. Bolstad
 #' @examples
 #' # Also see vignette("Analyzing_rates_of_evolution").
