@@ -202,7 +202,7 @@ gls_mod_boot$summary
 \references{
 Hansen TF, Bolstad GH, Tsuboi M. 2021. Analyzing disparity and rates 
 of morphological evolution with model-based phylogenetic comparative methods. 
-*Systematic Biology*. syab079. <doi:10.1093/sysbio/syab079>
+*Systematic Biology*. syab079. doi:10.1093/sysbio/syab079
 }
 \author{
 Geir H. Bolstad

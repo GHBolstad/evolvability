@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 library(evolvability)
 ```
 
-This vignette shows how to analyze rates of evolution using the comparative methods implemented in `evolvability::rate_gls`. The function `rate_gls` can fit three different types of evolutionary models depending on its `model` argument. In all three models the evolutionary rate of change in the y-variable is a function of the state of the predictor x. These models can be used to test hypotheses about the effect of an evolving trait (x) on the rate of evolution in a different trait (y). The different evolutionary models outlined below are described in detail in Hansen TF, Bolstad GH, Tsuboi M. 2021. Analyzing disparity and rates of morphological evolution with model-based phylogenetic comparative methods. *Systematic Biology*. syab079. <doi:10.1093/sysbio/syab079>  
+This vignette shows how to analyze rates of evolution using the comparative methods implemented in `evolvability::rate_gls`. The function `rate_gls` can fit three different types of evolutionary models depending on its `model` argument. In all three models the evolutionary rate of change in the y-variable is a function of the state of the predictor x. These models can be used to test hypotheses about the effect of an evolving trait (x) on the rate of evolution in a different trait (y). The different evolutionary models outlined below are described in detail in Hansen TF, Bolstad GH, Tsuboi M. 2021. Analyzing disparity and rates of morphological evolution with model-based phylogenetic comparative methods. *Systematic Biology*. syab079. 
 
 Note that sample sizes and number of simulations below are kept small in the interest of computational speed. With small sample sizes the parameter estimates will be inaccurate, and when performing a bootstrap in a real analysis the number of simulations is typically 1000. Hence, the below examples are only for explaining the functionality in the `evolvability` package.
   
@@ -262,6 +262,6 @@ plot(d$y, y_macro_pred, xlab = "y", ylab = "Macro-evolutionary predictions of y"
 ```
 
 # References
-Hansen TF, Bolstad GH, Tsuboi M. 2021. Analyzing disparity and rates of morphological evolution with model-based phylogenetic comparative methods. *Systematic Biology*. syab079. <doi:10.1093/sysbio/syab079> 
+Hansen TF, Bolstad GH, Tsuboi M. 2021. Analyzing disparity and rates of morphological evolution with model-based phylogenetic comparative methods. *Systematic Biology*. syab079. <https://doi.org/10.1093/sysbio/syab079> 
 
 

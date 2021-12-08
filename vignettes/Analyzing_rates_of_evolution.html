@@ -340,7 +340,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<p>This vignette shows how to analyze rates of evolution using the comparative methods implemented in <code>evolvability::rate_gls</code>. The function <code>rate_gls</code> can fit three different types of evolutionary models depending on its <code>model</code> argument. In all three models the evolutionary rate of change in the y-variable is a function of the state of the predictor x. These models can be used to test hypotheses about the effect of an evolving trait (x) on the rate of evolution in a different trait (y). The different evolutionary models outlined below are described in detail in Hansen TF, Bolstad GH, Tsuboi M. 2021. Analyzing disparity and rates of morphological evolution with model-based phylogenetic comparative methods. <em>Systematic Biology</em>. syab079. <a href="doi:10.1093/sysbio/syab079" class="uri">doi:10.1093/sysbio/syab079</a></p>
+<p>This vignette shows how to analyze rates of evolution using the comparative methods implemented in <code>evolvability::rate_gls</code>. The function <code>rate_gls</code> can fit three different types of evolutionary models depending on its <code>model</code> argument. In all three models the evolutionary rate of change in the y-variable is a function of the state of the predictor x. These models can be used to test hypotheses about the effect of an evolving trait (x) on the rate of evolution in a different trait (y). The different evolutionary models outlined below are described in detail in Hansen TF, Bolstad GH, Tsuboi M. 2021. Analyzing disparity and rates of morphological evolution with model-based phylogenetic comparative methods. <em>Systematic Biology</em>. syab079.</p>
 <p>Note that sample sizes and number of simulations below are kept small in the interest of computational speed. With small sample sizes the parameter estimates will be inaccurate, and when performing a bootstrap in a real analysis the number of simulations is typically 1000. Hence, the below examples are only for explaining the functionality in the <code>evolvability</code> package.</p>
 <p>To simulate data for the different evolutionary models, we first need an ultrametric phylogeny. Here we generate a random phylogeny using the <code>ape</code> package. In a real data analysis, you would use a molecular phylogeny of the species in your data set.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">set.seed</span>(<span class="dv">999</span>)</span>
@@ -532,7 +532,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="references" class="section level1">
 <h1>References</h1>
-<p>Hansen TF, Bolstad GH, Tsuboi M. 2021. Analyzing disparity and rates of morphological evolution with model-based phylogenetic comparative methods. <em>Systematic Biology</em>. syab079. <a href="doi:10.1093/sysbio/syab079" class="uri">doi:10.1093/sysbio/syab079</a></p>
+<p>Hansen TF, Bolstad GH, Tsuboi M. 2021. Analyzing disparity and rates of morphological evolution with model-based phylogenetic comparative methods. <em>Systematic Biology</em>. syab079. <a href="https://doi.org/10.1093/sysbio/syab079" class="uri">https://doi.org/10.1093/sysbio/syab079</a></p>
 </div>
 
 
