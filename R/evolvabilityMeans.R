@@ -50,10 +50,11 @@ evolvabilityMeans <- function(G, means = 1) {
   e_mean <- mean(eigen(G)$values)
   e_max <- max(eigen(G)$values)
   e_min <- min(eigen(G)$values)
+  VAR <- function(x) (sum(x - mean(x))^2)/length(x)
   Heig <- 1 / mean(1 / eigen(G)$values)
-  Ieig <- var(eigen(G)$values) / (mean(eigen(G)$values))^2
-  Ieig2 <- var(eigen(G)$values^2) / (mean(eigen(G)$values^2))^2
-  Iinveig <- var(1 / eigen(G)$values) / (mean(1 / eigen(G)$values))^2
+  Ieig <- VAR(eigen(G)$values) / (mean(eigen(G)$values))^2
+  Ieig2 <- VAR(eigen(G)$values^2) / (mean(eigen(G)$values^2))^2
+  Iinveig <- VAR(1 / eigen(G)$values) / (mean(1 / eigen(G)$values))^2
   k <- nrow(G)
   c_mean <- Heig * (1 + (2 * Iinveig) / (k + 2))
   r_mean <- sqrt(mean(eigen(G)$values^2)) * (1 - (Ieig2 / (4 * (k + 2))))
