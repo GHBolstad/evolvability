@@ -63,7 +63,11 @@
 #' @export
 evolvabilityMeansMCMC <- function(G_mcmc) {
   X <- list()
+<<<<<<< HEAD
   VAR <- function(x) sum((x - mean(x))^2)/length(x)
+=======
+  VAR <- function(x) (sum(x - mean(x))^2)/length(x)
+>>>>>>> 98ae49aea81342a8bd6755c10986a78d42b80b57
   X$post.dist <- t(apply(G_mcmc, 1, function(G) {
     G <- matrix(G, ncol = sqrt(length(G)))
     e_mean <- mean(eigen(G)$values)
