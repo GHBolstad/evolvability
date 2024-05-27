@@ -37,8 +37,9 @@
 #' @export
 conditionalG <- function(G, condition_on = NULL) {
   if (is.null(condition_on)) {
-    stop("Specify on or several column numbers in a vector (e.g. c(1,3) for column 
-         1 and 3)")
+    stop("Specify one or several column numbers in a vector for 
+          the argument condition_on (e.g. condition_on = c(1, 3) 
+          for column 1 and 3)")
   }
   if (any(G[upper.tri(G)] != G[t(lower.tri(G))])) {
     stop("G is not symmetric.")
