@@ -7,7 +7,7 @@
 #' the third model, 'recent_evol', the residuals of the macroevolutionary
 #' predictions of y have variance linear in x.
 #'
-#' @param tree A \code{\link{phylo}} object. Must be ultrametric and scaled to
+#' @param tree A \code{\link{ape::phylo}} object. Must be ultrametric and scaled to
 #'   unit length.
 #' @param startv_x The starting value for x (usually 0 for 'predictor_BM' and
 #'   'recent_evol', and 1 for 'predictor_gBM').
