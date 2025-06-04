@@ -17,7 +17,7 @@
 #'   centers y.
 #' @param species A vector with the names of the species, must be equal in
 #'   length and in the same order as \code{x} and \code{y}.
-#' @param tree An object of class \code{\link{phylo}}, needs to be ultrametric
+#' @param tree An object of class \code{\link{ape::phylo}}, needs to be ultrametric
 #'   and with total length of unit, tips must have the same names as in
 #'   \code{species}.
 #' @param model The acronym of the evolutionary model to be fitted. There are
