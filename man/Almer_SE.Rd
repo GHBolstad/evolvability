@@ -14,18 +14,18 @@ Almer_SE(
 )
 }
 \arguments{
-\item{formula}{as in \code{\link{lme4::lmer}}.}
+\item{formula}{as in \code{\link[lme4]{lmer}}.}
 
 \item{SE}{A vector of standard errors associated with the response variable. NB! Must have column name "SE" in the data.}
 
 \item{maxiter}{The maximum number of iterations.}
 
-\item{control}{as in \code{\link{lme4::lmer}}.}
+\item{control}{as in \code{\link[lme4]{lmer}}.}
 
 \item{...}{Further optional arguments, see \code{\link{Almer}}.}
 }
 \value{
-\code{Almer_SE} returns an object of class \code{\link{lme4::merMod}}.
+\code{Almer_SE} returns an object of class \code{\link[lme4]{merMod}}.
 }
 \description{
 \code{Almer_SE} Linear mixed model for response variables with uncertainty

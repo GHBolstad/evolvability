@@ -2,25 +2,25 @@
 #'
 #' \code{Almer} fits a univariate linear mixed model incorporating a correlated
 #' random effects structure. Can be used to fit phylogenetic mixed models and
-#' animal models. The function is based on the \code{lme4} package and is
-#' very similar to \code{\link{lme4::lmer}}, apart from the A argument.
+#' animal models. The function is based on the \code{\link[lme4]{lme4}} package and is
+#' very similar to \code{\link[lme4]{lmer}}, apart from the A argument.
 #'
 #' @param A an optional named list of sparse matrices. The names must correspond
 #'   to the names of the random effects in the formula argument. All levels of
 #'   the random effect should appear as row and column names for the matrices.
-#' @param formula as in \code{\link{lme4::lmer}}.
-#' @param data as in \code{\link{lme4::lmer}}.
-#' @param REML as in \code{\link{lme4::lmer}}.
-#' @param control as in \code{\link{lme4::lmer}}.
-#' @param start as in \code{\link{lme4::lmer}}.
-#' @param verbose as in \code{\link{lme4::lmer}}.
-#' @param weights as in \code{\link{lme4::lmer}}.
-#' @param na.action as in \code{\link{lme4::lmer}}.
-#' @param offset as in \code{\link{lme4::lmer}}.
-#' @param contrasts as in \code{\link{lme4::lmer}}.
-#' @param devFunOnly as in \code{\link{lme4::lmer}}.
-#' @param ... as in \code{\link{lme4::lmer}}.
-#' @return \code{Almer} an object of class \code{\link{lme4::merMod}}.
+#' @param formula as in \code{\link[lme4]{lmer}}.
+#' @param data as in \code{\link[lme4]{lmer}}.
+#' @param REML as in \code{\link[lme4]{lmer}}.
+#' @param control as in \code{\link[lme4]{lmer}}.
+#' @param start as in \code{\link[lme4]{lmer}}.
+#' @param verbose as in \code{\link[lme4]{lmer}}.
+#' @param weights as in \code{\link[lme4]{lmer}}.
+#' @param na.action as in \code{\link[lme4]{lmer}}.
+#' @param offset as in \code{\link[lme4]{lmer}}.
+#' @param contrasts as in \code{\link[lme4]{lmer}}.
+#' @param devFunOnly as in \code{\link[lme4]{lmer}}.
+#' @param ... as in \code{\link[lme4]{lmer}}.
+#' @return \code{Almer} an object of class \code{\link[lme4]{merMod}}.
 #' @author Geir H. Bolstad
 #' @examples
 #' # See the vignette 'Phylogenetic mixed model'.
@@ -83,12 +83,12 @@ Almer <- function(formula,
 #'
 #' \code{Almer_SE} Linear mixed model for response variables with uncertainty
 #'
-#' @param formula as in \code{\link{lme4::lmer}}.
+#' @param formula as in \code{\link[lme4]{lmer}}.
 #' @param SE A vector of standard errors associated with the response variable. NB! Must have column name "SE" in the data.
 #' @param maxiter The maximum number of iterations.
-#' @param control as in \code{\link{lme4::lmer}}.
+#' @param control as in \code{\link[lme4]{lmer}}.
 #' @param ... Further optional arguments, see \code{\link{Almer}}.
-#' @return \code{Almer_SE} returns an object of class \code{\link{lme4::merMod}}.
+#' @return \code{Almer_SE} returns an object of class \code{\link[lme4]{merMod}}.
 #' @author Geir H. Bolstad
 #' @examples
 #' # See the vignette 'Phylogenetic mixed model'.
@@ -127,7 +127,7 @@ Almer_SE <- function(formula,
 #'
 #' @param mod A fitted object from \code{\link{Almer}}
 #' @param nsim The number of simulations.
-#' @details This function is only included as the \code{\link{lme4::simulate.merMod}}
+#' @details This function is only included because the \code{\link[lme4]{simulate.merMod}}
 #'   function did not seem to work properly when the number of random effect
 #'   levels equal the number of observations.
 #' @return \code{Almer_sim} a matrix of simulated responses, columns correspond

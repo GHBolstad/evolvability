@@ -19,7 +19,7 @@ Almer_sim(mod, nsim = 1000)
 \code{Almer_sim} Simulate responses from an \code{\link{Almer}} model fit.
 }
 \details{
-This function is only included as the \code{\link{lme4::simulate.merMod}}
+This function is only included because the \code{\link[lme4]{simulate.merMod}}
   function did not seem to work properly when the number of random effect
   levels equal the number of observations.
 }

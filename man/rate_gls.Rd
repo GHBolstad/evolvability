@@ -27,7 +27,7 @@ centers y.}
 \item{species}{A vector with the names of the species, must be equal in
 length and in the same order as \code{x} and \code{y}.}
 
-\item{tree}{An object of class \code{\link{ape::phylo}}, needs to be ultrametric
+\item{tree}{An object of class \code{\link[ape]{phylo}}, needs to be ultrametric
 and with total length of unit, tips must have the same names as in
 \code{species}.}
 

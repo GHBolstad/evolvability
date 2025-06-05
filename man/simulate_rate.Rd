@@ -16,7 +16,7 @@ simulate_rate(
 )
 }
 \arguments{
-\item{tree}{A \code{\link{ape::phylo}} object. Must be ultrametric and scaled to
+\item{tree}{A \code{\link[ape]{phylo}} object. Must be ultrametric and scaled to
 unit length.}
 
 \item{startv_x}{The starting value for x (usually 0 for 'predictor_BM' and
