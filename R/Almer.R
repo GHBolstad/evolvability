@@ -48,15 +48,17 @@ Almer <- function(formula,
   mc <- match.call()
   cholA <- lapply(A, function(x) chol(x))
   mod <- 
-      lFormula(formula, 
-               data,
-               REML = REML, 
-               weights = weights, 
-               na.action = na.action,
-               offset = offset, 
-               contrasts = contrasts, 
-               control = control, 
-               ...)
+      do.call(lFormula,
+              c(list(formula = formula,
+                     data = data,
+                     REML = REML,
+                     weights = weights,
+                     na.action = na.action,
+                     offset = offset,
+                     contrasts = contrasts,
+                     control = control),
+                list(...)),
+              quote = TRUE)
   for (i in seq_along(cholA)) {
     j <- match(names(cholA)[i], names(mod$reTrms$cnms))
     if (length(j) > 1) {
