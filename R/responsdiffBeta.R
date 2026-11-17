@@ -43,11 +43,11 @@ responsediffBeta <- function(G1, G2, Beta, means1 = 1, means2 = 1) {
   if (length(means1) == 1 & means1[1] == 1) {
     means1 <- rep(1, nrow(G1))
   }
-  if (length(means2) == 1 & means1[1] == 1) {
+  if (length(means2) == 1 & means2[1] == 1) {
     means2 <- rep(1, nrow(G2))
   }
   G1 <- G1 / (means1 %*% t(means1))
-  G2 <- G2 / (means1 %*% t(means2))
+  G2 <- G2 / (means2 %*% t(means2))
   Beta <- cbind(Beta)
   dB <- sqrt(diag(t(Beta) %*% (G1 - G2) %*% (G1 - G2) %*% Beta))
   est <- list(Beta = Beta, 
