@@ -7,7 +7,9 @@
 #'
 #' @param G A variance matrix.
 #' @param Beta Either a vector or a matrix of unit length selection gradients
-#'   stacked column wise.
+#'   stacked column wise. A warning is issued if any gradient's Euclidean
+#'   length differs from one by more than \code{sqrt(.Machine$double.eps)} or
+#'   is not finite. Gradients are not automatically normalized.
 #' @param means An optional vector of trait means (for internal mean
 #'   standardization).
 #' @description \code{G} needs to be symmetric and positive definite.
@@ -34,6 +36,7 @@
 #' @keywords array algebra
 #' @export
 evolvabilityBeta <- function(G, Beta, means = 1) {
+  check_beta_length(Beta)
   if (any(G[upper.tri(G)] != G[t(lower.tri(G))])) {
     stop("G is not symmetric.")
   }

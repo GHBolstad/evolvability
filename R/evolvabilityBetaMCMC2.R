@@ -12,7 +12,10 @@
 #'   posterior distribution of a matrix in the slot \code{VCV} of a object of
 #'   class \code{MCMCglmm} is by default on this form.
 #' @param Beta_mcmc A posterior distribution of a unit length selection gradient
-#'   where iterations are given row wise.
+#'   where iterations are given row wise. A warning is issued if any gradient's
+#'   Euclidean length differs from one by more than
+#'   \code{sqrt(.Machine$double.eps)} or is not finite. Gradients are not
+#'   automatically normalized.
 #' @param post.dist logical: should the posterior distribution of the evolvability
 #'  parameters be saved.
 #' \tabular{llllll}{
@@ -60,6 +63,7 @@
 #' @importFrom stats median
 #' @export
 evolvabilityBetaMCMC2 <- function(G_mcmc, Beta_mcmc, post.dist = FALSE) {
+  check_beta_length(Beta_mcmc, rows = TRUE)
   G_Beta <- cbind(G_mcmc, Beta_mcmc)
   dimG <- sqrt(ncol(G_mcmc))
   X1 <- t(apply(G_Beta, 1, function(GB) {

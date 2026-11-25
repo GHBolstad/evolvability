@@ -14,7 +14,9 @@
 #'   posterior distribution of a matrix in the slot \code{VCV} of a object of
 #'   class \code{MCMCglmm} is by default on this form.
 #' @param Beta either a vector or a matrix of unit length selection gradients
-#'   stacked column wise.
+#'   stacked column wise. A warning is issued if any gradient's Euclidean
+#'   length differs from one by more than \code{sqrt(.Machine$double.eps)} or
+#'   is not finite. Gradients are not automatically normalized.
 #' @param post.dist logical: should the posterior distribution of the
 #'   evolvability parameters be saved.
 #' @return An object of \code{class} \code{'evolvabilityBetaMCMC'}, which is a
@@ -68,6 +70,8 @@
 #' @importFrom stats median
 #' @export
 evolvabilityBetaMCMC <- function(G_mcmc, Beta, post.dist = FALSE) {
+  check_beta_length(Beta)
+  Beta <- cbind(Beta)
   X1 <- t(apply(G_mcmc, 1, 
                 function(G) {
                     G <- matrix(G, ncol = sqrt(length(G)))
@@ -81,11 +85,11 @@ evolvabilityBetaMCMC <- function(G_mcmc, Beta, post.dist = FALSE) {
                 )
           )
   n <- ncol(Beta)
-  X2 <- list(eB = X1[, 1:n], 
-             rB = X1[, (n + 1):(2 * n)], 
-             cB = X1[, (2 * n + 1):(3 *n)], 
-             aB = X1[, (3 * n + 1):(4 * n)], 
-             iB = X1[, (4 * n + 1):(5 * n)]
+  X2 <- list(eB = X1[, 1:n, drop = FALSE],
+             rB = X1[, (n + 1):(2 * n), drop = FALSE],
+             cB = X1[, (2 * n + 1):(3 * n), drop = FALSE],
+             aB = X1[, (3 * n + 1):(4 * n), drop = FALSE],
+             iB = X1[, (4 * n + 1):(5 * n), drop = FALSE]
              )
   X_summary <- cbind(sapply(X2, function(x) apply(x, 1, mean)))
   colnames(X_summary) <- c("e_mean", "r_mean", "c_mean", "a_mean", "i_mean")

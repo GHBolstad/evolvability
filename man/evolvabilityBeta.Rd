@@ -10,7 +10,9 @@ evolvabilityBeta(G, Beta, means = 1)
 \item{G}{A variance matrix.}
 
 \item{Beta}{Either a vector or a matrix of unit length selection gradients
-stacked column wise.}
+stacked column wise. A warning is issued if any gradient's Euclidean
+length differs from one by more than \code{sqrt(.Machine$double.eps)} or
+is not finite. Gradients are not automatically normalized.}
 
 \item{means}{An optional vector of trait means (for internal mean
 standardization).}

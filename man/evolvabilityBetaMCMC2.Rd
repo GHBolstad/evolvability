@@ -16,7 +16,10 @@ posterior distribution of a matrix in the slot \code{VCV} of a object of
 class \code{MCMCglmm} is by default on this form.}
 
 \item{Beta_mcmc}{A posterior distribution of a unit length selection gradient
-where iterations are given row wise.}
+where iterations are given row wise. A warning is issued if any gradient's
+Euclidean length differs from one by more than
+\code{sqrt(.Machine$double.eps)} or is not finite. Gradients are not
+automatically normalized.}
 
 \item{post.dist}{logical: should the posterior distribution of the evolvability
  parameters be saved.

@@ -12,7 +12,9 @@ responsediffBeta(G1, G2, Beta, means1 = 1, means2 = 1)
 \item{G2}{A variance matrix.}
 
 \item{Beta}{Either a vector or a matrix of unit length selection gradients
-stacked column wise.}
+stacked column wise. A warning is issued if any gradient's Euclidean
+length differs from one by more than \code{sqrt(.Machine$double.eps)} or
+is not finite. Gradients are not automatically normalized.}
 
 \item{means1}{An optional vector of trait means of G1 (for internal mean
 standardization).}

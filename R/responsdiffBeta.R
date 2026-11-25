@@ -7,7 +7,9 @@
 #' @param G1 A variance matrix.
 #' @param G2 A variance matrix.
 #' @param Beta Either a vector or a matrix of unit length selection gradients
-#'   stacked column wise.
+#'   stacked column wise. A warning is issued if any gradient's Euclidean
+#'   length differs from one by more than \code{sqrt(.Machine$double.eps)} or
+#'   is not finite. Gradients are not automatically normalized.
 #' @param means1 An optional vector of trait means of G1 (for internal mean
 #'   standardization).
 #' @param means2 An optional vector of trait means of G2 (for internal mean
@@ -34,6 +36,7 @@
 #' 
 
 responsediffBeta <- function(G1, G2, Beta, means1 = 1, means2 = 1) {
+  check_beta_length(Beta)
   if (any(G1[upper.tri(G1)] != G1[t(lower.tri(G1))])) {
     stop("G1 is not symmetric.")
   }
