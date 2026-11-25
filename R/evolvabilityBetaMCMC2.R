@@ -26,6 +26,10 @@
 #' \code{post.dist} \tab\tab\tab\tab The full posterior distributions of the
 #'  evolvability parameters.
 #' }
+#' @details If \code{solve(G)} fails for a posterior draw because the matrix is
+#'   singular or computationally singular, a warning is issued. Conditional
+#'   evolvability, autonomy and integration are \code{NA} for that draw, and
+#'   their posterior summaries are \code{NA}; other results are retained.
 #' @references Hansen, T. F. & Houle, D. (2008) Measuring and comparing
 #'  evolvability and constraint in multivariate characters. J. Evol. Biol.
 #'   21:1201-1219.
@@ -71,18 +75,28 @@ evolvabilityBetaMCMC2 <- function(G_mcmc, Beta_mcmc, post.dist = FALSE) {
     B <- cbind(GB[(dimG^2 + 1):ncol(G_Beta)])
     eB <- t(B) %*% G %*% B
     rB <- sqrt(t(B) %*% (G %*% G) %*% B)
-    cB <- 1 / (t(B) %*% solve(G) %*% B)
+    G_inv <- solve_g(G)
+    cB <- if (is.null(G_inv)) NA_real_ else 1 / (t(B) %*% G_inv %*% B)
     aB <- cB / eB
     iB <- 1 - aB
-    c(eB = eB, rB = rB, cB = cB, aB = aB, iB = iB)
+    c(eB = eB, rB = rB, cB = cB, aB = aB, iB = iB,
+      failed_solve = is.null(G_inv))
   }))
+  failed <- X1[, "failed_solve"] == 1
+  X1 <- X1[, seq_len(5), drop = FALSE]
+  if (any(failed)) {
+    warning(sum(failed), " G matrix/matrices could not be inverted by solve(); conditional evolvability, autonomy and integration are NA for those draws and their posterior summaries.",
+            call. = FALSE)
+  }
   X <- list()
   X$Beta.median <- cbind(median = apply(Beta_mcmc, 2, median), 
                          coda::HPDinterval(coda::mcmc(Beta_mcmc))
                          )
-  X$summary <- cbind(median = apply(X1, 2, median), 
-                     coda::HPDinterval(coda::mcmc(X1))
-                     )
+  X$summary <- if (any(failed)) {
+    summarize_posterior_with_failed_draws(X1, c(FALSE, FALSE, TRUE, TRUE, TRUE))
+  } else {
+    cbind(median = apply(X1, 2, median), coda::HPDinterval(coda::mcmc(X1)))
+  }
   if (post.dist == TRUE) X$post.dist <- X1
   X$call <- match.call()
   class(X) <- "evolvabilityBetaMCMC2"

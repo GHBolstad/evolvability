@@ -12,7 +12,10 @@
 #'   is not finite. Gradients are not automatically normalized.
 #' @param means An optional vector of trait means (for internal mean
 #'   standardization).
-#' @description \code{G} needs to be symmetric and positive definite.
+#' @description \code{G} needs to be symmetric and positive definite. If
+#'   \code{solve(G)} fails because the matrix is singular or computationally
+#'   singular, a warning is issued and conditional evolvability, autonomy and
+#'   integration are returned as \code{NA}.
 #' @return An object of \code{class} \code{'evolvabilityBeta'}, which is a list
 #' with the following components:
 #' \tabular{llllll}{
@@ -47,7 +50,14 @@ evolvabilityBeta <- function(G, Beta, means = 1) {
   Beta <- cbind(Beta)
   eB <- diag(t(Beta) %*% G %*% Beta)
   rB <- sqrt(diag(t(Beta) %*% (G %*% G) %*% Beta))
-  cB <- 1 / diag(t(Beta) %*% solve(G) %*% Beta)
+  G_inv <- solve_g(G)
+  if (is.null(G_inv)) {
+    warning("G could not be inverted by solve(); conditional evolvability, autonomy and integration are NA.",
+            call. = FALSE)
+    cB <- rep(NA_real_, ncol(Beta))
+  } else {
+    cB <- 1 / diag(t(Beta) %*% G_inv %*% Beta)
+  }
   aB <- cB / eB
   iB <- 1 - aB
   est <- list(Beta = Beta, 

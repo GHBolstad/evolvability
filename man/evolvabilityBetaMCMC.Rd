@@ -50,6 +50,12 @@ integration (i) from selection gradients given the posterior distribution of
 an additive-genetic variance matrix. These measures and their meanings are
 described in Hansen and Houle (2008).
 }
+\details{
+If \code{solve(G)} fails for a posterior draw because the matrix is
+singular or computationally singular, a warning is issued. Conditional
+evolvability, autonomy and integration are \code{NA} for that draw, and
+their posterior summaries are \code{NA}; other results are retained.
+}
 \examples{
 # Simulating a posterior distribution
 # (or bootstrap distribution) of a G-matrix:

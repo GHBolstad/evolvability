@@ -19,6 +19,10 @@
 #'   is not finite. Gradients are not automatically normalized.
 #' @param post.dist logical: should the posterior distribution of the
 #'   evolvability parameters be saved.
+#' @details If \code{solve(G)} fails for a posterior draw because the matrix is
+#'   singular or computationally singular, a warning is issued. Conditional
+#'   evolvability, autonomy and integration are \code{NA} for that draw, and
+#'   their posterior summaries are \code{NA}; other results are retained.
 #' @return An object of \code{class} \code{'evolvabilityBetaMCMC'}, which is a
 #'   list with the following components:
 #' \tabular{llllll}{
@@ -72,19 +76,30 @@
 evolvabilityBetaMCMC <- function(G_mcmc, Beta, post.dist = FALSE) {
   check_beta_length(Beta)
   Beta <- cbind(Beta)
+  n <- ncol(Beta)
   X1 <- t(apply(G_mcmc, 1, 
                 function(G) {
                     G <- matrix(G, ncol = sqrt(length(G)))
                     eB <- diag(t(Beta) %*% G %*% Beta)
                     rB <- sqrt(diag(t(Beta) %*% (G %*% G) %*% Beta))
-                    cB <- 1 / diag(t(Beta) %*% solve(G) %*% Beta)
+                    G_inv <- solve_g(G)
+                    cB <- if (is.null(G_inv)) rep(NA_real_, n) else
+                      1 / diag(t(Beta) %*% G_inv %*% Beta)
                     aB <- cB / eB
                     iB <- 1 - aB
-                    c(eB = eB, rB = rB, cB = cB, aB = aB, iB = iB)
+                    c(eB = eB, rB = rB, cB = cB, aB = aB, iB = iB,
+                      failed_solve = is.null(G_inv))
                     }
                 )
           )
-  n <- ncol(Beta)
+  failed <- X1[, 5 * n + 1] == 1
+  X1 <- X1[, seq_len(5 * n), drop = FALSE]
+  if (any(failed)) {
+    warning(sum(failed), " G matrix/matrices could not be inverted by solve(); ",
+            "conditional evolvability, autonomy and integration are NA ",
+            "for those draws and their posterior summaries.",
+            call. = FALSE)
+  }
   X2 <- list(eB = X1[, 1:n, drop = FALSE],
              rB = X1[, (n + 1):(2 * n), drop = FALSE],
              cB = X1[, (2 * n + 1):(3 * n), drop = FALSE],
@@ -93,16 +108,24 @@ evolvabilityBetaMCMC <- function(G_mcmc, Beta, post.dist = FALSE) {
              )
   X_summary <- cbind(sapply(X2, function(x) apply(x, 1, mean)))
   colnames(X_summary) <- c("e_mean", "r_mean", "c_mean", "a_mean", "i_mean")
-  X <- lapply(X2, function(x){
-                    rbind(median = apply(x, 2, median), 
-                          t(coda::HPDinterval(coda::mcmc(x)))
-                         )
-                   }
-              )
+  X <- lapply(seq_along(X2), function(i) {
+    x <- X2[[i]]
+    if (any(failed) && i >= 3) {
+      t(summarize_posterior_with_failed_draws(x, rep(TRUE, ncol(x))))
+    } else {
+      rbind(median = apply(x, 2, median), t(coda::HPDinterval(coda::mcmc(x))))
+    }
+  })
+  names(X) <- names(X2)
   X$Beta <- Beta
-  X$summary <- rbind(median = apply(X_summary, 2, median), 
-                     t(coda::HPDinterval(coda::mcmc(X_summary)))
-                     )
+  X$summary <- if (any(failed)) {
+    t(summarize_posterior_with_failed_draws(
+      X_summary, c(FALSE, FALSE, TRUE, TRUE, TRUE)
+    ))
+  } else {
+    rbind(median = apply(X_summary, 2, median),
+          t(coda::HPDinterval(coda::mcmc(X_summary))))
+  }
   X$call <- match.call()
   class(X) <- "evolvabilityBetaMCMC"
   X2$summary <- X_summary
@@ -151,11 +174,17 @@ summary.evolvabilityBetaMCMC <- function(object, ...) {
   X <- list()
   X$call <- object$call
   X$Averages <- object$summary
-  X$Minimum <- sapply(object[1:5], function(x) x[, which(x[1, ] == min(x[1, ]))])
+  X$Minimum <- sapply(object[1:5], function(x) {
+    if (anyNA(x[1, ])) rep(NA_real_, nrow(x)) else
+      x[, which.min(x[1, ])]
+  })
   colnames(X$Minimum) <- paste(colnames(X$Min), "_min", sep = "")
-  X$Maximum <- sapply(object[1:5], function(x) x[, which(x[1, ] == max(x[1, ]))])
+  X$Maximum <- sapply(object[1:5], function(x) {
+    if (anyNA(x[1, ])) rep(NA_real_, nrow(x)) else
+      x[, which.max(x[1, ])]
+  })
   colnames(X$Maximum) <- paste(colnames(X$Max), "_max", sep = "")
-  class(X) <- "summary.evolavbilityBetaMCMC"
+  class(X) <- "summary.evolvabilityBetaMCMC"
   X
 }
 
@@ -163,7 +192,7 @@ summary.evolvabilityBetaMCMC <- function(object, ...) {
 print.summary.evolvabilityBetaMCMC <- function(x, ...) {
   cat("Call:\n")
   print(x$call)
-  cat("\nAverage:\n")
+  cat("\nAverage values over all selection gradients and 95% HPD intervals):\n")
   print(x$Averages)
   cat("\nMinimum (the direction with the lowest posterior median):\n")
   print(x$Minimum)

@@ -31,7 +31,10 @@ gradient. \cr
 }
 }
 \description{
-\code{G} needs to be symmetric and positive definite.
+\code{G} needs to be symmetric and positive definite. If
+\code{solve(G)} fails because the matrix is singular or computationally
+singular, a warning is issued and conditional evolvability, autonomy and
+integration are returned as \code{NA}.
 }
 \details{
 \code{evolvabilityBeta} calculates (unconditional) evolvability (e),
