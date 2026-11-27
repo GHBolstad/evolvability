@@ -73,19 +73,16 @@ evolvabilityBetaMCMC2 <- function(G_mcmc, Beta_mcmc, post.dist = FALSE) {
   X1 <- t(apply(G_Beta, 1, function(GB) {
     G <- matrix(GB[1:(dimG^2)], ncol = dimG)
     B <- cbind(GB[(dimG^2 + 1):ncol(G_Beta)])
-    eB <- t(B) %*% G %*% B
-    rB <- sqrt(t(B) %*% (G %*% G) %*% B)
-    G_inv <- solve_g(G)
-    cB <- if (is.null(G_inv)) NA_real_ else 1 / (t(B) %*% G_inv %*% B)
-    aB <- cB / eB
-    iB <- 1 - aB
-    c(eB = eB, rB = rB, cB = cB, aB = aB, iB = iB,
-      failed_solve = is.null(G_inv))
+    p <- beta_parameters(G, B)
+    c(eB = p$e, rB = p$r, cB = p$c, aB = p$a, iB = p$i,
+      failed_solve = p$failed)
   }))
   failed <- X1[, "failed_solve"] == 1
   X1 <- X1[, seq_len(5), drop = FALSE]
   if (any(failed)) {
-    warning(sum(failed), " G matrix/matrices could not be inverted by solve(); conditional evolvability, autonomy and integration are NA for those draws and their posterior summaries.",
+    warning(sum(failed), " G matrix/matrices could not be inverted by solve(); ",
+            "conditional evolvability, autonomy and integration are NA ",
+            "for those draws and their posterior summaries.",
             call. = FALSE)
   }
   X <- list()

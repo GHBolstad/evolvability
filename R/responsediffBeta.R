@@ -1,6 +1,6 @@
 #' Calculate response differences along a set of selection gradients
 #'
-#' \code{responsdiffBeta} calculates the response difference along selection 
+#' \code{responsediffBeta} calculates the response difference along selection 
 #' gradients between two additive-genetic variance matrices as described in 
 #' Hansen and Houle (2008).
 #'
@@ -15,7 +15,7 @@
 #' @param means2 An optional vector of trait means of G2 (for internal mean
 #'   standardization).
 #' @description \code{G1} and \code{G2} need to be symmetric and positive definite.
-#' @return An object of \code{class} \code{'responsdiffBeta'}, which is a list
+#' @return An object of \code{class} \code{'responsediffBeta'}, which is a list
 #' with the following components:
 #' \tabular{llllll}{
 #' \code{Beta} \tab\tab\tab\tab The matrix of selection gradients. \cr
@@ -37,20 +37,8 @@
 
 responsediffBeta <- function(G1, G2, Beta, means1 = 1, means2 = 1) {
   check_beta_length(Beta)
-  if (any(G1[upper.tri(G1)] != G1[t(lower.tri(G1))])) {
-    stop("G1 is not symmetric.")
-  }
-  if (any(G2[upper.tri(G2)] != G2[t(lower.tri(G2))])) {
-    stop("G2 is not symmetric.")
-  }
-  if (length(means1) == 1 & means1[1] == 1) {
-    means1 <- rep(1, nrow(G1))
-  }
-  if (length(means2) == 1 & means2[1] == 1) {
-    means2 <- rep(1, nrow(G2))
-  }
-  G1 <- G1 / (means1 %*% t(means1))
-  G2 <- G2 / (means2 %*% t(means2))
+  G1 <- standardize_g(G1, means1, "G1")
+  G2 <- standardize_g(G2, means2, "G2")
   Beta <- cbind(Beta)
   dB <- sqrt(diag(t(Beta) %*% (G1 - G2) %*% (G1 - G2) %*% Beta))
   est <- list(Beta = Beta, 

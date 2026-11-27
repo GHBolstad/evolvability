@@ -40,8 +40,9 @@ parameters.}
 
 \item{maxiter}{The maximum number of iterations for updating the GLS.}
 
-\item{silent}{logical: if the function should not print the generalized sum
-of squares for each iteration.}
+\item{silent}{logical: if the function should not report the parameter
+estimates and convergence score for each iteration (reported with
+\code{\link{message}}).}
 
 \item{useLFO}{logical: whether the focal species should be left out when
 calculating the corresponding species' means. Note that this is only
@@ -96,7 +97,7 @@ Brownian motion with variance linear in x, while the evolution of x either
 follows a Brownian motion or a geometric Brownian motion, respectively. In
 the third model, 'recent_evol', the residuals of the macroevolutionary
 predictions of y have variance linear in x. It is highly recommended  to read
-Hansen et al. (in review) and \code{vignette("Analyzing_rates_of_evolution")}
+Hansen et al. (2021) and \code{vignette("Analyzing_rates_of_evolution")}
 before fitting these models.
 }
 \details{
@@ -109,7 +110,7 @@ before fitting these models.
   'recent_evol' analyses, while it mean standardized \code{x} (i.e. divided
   \code{x} by its mean) in the 'predictor_gBM'. The evolutionary parameters a
   and b are inferred from the intercept and the slope of the GLS fit. Again,
-  it is highly recommended to read Hansen et al. (in review) and
+  it is highly recommended to read Hansen et al. (2021) and
   \code{vignette("Analyzing_rates_of_evolution")} before fitting these
   models. In Hansen et al. (2021) the three models 'predictor_BM',
   'predictor_gBM' and 'recent_evol' are referred to as 'Model 1', 'Model 2'

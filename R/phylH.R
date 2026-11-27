@@ -19,17 +19,9 @@
 #' @export
 
 phylH <- function(mod, numerator, residual = "Residual", nsim = 10) {
-  y <- Almer_sim(mod, nsim)
-  dt <- mod@frame
-  boot <- apply(y, 2, 
-                function(x) {
-                    dt$x86eb0d23_ebe6_4b37_bbc7_1d164b2f7c26 <- x
-                    mod_updt <- update(mod, 
-                                       x86eb0d23_ebe6_4b37_bbc7_1d164b2f7c26 ~ ., 
-                                       data = dt)
-                    H(mod_updt, numerator, residual)
-                    }
-                )
+  boot <- vapply(refit_simulated(mod, nsim),
+                 function(m) H(m, numerator, residual), numeric(1),
+                 USE.NAMES = TRUE)
   return(list(phylH = c(H(mod, numerator, residual), 
                         quantile(boot, c(0.025, 0.975))),
               bootstrap = boot

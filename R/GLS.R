@@ -4,7 +4,8 @@
 #' generalized least squares regression
 #'
 #' @param y response variable
-#' @param X design matrix
+#' @param X design matrix. The first column must be the intercept (a column of
+#'   ones), which is used for the total sum of squares and hence the R-squared.
 #' @param R residual covariance or correlation matrix (can be sparse), ignored
 #'   if \code{L} is provided.
 #' @param L lower triangular matrix of the Cholesky decomposition of \code{R}
@@ -32,6 +33,9 @@
 #' @export
 GLS <- function(y, X, R = NULL, L = NULL, coef_only = FALSE) {
   if (is.null(L)) {
+    if (is.null(R)) {
+      stop("Provide either R or L.")
+    }
     L <- t(chol(R))
   }
   if (coef_only) {
@@ -43,7 +47,7 @@ GLS <- function(y, X, R = NULL, L = NULL, coef_only = FALSE) {
     obj <- lm.fit(X_star, forwardsolve(L, y))
     GSSE <- sum(obj$residuals^2) # generalized residual sum of squares
     sigma2 <- GSSE / obj$df.residual # generalized residual variance
-    error_var <- c(sigma2) * solve(t(X_star) %*% X_star) # error variance matrix
+    error_var <- c(sigma2) * chol2inv(qr.R(obj$qr)) # error variance matrix
     X_int <- cbind(X_star[, 1]) 
     GSST <- sum(lm.fit(X_int, forwardsolve(L, y))$residuals^2) # generalized total
     # sum of squares of the intercept only model

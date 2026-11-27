@@ -1,11 +1,13 @@
+# Inverts G, or returns NULL if G is (numerically) singular. The criterion is
+# the same as in base::solve() (reciprocal condition number below machine
+# epsilon), but it does not depend on the language of error messages. Other
+# problems (e.g. non-square or non-finite G) still raise an error.
 solve_g <- function(G) {
-  tryCatch(solve(G), error = function(e) {
-    if (!grepl("system is (exactly|computationally) singular",
-               conditionMessage(e))) {
-      stop(e)
-    }
-    NULL
-  })
+  G <- as.matrix(G)
+  if (rcond(G) < .Machine$double.eps) {
+    return(NULL)
+  }
+  solve(G)
 }
 
 summarize_posterior_with_failed_draws <- function(x, invalid) {

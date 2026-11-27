@@ -40,32 +40,19 @@
 #' @export
 evolvabilityBeta <- function(G, Beta, means = 1) {
   check_beta_length(Beta)
-  if (any(G[upper.tri(G)] != G[t(lower.tri(G))])) {
-    stop("G is not symmetric.")
-  }
-  if (length(means) == 1 & means[1] == 1) {
-    means <- rep(1, nrow(G))
-  }
-  G <- G / (means %*% t(means))
+  G <- standardize_g(G, means)
   Beta <- cbind(Beta)
-  eB <- diag(t(Beta) %*% G %*% Beta)
-  rB <- sqrt(diag(t(Beta) %*% (G %*% G) %*% Beta))
-  G_inv <- solve_g(G)
-  if (is.null(G_inv)) {
+  est <- beta_parameters(G, Beta)
+  if (est$failed) {
     warning("G could not be inverted by solve(); conditional evolvability, autonomy and integration are NA.",
             call. = FALSE)
-    cB <- rep(NA_real_, ncol(Beta))
-  } else {
-    cB <- 1 / diag(t(Beta) %*% G_inv %*% Beta)
   }
-  aB <- cB / eB
-  iB <- 1 - aB
-  est <- list(Beta = Beta, 
-              e = eB, 
-              r = rB, 
-              c = cB, 
-              a = aB, 
-              i = iB
+  est <- list(Beta = Beta,
+              e = est$e,
+              r = est$r,
+              c = est$c,
+              a = est$a,
+              i = est$i
               )
   class(est) <- "evolvabilityBeta"
   est$call <- match.call()

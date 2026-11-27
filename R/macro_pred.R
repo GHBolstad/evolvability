@@ -30,9 +30,8 @@ macro_pred <- function(y, V, useLFO = TRUE) {
     # here the mean is calculated leaving out the focal species
     X <- matrix(rep(1, length(y) - 1), ncol = 1) # design matrix
     y_mean <- 
-        as.matrix(sapply(as.vector(y), 
-                         function(x) {
-                             j <- which(as.vector(y) == x)
+        as.matrix(sapply(seq_along(y), 
+                         function(j) {
                              GLS(y = as.vector(y)[-j], 
                                  X = X, R = V[-j, -j], 
                                  coef_only = TRUE)$coef

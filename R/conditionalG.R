@@ -41,13 +41,18 @@ conditionalG <- function(G, condition_on = NULL) {
           the argument condition_on (e.g. condition_on = c(1, 3) 
           for column 1 and 3)")
   }
-  if (any(G[upper.tri(G)] != G[t(lower.tri(G))])) {
-    stop("G is not symmetric.")
+  check_symmetric(G)
+  if (!is.numeric(condition_on) ||
+      any(condition_on < 1 | condition_on > nrow(G) |
+          condition_on != round(condition_on))) {
+    stop("condition_on must contain column numbers of G.")
   }
-  condition_on <- sort(condition_on)
-  var_y <- G[-condition_on, -condition_on]
-  var_x <- G[condition_on, condition_on]
-  cov_yx <- G[condition_on, -condition_on]
-  cov_xy <- G[-condition_on, condition_on]
-  return(var_y - cov_xy %*% solve(var_x) %*% cov_yx)
+  condition_on <- sort(unique(condition_on))
+  if (length(condition_on) == nrow(G)) {
+    stop("condition_on cannot include all the columns of G.")
+  }
+  var_y <- G[-condition_on, -condition_on, drop = FALSE]
+  var_x <- G[condition_on, condition_on, drop = FALSE]
+  cov_yx <- G[-condition_on, condition_on, drop = FALSE]
+  return(var_y - cov_yx %*% solve(var_x, t(cov_yx)))
 }

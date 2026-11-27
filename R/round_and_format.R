@@ -23,15 +23,15 @@ round_and_format <- function(x, digits = 2, sign_digits = NULL, scientific = FAL
     )
   } else {
     x <- signif(x, digits = sign_digits)
-    x_list <- strsplit(c(as.character(format(abs(x), scientific = FALSE))), "\\.")
-    nchar_x <- nchar(x_list[[1]])
-    if (abs(x) < 1) {
-      sign_digits_displayed <- nchar(x * 10^nchar_x[2])
-      nsmall <- nchar_x[2] + sign_digits - sign_digits_displayed
-    } else {
-      nsmall <- sign_digits - nchar_x[1]
-      if (nsmall < 0) nsmall <- 0
-    }
-    format(x, nsmall = nsmall, scientific = scientific, trim = trim)
+    # Number of decimals needed to display sign_digits significant digits
+    nsmall <- vapply(x, function(xi) {
+      if (!is.finite(xi) || xi == 0) return(0)
+      min(20, max(0, sign_digits - 1 - floor(log10(abs(xi)))))
+    }, numeric(1))
+    out <- vapply(seq_along(x), function(i) {
+      format(x[i], nsmall = nsmall[i], scientific = scientific, trim = trim)
+    }, character(1))
+    names(out) <- names(x)
+    out
   }
 }

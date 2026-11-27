@@ -8,7 +8,7 @@
 #' follows a Brownian motion or a geometric Brownian motion, respectively. In
 #' the third model, 'recent_evol', the residuals of the macroevolutionary
 #' predictions of y have variance linear in x. It is highly recommended  to read
-#' Hansen et al. (in review) and \code{vignette("Analyzing_rates_of_evolution")}
+#' Hansen et al. (2021) and \code{vignette("Analyzing_rates_of_evolution")}
 #' before fitting these models.
 #'
 #' @param x The explanatory variable, which must be equal to the length of
@@ -26,8 +26,9 @@
 #' @param startv A vector of optional starting values for the a and b
 #'   parameters.
 #' @param maxiter The maximum number of iterations for updating the GLS.
-#' @param silent logical: if the function should not print the generalized sum
-#'   of squares for each iteration.
+#' @param silent logical: if the function should not report the parameter
+#'   estimates and convergence score for each iteration (reported with
+#'   \code{\link{message}}).
 #' @param useLFO logical: whether the focal species should be left out when
 #'   calculating the corresponding species' means. Note that this is only
 #'   relevant for the 'recent_evol' model. The most correct is to use
@@ -48,7 +49,7 @@
 #'   'recent_evol' analyses, while it mean standardized \code{x} (i.e. divided
 #'   \code{x} by its mean) in the 'predictor_gBM'. The evolutionary parameters a
 #'   and b are inferred from the intercept and the slope of the GLS fit. Again,
-#'   it is highly recommended to read Hansen et al. (in review) and
+#'   it is highly recommended to read Hansen et al. (2021) and
 #'   \code{vignette("Analyzing_rates_of_evolution")} before fitting these
 #'   models. In Hansen et al. (2021) the three models 'predictor_BM',
 #'   'predictor_gBM' and 'recent_evol' are referred to as 'Model 1', 'Model 2'
@@ -200,7 +201,6 @@ rate_gls <-
       stop("The tree is not standardized to unit length")
     }
     A <- A[match(species, colnames(A)), match(species, colnames(A))]
-    I <- diag(nrow(A))
 
     #### storing original y and x values ####
     y_original <- y
@@ -232,7 +232,6 @@ rate_gls <-
       Vx <- mod$coef[2]^2
       mean_x <- exp(mod$coef[1])
       s2 <- mod$sigma2
-      Vs2 <- 2 * (s2^2) / (length(x) + 2) # var(s2)
       x <- x / c(mean_x) - exp((s2 - Vx) / 2) # The centering is done on the
       # theoretical mean
 
@@ -242,26 +241,6 @@ rate_gls <-
       e_s2A <- exp(s2 * A) - 1
       x <- c(2 * inv_s2 *
         (x - (2 / 3) * exp(-s2 / 2) * e_32s2A %*% solve(e_s2A, x)))
-
-      # # Hack to correct for measurement error in s2, need to comment out the
-      # # calculation of x above
-      # e_32s2A <- exp(3/2 * s2 * A)
-      # e_s2A <-   exp(s2 * A)
-      # solve_e_s2A <- solve(e_s2A-1)
-      # H <- (2/s2^3)*I - (2/3)*exp(-s2/2)*inv_s2*
-      #   ((9/4) * A * A * e_32s2A - 3 * (0.5 + inv_s2) * A * e_32s2A +
-      #      (0.25 + inv_s2 + 2 * inv_s4) * (e_32s2A - 1) -
-      #      (e_32s2A - 1) %*% solve_e_s2A %*% (A * A * e_s2A) +
-      #      2 * (0.5 + inv_s2) * (e_32s2A - 1) %*% solve_e_s2A %*%
-      #      (A * e_s2A) - 3 * (A * e_32s2A) %*% solve_e_s2A %*% (A * e_s2A) +
-      #      2 * (e_32s2A - 1) %*% solve_e_s2A %*% (A * e_s2A) %*%
-      #      solve_e_s2A %*% (A * e_s2A)) %*% solve_e_s2A
-      # # x <- c(2/s2 * x - (4/3)*exp(-s2/2)/s2*(e_32s2A-1) %*%
-      # # solve(e_s2A-1, x) + Vs2*H%*%x)
-      # x <- c((2/s2 * I - (4/3) * exp(-s2/2)/s2 * (e_32s2A - 1) %*%
-      #         solve_e_s2A + Vs2 * H) %*% x)
-      # e_32s2A <- e_32s2A - 1
-      # e_s2A <-  e_s2A - 1
     }
     if (model == "recent_evol") {
       mean_x <- mean(x)
@@ -289,27 +268,11 @@ rate_gls <-
     }
     if (model == "predictor_gBM") {
       b_func <- function(Beta) Beta[2, 1]
-      # Hack to ensure a positive a-parameter:
-      # b_func <- function(Beta){
-      #   if((Beta[1, 1] + Vy - c(2*Beta[2, 1]*exp(Vx/2)*
-      #     (exp(s2/2)-1)*inv_s2))<0){
-      #     return((Beta[1, 1] + Vy)/c(2*exp(Vx/2)*(exp(s2/2)-1)*inv_s2))
-      #   } else{
-      #     return(Beta[2, 1])
-      #   }
-      # }
-
       a_func <- function(Beta) {
         a <- Beta[1, 1] + Vy - 
           c(2 * b_func(Beta) * exp(Vx / 2) * (exp(s2 / 2) - 1) * inv_s2)
         return(a)
       }
-      # Hack to correct for error in s2:
-      # a_func <- function(Beta){
-      #  a <- Beta[1, 1] + Vy - c(2*Beta[2, 1]*exp(Vx/2)*((exp(s2/2)-1)*inv_s2 +
-      #               Vs2*((s2^2 - 4*s2 + 8)*exp(s2/2)-8)/(8*s2^3)))
-      #  return(a)
-      # }
 
       # Some matrix calculations to avoid repeating them in the loop:
       AoA <- A * A
@@ -329,12 +292,7 @@ rate_gls <-
           2 * a^2 * AoA +
           a * b * Q1 +
           b^2 * Q2
-        e <- eigen(R)
-        if (any(e$values < 1e-8)) {
-          e$values[e$values < 1e-8] <- 1e-8 # ensures a positive definite R
-          R <- e$vectors %*% diag(e$values) %*% t(e$vectors)
-        }
-        return(R)
+        return(make_positive_definite(R))
       }
       a_SE_func <- function(Beta_vcov) {
         bb <- c(2 * exp(Vx / 2) * (exp(s2 / 2) - 1) * inv_s2)
@@ -346,13 +304,7 @@ rate_gls <-
       a_func <- function(Beta) Beta[1, 1]
       b_func <- function(Beta) Beta[2, 1]
       R_func <- function(a, b) {
-        R <- 2 * (Q * Q)
-        e <- eigen(R)
-        if (any(e$values < 1e-8)) {
-          e$values[e$values < 1e-8] <- 1e-8 # ensures a positive definite R
-          R <- e$vectors %*% diag(e$values) %*% t(e$vectors)
-        }
-        return(R)
+        return(make_positive_definite(2 * (Q * Q)))
       }
       a_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[1, 1])
       b_SE_func <- function(Beta_vcov) sqrt(Beta_vcov[2, 2])
@@ -417,11 +369,7 @@ rate_gls <-
         # negative variances are replaced by a small value.
         V_micro <- diag(c(diag_V_micro))
         V <- sigma2_y * A + V_micro
-        e <- eigen(V)
-        if (any(e$values < 1e-8)) {
-          e$values[e$values < 1e-8] <- 1e-8 # Ensures a positive definite V.
-          V <- e$vectors %*% diag(e$values) %*% t(e$vectors)
-        }
+        V <- make_positive_definite(V)
         Vinv <- chol2inv(chol(V))
         dVinv <- diag(x = diag(Vinv))
         inv_dVinv <- diag(x = 1 / diag(Vinv))
@@ -450,10 +398,10 @@ rate_gls <-
       convergence_score[i] <- max(a_diff, b_diff)
 
       if (!silent) {
-        print(paste0(
+        message(
           "i=", i, "; a=", a[i + 1], "; b=", b[i + 1],
           "; converg score=", convergence_score[i]
-        ))
+        )
       }
 
       if (convergence_score[i] < tol &
@@ -743,7 +691,7 @@ rate_gls_boot <-
       boot_distribution[i, ] <- NA
     }
     if (!silent) {
-      print(paste("Bootstrap iteration", i))
+      message("Bootstrap iteration ", i)
     }
   }
   return(

@@ -77,21 +77,12 @@ evolvabilityBetaMCMC <- function(G_mcmc, Beta, post.dist = FALSE) {
   check_beta_length(Beta)
   Beta <- cbind(Beta)
   n <- ncol(Beta)
-  X1 <- t(apply(G_mcmc, 1, 
-                function(G) {
-                    G <- matrix(G, ncol = sqrt(length(G)))
-                    eB <- diag(t(Beta) %*% G %*% Beta)
-                    rB <- sqrt(diag(t(Beta) %*% (G %*% G) %*% Beta))
-                    G_inv <- solve_g(G)
-                    cB <- if (is.null(G_inv)) rep(NA_real_, n) else
-                      1 / diag(t(Beta) %*% G_inv %*% Beta)
-                    aB <- cB / eB
-                    iB <- 1 - aB
-                    c(eB = eB, rB = rB, cB = cB, aB = aB, iB = iB,
-                      failed_solve = is.null(G_inv))
-                    }
-                )
-          )
+  X1 <- t(apply(G_mcmc, 1, function(G) {
+    G <- matrix(G, ncol = sqrt(length(G)))
+    p <- beta_parameters(G, Beta)
+    c(eB = p$e, rB = p$r, cB = p$c, aB = p$a, iB = p$i,
+      failed_solve = p$failed)
+  }))
   failed <- X1[, 5 * n + 1] == 1
   X1 <- X1[, seq_len(5 * n), drop = FALSE]
   if (any(failed)) {
@@ -178,12 +169,12 @@ summary.evolvabilityBetaMCMC <- function(object, ...) {
     if (anyNA(x[1, ])) rep(NA_real_, nrow(x)) else
       x[, which.min(x[1, ])]
   })
-  colnames(X$Minimum) <- paste(colnames(X$Min), "_min", sep = "")
+  colnames(X$Minimum) <- paste(colnames(X$Minimum), "_min", sep = "")
   X$Maximum <- sapply(object[1:5], function(x) {
     if (anyNA(x[1, ])) rep(NA_real_, nrow(x)) else
       x[, which.max(x[1, ])]
   })
-  colnames(X$Maximum) <- paste(colnames(X$Max), "_max", sep = "")
+  colnames(X$Maximum) <- paste(colnames(X$Maximum), "_max", sep = "")
   class(X) <- "summary.evolvabilityBetaMCMC"
   X
 }

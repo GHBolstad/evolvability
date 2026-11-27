@@ -60,7 +60,11 @@ Almer <- function(formula,
                 list(...)),
               quote = TRUE)
   for (i in seq_along(cholA)) {
-    j <- match(names(cholA)[i], names(mod$reTrms$cnms))
+    j <- which(names(mod$reTrms$cnms) == names(cholA)[i])
+    if (length(j) == 0) {
+      stop("the A matrix '", names(cholA)[i],
+           "' does not match any random effect term in the formula")
+    }
     if (length(j) > 1) {
       stop("an A matrix can only be associated with one random effect term")
     }
@@ -107,15 +111,17 @@ Almer_SE <- function(formula,
   mc <- match.call()
   wgth <- 1 / (1 + SE^2)
   mod <- Almer(formula, weights = wgth, control = control, ...)
-  for (i in 1:maxiter) {
+  converged <- FALSE
+  for (i in seq_len(maxiter)) {
     rvariance <- attr(lme4::VarCorr(mod), "sc")^2
     wgth <- 1 / (1 + (SE^2) / rvariance)
-    mod <- Almer(formula, weights = wgth, ...)
+    mod <- Almer(formula, weights = wgth, control = control, ...)
     if (abs(rvariance - attr(lme4::VarCorr(mod), "sc")^2) < 1e-08) {
-      (break)()
+      converged <- TRUE
+      break
     }
   }
-  if (i == maxiter) {
+  if (!converged) {
     warning("Optimization of weights reached maximum number of iterations.")
   }
   mod@call <- evalq(mc)
@@ -188,15 +194,7 @@ Almer_sim <- function(mod, nsim = 1000) {
 #' @importFrom stats update sd quantile
 #' @export
 Almer_boot <- function(mod, nsim = 1000) {
-  y <- Almer_sim(mod, nsim)
-  dt <- mod@frame
-  boot <- 
-      apply(y, 2, 
-            function(x) {
-                dt$x86eb0d23_ebe6_4b37_bbc7_1d164b2f7c26 <- x
-                update(mod, x86eb0d23_ebe6_4b37_bbc7_1d164b2f7c26 ~ .,data = dt)
-                }
-            )
+  boot <- refit_simulated(mod, nsim)
   fixef_boot <- sapply(boot, lme4::fixef)
   if (is.vector(fixef_boot)) {
     fixef_boot <- cbind(fixef_boot)

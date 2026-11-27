@@ -9,7 +9,8 @@ GLS(y, X, R = NULL, L = NULL, coef_only = FALSE)
 \arguments{
 \item{y}{response variable}
 
-\item{X}{design matrix}
+\item{X}{design matrix. The first column must be the intercept (a column of
+ones), which is used for the total sum of squares and hence the R-squared.}
 
 \item{R}{residual covariance or correlation matrix (can be sparse), ignored
 if \code{L} is provided.}

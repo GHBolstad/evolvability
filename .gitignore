@@ -4,3 +4,5 @@
 evolvability.Rproj
 doc
 Meta
+vignettes/*.html
+vignettes/*.R
