@@ -19,6 +19,10 @@ check_g <- function(G, name = "G") {
     stop(name, " must be numeric without missing or non-finite values.",
          call. = FALSE)
   }
+  if (nrow(G) != ncol(G)) {
+    stop(name, " must be a square matrix (not a vector or a non-square ",
+         "matrix).", call. = FALSE)
+  }
   if (!isSymmetric(unname(G), tol = sqrt(.Machine$double.eps))) {
     stop(name, " is not symmetric.", call. = FALSE)
   }

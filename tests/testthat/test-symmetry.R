@@ -9,7 +9,8 @@ test_that("asymmetric G matrices are rejected", {
                "G1 is not symmetric")
   expect_error(responsediffBeta(diag(3), asymmetric, beta),
                "G2 is not symmetric")
-  expect_error(evolvabilityBeta(matrix(1, 2, 3), c(1, 0)), "not symmetric")
+  expect_error(evolvabilityBeta(matrix(1, 2, 3), c(1, 0)), "square matrix")
+  expect_error(evolvabilityMeans(c(1, 2, 2, 1)), "square matrix")
 })
 
 test_that("rounding errors in G are tolerated", {
