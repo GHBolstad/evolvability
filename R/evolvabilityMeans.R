@@ -5,7 +5,7 @@
 #' integration (i) of a additive-genetic variance matrix using the approximation
 #' formulas described in Hansen and Houle (2008, 2009).
 #'
-#' @param G A variance matrix (must be symmetric and positive definite).
+#' @param G A symmetric variance matrix (see Details).
 #' @param means An optional vector of trait means, for mean standardization.
 #' @details The equations for calculating the evolvability parameters are
 #'   approximations, except for the minimum, maximum and unconditional
@@ -17,7 +17,13 @@
 #'   \code{randomBeta}). The maximum and minimum evolvability, which
 #'   are also the maximum and minimum respondability and conditional
 #'   evolvability, equals the largest and smallest eigenvalue of the G-matrix,
-#'   respectively.
+#'   respectively. \code{G} must be symmetric, otherwise an error is given. If
+#'   \code{solve(G)} fails because the matrix is singular or computationally
+#'   singular, a warning is issued, the conditional evolvability, autonomy and
+#'   integration are \code{NA}, and the other parameters are still calculated.
+#'   A warning is also issued if \code{G} is not positive definite (it has
+#'   negative eigenvalues); the parameters are then still calculated but may
+#'   not be meaningful.
 #' @return A vector with the following components:
 #' \tabular{llllll}{
 #' \code{e_mean} \tab\tab\tab\tab The average (unconditional) evolvability. \cr
@@ -40,5 +46,8 @@
 #' @importFrom stats var
 #' @export
 evolvabilityMeans <- function(G, means = 1) {
-  mean_evolvability(standardize_g(G, means))
+  est <- mean_evolvability(standardize_g(G, means))
+  warn_not_invertible(est$singular)
+  warn_not_positive_definite(est$not_pd)
+  est$estimates
 }

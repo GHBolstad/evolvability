@@ -7,9 +7,9 @@
 responsediffBeta(G1, G2, Beta, means1 = 1, means2 = 1)
 }
 \arguments{
-\item{G1}{A variance matrix.}
+\item{G1}{A symmetric variance matrix (see Details).}
 
-\item{G2}{A variance matrix.}
+\item{G2}{A symmetric variance matrix (see Details).}
 
 \item{Beta}{Either a vector or a matrix of unit length selection gradients
 stacked column wise. A warning is issued if any gradient's Euclidean
@@ -31,16 +31,19 @@ with the following components:
 }
 }
 \description{
-\code{G1} and \code{G2} need to be symmetric and positive definite.
-}
-\details{
 \code{responsediffBeta} calculates the response difference along selection 
 gradients between two additive-genetic variance matrices as described in 
 Hansen and Houle (2008).
 }
+\details{
+\code{G1} and \code{G2} must be symmetric, otherwise an error is
+  given. A warning is issued if either is not positive definite (it has
+  negative eigenvalues); the response difference is then still calculated
+  but may not be meaningful.
+}
 \examples{
-G1 <- matrix(c(1, 1, 0, 1, 2, 2, 0, 2, 3), ncol = 3) / 10
-G2 <- matrix(c(1, 2, 0,2, 1, 1,0, 1, 3), ncol = 3)
+G1 <- matrix(c(1, 1, 0, 1, 2, 1, 0, 1, 2), ncol = 3) / 10
+G2 <- matrix(c(2, 1, 0, 1, 2, 1, 0, 1, 3), ncol = 3)
 Beta <- randomBeta(5, 3)
 X <- responsediffBeta(G1, G2, Beta)
 summary(X)

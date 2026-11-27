@@ -18,7 +18,7 @@ devtools::install_github(repo = "GHBolstad/evolvability", build_vignettes = TRUE
 library(evolvability)
 
 # An additive-genetic variance matrix and 100 random selection gradients
-G <- matrix(c(1, 1, 0, 1, 2, 2, 0, 2, 3), ncol = 3) / 10
+G <- matrix(c(1, 1, 0, 1, 2, 1, 0, 1, 2), ncol = 3) / 10
 Beta <- randomBeta(100, 3)
 
 # Evolvability, respondability, conditional evolvability, autonomy and

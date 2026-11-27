@@ -26,10 +26,14 @@
 #' \code{post.dist} \tab\tab\tab\tab The full posterior distributions of the
 #'  evolvability parameters.
 #' }
-#' @details If \code{solve(G)} fails for a posterior draw because the matrix is
+#' @details An error is given if any draw in \code{G_mcmc} is not symmetric. If
+#'   \code{solve(G)} fails for a posterior draw because the matrix is
 #'   singular or computationally singular, a warning is issued. Conditional
 #'   evolvability, autonomy and integration are \code{NA} for that draw, and
-#'   their posterior summaries are \code{NA}; other results are retained.
+#'   their posterior summaries are \code{NA}; the other results are still
+#'   calculated. A warning is also issued if draws are not positive definite
+#'   (they have negative eigenvalues); the results are then still calculated
+#'   but may not be meaningful for those draws.
 #' @references Hansen, T. F. & Houle, D. (2008) Measuring and comparing
 #'  evolvability and constraint in multivariate characters. J. Evol. Biol.
 #'   21:1201-1219.
@@ -68,23 +72,25 @@
 #' @export
 evolvabilityBetaMCMC2 <- function(G_mcmc, Beta_mcmc, post.dist = FALSE) {
   check_beta_length(Beta_mcmc, rows = TRUE)
+  dimG <- check_g_mcmc(G_mcmc)
+  if (nrow(as.matrix(Beta_mcmc)) != nrow(as.matrix(G_mcmc)) ||
+      ncol(as.matrix(Beta_mcmc)) != dimG) {
+    stop("Beta_mcmc must have one row per row of G_mcmc and as many columns ",
+         "as the dimension of G.", call. = FALSE)
+  }
   G_Beta <- cbind(G_mcmc, Beta_mcmc)
-  dimG <- sqrt(ncol(G_mcmc))
   X1 <- t(apply(G_Beta, 1, function(GB) {
     G <- matrix(GB[1:(dimG^2)], ncol = dimG)
     B <- cbind(GB[(dimG^2 + 1):ncol(G_Beta)])
     p <- beta_parameters(G, B)
     c(eB = p$e, rB = p$r, cB = p$c, aB = p$a, iB = p$i,
-      failed_solve = p$failed)
+      failed_solve = p$failed, not_pd = p$not_pd)
   }))
   failed <- X1[, "failed_solve"] == 1
+  not_pd <- X1[, "not_pd"] == 1
   X1 <- X1[, seq_len(5), drop = FALSE]
-  if (any(failed)) {
-    warning(sum(failed), " G matrix/matrices could not be inverted by solve(); ",
-            "conditional evolvability, autonomy and integration are NA ",
-            "for those draws and their posterior summaries.",
-            call. = FALSE)
-  }
+  warn_not_invertible(failed)
+  warn_not_positive_definite(not_pd)
   X <- list()
   X$Beta.median <- cbind(median = apply(Beta_mcmc, 2, median), 
                          coda::HPDinterval(coda::mcmc(Beta_mcmc))

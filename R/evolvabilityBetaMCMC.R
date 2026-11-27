@@ -19,10 +19,14 @@
 #'   is not finite. Gradients are not automatically normalized.
 #' @param post.dist logical: should the posterior distribution of the
 #'   evolvability parameters be saved.
-#' @details If \code{solve(G)} fails for a posterior draw because the matrix is
+#' @details An error is given if any draw in \code{G_mcmc} is not symmetric. If
+#'   \code{solve(G)} fails for a posterior draw because the matrix is
 #'   singular or computationally singular, a warning is issued. Conditional
 #'   evolvability, autonomy and integration are \code{NA} for that draw, and
-#'   their posterior summaries are \code{NA}; other results are retained.
+#'   their posterior summaries are \code{NA}; the other results are still
+#'   calculated. A warning is also issued if draws are not positive definite
+#'   (they have negative eigenvalues); the results are then still calculated
+#'   but may not be meaningful for those draws.
 #' @return An object of \code{class} \code{'evolvabilityBetaMCMC'}, which is a
 #'   list with the following components:
 #' \tabular{llllll}{
@@ -76,21 +80,21 @@
 evolvabilityBetaMCMC <- function(G_mcmc, Beta, post.dist = FALSE) {
   check_beta_length(Beta)
   Beta <- cbind(Beta)
+  if (nrow(Beta) != check_g_mcmc(G_mcmc)) {
+    stop("Beta must have as many rows as the dimension of G.", call. = FALSE)
+  }
   n <- ncol(Beta)
   X1 <- t(apply(G_mcmc, 1, function(G) {
     G <- matrix(G, ncol = sqrt(length(G)))
     p <- beta_parameters(G, Beta)
     c(eB = p$e, rB = p$r, cB = p$c, aB = p$a, iB = p$i,
-      failed_solve = p$failed)
+      failed_solve = p$failed, not_pd = p$not_pd)
   }))
   failed <- X1[, 5 * n + 1] == 1
+  not_pd <- X1[, 5 * n + 2] == 1
   X1 <- X1[, seq_len(5 * n), drop = FALSE]
-  if (any(failed)) {
-    warning(sum(failed), " G matrix/matrices could not be inverted by solve(); ",
-            "conditional evolvability, autonomy and integration are NA ",
-            "for those draws and their posterior summaries.",
-            call. = FALSE)
-  }
+  warn_not_invertible(failed)
+  warn_not_positive_definite(not_pd)
   X2 <- list(eB = X1[, 1:n, drop = FALSE],
              rB = X1[, (n + 1):(2 * n), drop = FALSE],
              cB = X1[, (2 * n + 1):(3 * n), drop = FALSE],

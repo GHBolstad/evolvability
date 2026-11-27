@@ -5,17 +5,20 @@
 #' integration (i) along selection gradients given an additive-genetic variance
 #' matrix as described in Hansen and Houle (2008).
 #'
-#' @param G A variance matrix.
+#' @param G A symmetric variance matrix (see Details).
 #' @param Beta Either a vector or a matrix of unit length selection gradients
 #'   stacked column wise. A warning is issued if any gradient's Euclidean
 #'   length differs from one by more than \code{sqrt(.Machine$double.eps)} or
 #'   is not finite. Gradients are not automatically normalized.
 #' @param means An optional vector of trait means (for internal mean
 #'   standardization).
-#' @description \code{G} needs to be symmetric and positive definite. If
+#' @details \code{G} must be symmetric, otherwise an error is given. If
 #'   \code{solve(G)} fails because the matrix is singular or computationally
-#'   singular, a warning is issued and conditional evolvability, autonomy and
-#'   integration are returned as \code{NA}.
+#'   singular, a warning is issued, the conditional evolvability, autonomy and
+#'   integration are returned as \code{NA}, and the other parameters are still
+#'   calculated. A warning is also issued if \code{G} is not positive definite
+#'   (it has negative eigenvalues); the parameters are then still calculated
+#'   but may not be meaningful.
 #' @return An object of \code{class} \code{'evolvabilityBeta'}, which is a list
 #' with the following components:
 #' \tabular{llllll}{
@@ -32,7 +35,7 @@
 #' 21:1201-1219.
 #' @author Geir H. Bolstad
 #' @examples
-#' G <- matrix(c(1, 1, 0, 1, 2, 2, 0, 2, 3), ncol = 3) / 10
+#' G <- matrix(c(1, 1, 0, 1, 2, 1, 0, 1, 2), ncol = 3) / 10
 #' Beta <- randomBeta(5, 3)
 #' X <- evolvabilityBeta(G, Beta)
 #' summary(X)
@@ -42,11 +45,12 @@ evolvabilityBeta <- function(G, Beta, means = 1) {
   check_beta_length(Beta)
   G <- standardize_g(G, means)
   Beta <- cbind(Beta)
-  est <- beta_parameters(G, Beta)
-  if (est$failed) {
-    warning("G could not be inverted by solve(); conditional evolvability, autonomy and integration are NA.",
-            call. = FALSE)
+  if (nrow(Beta) != nrow(G)) {
+    stop("Beta must have as many rows as the dimension of G.", call. = FALSE)
   }
+  est <- beta_parameters(G, Beta)
+  warn_not_invertible(est$failed)
+  warn_not_positive_definite(est$not_pd)
   est <- list(Beta = Beta,
               e = est$e,
               r = est$r,

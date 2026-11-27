@@ -7,7 +7,7 @@
 evolvabilityMeans(G, means = 1)
 }
 \arguments{
-\item{G}{A variance matrix (must be symmetric and positive definite).}
+\item{G}{A symmetric variance matrix (see Details).}
 
 \item{means}{An optional vector of trait means, for mean standardization.}
 }
@@ -40,7 +40,13 @@ The equations for calculating the evolvability parameters are
   \code{randomBeta}). The maximum and minimum evolvability, which
   are also the maximum and minimum respondability and conditional
   evolvability, equals the largest and smallest eigenvalue of the G-matrix,
-  respectively.
+  respectively. \code{G} must be symmetric, otherwise an error is given. If
+  \code{solve(G)} fails because the matrix is singular or computationally
+  singular, a warning is issued, the conditional evolvability, autonomy and
+  integration are \code{NA}, and the other parameters are still calculated.
+  A warning is also issued if \code{G} is not positive definite (it has
+  negative eigenvalues); the parameters are then still calculated but may
+  not be meaningful.
 }
 \examples{
 G <- matrix(c(1, 1, 0, 1, 2, 1, 0, 1, 2), ncol = 3)

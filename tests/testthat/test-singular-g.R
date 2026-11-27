@@ -87,3 +87,38 @@ test_that("solve_g only treats singularity, not bad input, as a failed inversion
   expect_equal(solve_g(G), diag(1 / c(2, 3)))
   expect_error(solve_g(matrix(1:6, 2, 3)))
 })
+
+test_that("evolvabilityMeans warns for singular G and returns what it can", {
+  for (bad in list(singular, near_singular)) {
+    result <- expect_inversion_warning(evolvabilityMeans(bad))
+    expect_true(all(is.na(result[c("c_mean", "a_mean", "i_mean")])))
+    expect_equal(unname(result[c("e_mean", "e_min", "e_max")]),
+                 c(mean(diag(bad)), min(diag(bad)), max(diag(bad))))
+    expect_true(is.finite(result[["r_mean"]]))
+  }
+  expect_no_warning(evolvabilityMeans(G))
+})
+
+test_that("evolvabilityMeansMCMC handles singular draws", {
+  result <- expect_inversion_warning(evolvabilityMeansMCMC(G_mcmc))
+  expect_equal(nrow(result$post.medians), 7)
+  expect_true(all(is.na(result$post.medians[c("c_mean", "a_mean", "i_mean"), ])))
+  expect_true(all(is.finite(result$post.medians[c("e_mean", "e_min", "e_max",
+                                                  "r_mean"), ])))
+  expect_true(all(is.na(result$post.dist[3, c("c_mean", "a_mean", "i_mean")])))
+  expect_true(all(is.finite(result$post.dist[-3, ])))
+
+  all_singular <- matrix(rep(c(singular), 10), nrow = 10, byrow = TRUE)
+  result <- expect_inversion_warning(evolvabilityMeansMCMC(all_singular))
+  expect_true(all(is.finite(result$post.medians[c("e_mean", "r_mean"), ])))
+})
+
+test_that("evolvabilityMeansMCMC is unchanged when all draws are invertible", {
+  draws <- rbind(c(diag(c(2, 3))), c(diag(c(1, 4))), c(diag(c(3, 1))))
+  res <- evolvabilityMeansMCMC(draws)
+  expect_equal(unname(res$post.medians[, "median"]),
+               unname(apply(res$post.dist, 2, median)))
+  expect_equal(unname(res$post.medians[, c("lower", "upper")]),
+               unname(coda::HPDinterval(res$post.dist)),
+               ignore_attr = TRUE)
+})

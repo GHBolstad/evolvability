@@ -15,6 +15,8 @@
 #'   mean vector in the slot \code{Sol} of an object of class \code{MCMCglmm} is
 #'   by default on this form.
 #' @return The posterior distribution of a mean standardized variance matrix.
+#' @details An error is given if any draw in \code{G_mcmc} is not symmetric, or
+#'   if the dimensions of \code{G_mcmc} and \code{means_mcmc} do not match.
 #' @author Geir H. Bolstad
 #' @examples
 #' # Simulating a posterior distribution
@@ -37,6 +39,12 @@
 #' @keywords array algebra multivariate
 #' @export
 meanStdGMCMC <- function(G_mcmc, means_mcmc) {
+  k <- check_g_mcmc(G_mcmc)
+  means_mcmc <- as.matrix(means_mcmc)
+  if (ncol(means_mcmc) != k || nrow(means_mcmc) != nrow(as.matrix(G_mcmc))) {
+    stop("means_mcmc must have one row per row of G_mcmc and as many columns ",
+         "as the dimension of G.", call. = FALSE)
+  }
   X <- cbind(means_mcmc, G_mcmc)
   n1 <- ncol(means_mcmc)
   n2 <- ncol(X)

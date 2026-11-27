@@ -4,8 +4,8 @@
 #' gradients between two additive-genetic variance matrices as described in 
 #' Hansen and Houle (2008).
 #'
-#' @param G1 A variance matrix.
-#' @param G2 A variance matrix.
+#' @param G1 A symmetric variance matrix (see Details).
+#' @param G2 A symmetric variance matrix (see Details).
 #' @param Beta Either a vector or a matrix of unit length selection gradients
 #'   stacked column wise. A warning is issued if any gradient's Euclidean
 #'   length differs from one by more than \code{sqrt(.Machine$double.eps)} or
@@ -14,7 +14,10 @@
 #'   standardization).
 #' @param means2 An optional vector of trait means of G2 (for internal mean
 #'   standardization).
-#' @description \code{G1} and \code{G2} need to be symmetric and positive definite.
+#' @details \code{G1} and \code{G2} must be symmetric, otherwise an error is
+#'   given. A warning is issued if either is not positive definite (it has
+#'   negative eigenvalues); the response difference is then still calculated
+#'   but may not be meaningful.
 #' @return An object of \code{class} \code{'responsediffBeta'}, which is a list
 #' with the following components:
 #' \tabular{llllll}{
@@ -26,8 +29,8 @@
 #' 21:1201-1219.
 #' @author Geir H. Bolstad
 #' @examples
-#' G1 <- matrix(c(1, 1, 0, 1, 2, 2, 0, 2, 3), ncol = 3) / 10
-#' G2 <- matrix(c(1, 2, 0,2, 1, 1,0, 1, 3), ncol = 3)
+#' G1 <- matrix(c(1, 1, 0, 1, 2, 1, 0, 1, 2), ncol = 3) / 10
+#' G2 <- matrix(c(2, 1, 0, 1, 2, 1, 0, 1, 3), ncol = 3)
 #' Beta <- randomBeta(5, 3)
 #' X <- responsediffBeta(G1, G2, Beta)
 #' summary(X)
@@ -39,6 +42,8 @@ responsediffBeta <- function(G1, G2, Beta, means1 = 1, means2 = 1) {
   check_beta_length(Beta)
   G1 <- standardize_g(G1, means1, "G1")
   G2 <- standardize_g(G2, means2, "G2")
+  warn_not_positive_definite(is_not_positive_definite(G1), "G1")
+  warn_not_positive_definite(is_not_positive_definite(G2), "G2")
   Beta <- cbind(Beta)
   dB <- sqrt(diag(t(Beta) %*% (G1 - G2) %*% (G1 - G2) %*% Beta))
   est <- list(Beta = Beta, 

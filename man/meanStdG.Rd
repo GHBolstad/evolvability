@@ -7,7 +7,8 @@
 meanStdG(G, means)
 }
 \arguments{
-\item{G}{A variance matrix.}
+\item{G}{A symmetric variance matrix. An error is given if it is not
+symmetric.}
 
 \item{means}{A vector of trait means.}
 }
@@ -16,6 +17,10 @@ A mean standardized variance matrix.
 }
 \description{
 \code{meanStdG} mean standardizes a variance matrix (e.g. a G-matrix).
+}
+\details{
+An error is given if \code{G} is not symmetric, or if the length of
+  \code{means} differs from the dimension of \code{G}.
 }
 \examples{
 G <- matrix(c(1, 1, 0, 1, 4, 1, 0, 1, 2), ncol = 3)

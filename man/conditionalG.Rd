@@ -7,7 +7,7 @@
 conditionalG(G, condition_on = NULL)
 }
 \arguments{
-\item{G}{A variance matrix (must be symmetric and positive definite).}
+\item{G}{A symmetric variance matrix (see Details).}
 
 \item{condition_on}{Either an integer with the column number indicating which
 trait to condition on or a vector with several column numbers (integers).}
@@ -22,7 +22,12 @@ A matrix that is a sub-matrix of the input matrix conditional on the
 \details{
 The function calculates a sub-matrix of \code{G} conditional on the
   traits defined by the the \code{condition_on} vector. The function is based
-  on equation 3 in Hansen et al. (2003).
+  on equation 3 in Hansen et al. (2003). An error is given if \code{G} is not
+  symmetric. If the variance matrix of the traits in \code{condition_on}
+  cannot be inverted by \code{solve()}, a warning is issued and a matrix of
+  \code{NA} is returned. A warning is also issued if \code{G} is not positive
+  definite (it has negative eigenvalues); the result is then still
+  calculated but may not be meaningful.
 }
 \examples{
 # Constructing a G-matrix:

@@ -7,7 +7,7 @@
 evolvabilityBeta(G, Beta, means = 1)
 }
 \arguments{
-\item{G}{A variance matrix.}
+\item{G}{A symmetric variance matrix (see Details).}
 
 \item{Beta}{Either a vector or a matrix of unit length selection gradients
 stacked column wise. A warning is issued if any gradient's Euclidean
@@ -31,19 +31,22 @@ gradient. \cr
 }
 }
 \description{
-\code{G} needs to be symmetric and positive definite. If
-  \code{solve(G)} fails because the matrix is singular or computationally
-  singular, a warning is issued and conditional evolvability, autonomy and
-  integration are returned as \code{NA}.
-}
-\details{
 \code{evolvabilityBeta} calculates (unconditional) evolvability (e),
 respondability (r), conditional evolvability (c), autonomy (a) and
 integration (i) along selection gradients given an additive-genetic variance
 matrix as described in Hansen and Houle (2008).
 }
+\details{
+\code{G} must be symmetric, otherwise an error is given. If
+  \code{solve(G)} fails because the matrix is singular or computationally
+  singular, a warning is issued, the conditional evolvability, autonomy and
+  integration are returned as \code{NA}, and the other parameters are still
+  calculated. A warning is also issued if \code{G} is not positive definite
+  (it has negative eigenvalues); the parameters are then still calculated
+  but may not be meaningful.
+}
 \examples{
-G <- matrix(c(1, 1, 0, 1, 2, 2, 0, 2, 3), ncol = 3) / 10
+G <- matrix(c(1, 1, 0, 1, 2, 1, 0, 1, 2), ncol = 3) / 10
 Beta <- randomBeta(5, 3)
 X <- evolvabilityBeta(G, Beta)
 summary(X)

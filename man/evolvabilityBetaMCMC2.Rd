@@ -38,10 +38,14 @@ respondability (r), conditional evolvability (c), autonomy (a) and
 integration (i) along a selection gradient estimate with uncertainty.
 }
 \details{
-If \code{solve(G)} fails for a posterior draw because the matrix is
+An error is given if any draw in \code{G_mcmc} is not symmetric. If
+  \code{solve(G)} fails for a posterior draw because the matrix is
   singular or computationally singular, a warning is issued. Conditional
   evolvability, autonomy and integration are \code{NA} for that draw, and
-  their posterior summaries are \code{NA}; other results are retained.
+  their posterior summaries are \code{NA}; the other results are still
+  calculated. A warning is also issued if draws are not positive definite
+  (they have negative eigenvalues); the results are then still calculated
+  but may not be meaningful for those draws.
 }
 \examples{
 {

@@ -1,7 +1,7 @@
 #' Calculate posterior distribution of average evolvability parameters of a
 #' G-matrix
 #'
-#' \code{evolvabilityMeans} calculates the average (unconditional) evolvability
+#' \code{evolvabilityMeansMCMC} calculates the average (unconditional) evolvability
 #' (e), respondability (r), conditional evolvability (c), autonomy (a) and
 #' integration (i) given the posterior distribution of a additive-genetic
 #' variance matrix using the approximation formulas described in Hansen and
@@ -23,7 +23,14 @@
 #'   \code{randomBeta}). The maximum and minimum evolvability, which
 #'   are also the maximum and minimum respondability and conditional
 #'   evolvability, equals the largest and smallest eigenvalue of the G-matrix,
-#'   respectively.
+#'   respectively. An error is given if any draw of \code{G_mcmc} is not
+#'   symmetric. If \code{solve(G)} fails for a draw because the matrix is
+#'   singular or computationally singular, a warning is issued, and the
+#'   conditional evolvability, autonomy and integration are \code{NA} for that
+#'   draw and in their posterior summaries; the other parameters are still
+#'   calculated. A warning is also issued if draws are not positive definite
+#'   (they have negative eigenvalues); the parameters are then still calculated
+#'   but may not be meaningful for those draws.
 #' @return An object of \code{class} \code{'evolvabilityMeansMCMC'}, which is a
 #'   list with the following components:
 #' \tabular{llllll}{
@@ -62,14 +69,23 @@
 #' @importFrom stats median var
 #' @export
 evolvabilityMeansMCMC <- function(G_mcmc) {
+  check_g_mcmc(G_mcmc)
   X <- list()
-  X$post.dist <- t(apply(G_mcmc, 1, function(G) {
-    mean_evolvability(matrix(G, ncol = sqrt(length(G))))[
-      c("e_mean", "e_min", "e_max", "r_mean", "c_mean", "a_mean", "i_mean")]
-  }))
-  X$post.dist <- coda::as.mcmc(X$post.dist)
-  X$post.medians <- cbind(median = apply(X$post.dist, 2, median), 
-                          coda::HPDinterval(X$post.dist))
+  results <- apply(G_mcmc, 1, function(G) {
+    est <- mean_evolvability(matrix(G, ncol = sqrt(length(G))))
+    c(est$estimates[c("e_mean", "e_min", "e_max", "r_mean", "c_mean", "a_mean",
+                      "i_mean")],
+      singular = est$singular, not_pd = est$not_pd)
+  })
+  results <- t(results)
+  failed <- results[, "singular"] == 1
+  warn_not_invertible(failed)
+  warn_not_positive_definite(results[, "not_pd"] == 1)
+  X$post.dist <- coda::as.mcmc(results[, seq_len(7), drop = FALSE])
+  conditional <- c("c_mean", "a_mean", "i_mean")
+  X$post.medians <- summarize_posterior_with_failed_draws(
+    X$post.dist, invalid = any(failed) & colnames(X$post.dist) %in% conditional
+  )
   X$call <- match.call()
   class(X) <- "evolvabilityMeansMCMC"
   X

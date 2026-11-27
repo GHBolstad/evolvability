@@ -26,7 +26,7 @@ of the average evolvability parameters.
 }
 }
 \description{
-\code{evolvabilityMeans} calculates the average (unconditional) evolvability
+\code{evolvabilityMeansMCMC} calculates the average (unconditional) evolvability
 (e), respondability (r), conditional evolvability (c), autonomy (a) and
 integration (i) given the posterior distribution of a additive-genetic
 variance matrix using the approximation formulas described in Hansen and
@@ -43,7 +43,14 @@ The equations for calculating the evolvability parameters are
   \code{randomBeta}). The maximum and minimum evolvability, which
   are also the maximum and minimum respondability and conditional
   evolvability, equals the largest and smallest eigenvalue of the G-matrix,
-  respectively.
+  respectively. An error is given if any draw of \code{G_mcmc} is not
+  symmetric. If \code{solve(G)} fails for a draw because the matrix is
+  singular or computationally singular, a warning is issued, and the
+  conditional evolvability, autonomy and integration are \code{NA} for that
+  draw and in their posterior summaries; the other parameters are still
+  calculated. A warning is also issued if draws are not positive definite
+  (they have negative eigenvalues); the parameters are then still calculated
+  but may not be meaningful for those draws.
 }
 \examples{
 # Simulating a posterior distribution

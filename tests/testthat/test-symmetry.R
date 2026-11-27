@@ -30,3 +30,53 @@ test_that("conditionalG conditions on the selected traits", {
   expect_error(conditionalG(G, 4), "column numbers")
   expect_error(conditionalG(G, 1:3), "all the columns")
 })
+
+test_that("non-finite and malformed G matrices give clear errors", {
+  with_na <- diag(2)
+  with_na[1, 1] <- NA
+  expect_error(evolvabilityBeta(with_na, c(1, 0)), "missing or non-finite")
+  expect_error(evolvabilityMeans(with_na), "missing or non-finite")
+  expect_error(conditionalG(with_na, 1), "missing or non-finite")
+  expect_error(evolvabilityBeta(diag(3), c(1, 0)), "as many rows")
+})
+
+test_that("MCMC functions reject asymmetric or malformed G draws", {
+  G <- diag(c(2, 3))
+  draws <- matrix(rep(c(G), 5), nrow = 5, byrow = TRUE)
+  asymmetric <- draws
+  asymmetric[4, ] <- c(2, 1, 0, 3)
+  beta <- c(1, 0)
+  beta_draws <- matrix(rep(beta, 5), nrow = 5, byrow = TRUE)
+
+  expect_error(evolvabilityBetaMCMC(asymmetric, beta), "not symmetric.*row 4")
+  expect_error(evolvabilityBetaMCMC2(asymmetric, beta_draws),
+               "not symmetric.*row 4")
+  expect_error(evolvabilityMeansMCMC(asymmetric), "not symmetric.*row 4")
+
+  expect_error(evolvabilityBetaMCMC(draws[, 1:3], beta), "square")
+  expect_error(evolvabilityBetaMCMC(draws, c(1, 0, 0)), "as many rows")
+  expect_error(evolvabilityBetaMCMC2(draws, beta_draws[1:3, ]),
+               "one row per row")
+  draws[2, 1] <- NA
+  expect_error(evolvabilityBetaMCMC(draws, beta), "missing or non-finite")
+})
+
+test_that("conditionalG returns NA with a warning for a singular conditioning block", {
+  expect_warning(result <- conditionalG(diag(c(2, 0, 1)), 2),
+                 "could not be inverted by solve()", fixed = TRUE)
+  expect_equal(dim(result), c(2, 2))
+  expect_true(all(is.na(result)))
+  # conditioning on a non-singular block of a singular G still works
+  expect_no_warning(result <- conditionalG(diag(c(2, 0, 1)), 1))
+  expect_equal(result, diag(c(0, 1)))
+})
+
+test_that("meanStdG and meanStdGMCMC reject asymmetric G", {
+  expect_error(meanStdG(asymmetric, c(1, 2, 3)), "G is not symmetric")
+  expect_error(meanStdG(diag(3), c(1, 2)), "length of the means")
+  draws <- rbind(c(diag(2)), c(2, 1, 0, 2))
+  means <- rbind(c(1, 1), c(1, 1))
+  expect_error(meanStdGMCMC(draws, means), "not symmetric.*row 2")
+  expect_error(meanStdGMCMC(rbind(c(diag(2)), c(diag(2))), means[, 1, drop = FALSE]),
+               "means_mcmc")
+})

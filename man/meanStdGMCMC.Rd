@@ -27,6 +27,10 @@ The posterior distribution of a mean standardized variance matrix.
 \code{meanStdGMCMC} mean standardizes the posterior distribution of a
 variance matrix (e.g. a G-matrix)
 }
+\details{
+An error is given if any draw in \code{G_mcmc} is not symmetric, or
+  if the dimensions of \code{G_mcmc} and \code{means_mcmc} do not match.
+}
 \examples{
 # Simulating a posterior distribution
 # (or bootstrap distribution) of a G-matrix:
