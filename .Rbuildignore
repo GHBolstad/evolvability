@@ -4,3 +4,4 @@
 ^Meta$
 ^CRAN-RELEASE$
 ^CRAN-SUBMISSION$
+^cran-comments\.md$
