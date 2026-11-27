@@ -43,7 +43,7 @@ evolvabilityMeans <- function(G, means = 1) {
   if (any(G[upper.tri(G)] != G[t(lower.tri(G))])) {
     stop("G is not symmetric.")
   }
-  if (means[1] == 1) {
+  if (length(means) > 0 && all(means == 1)) {
     means <- rep(1, nrow(G))
   }
   G <- G / (means %*% t(means))
