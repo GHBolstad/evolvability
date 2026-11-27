@@ -10,10 +10,12 @@ formula environments have been added. See `NEWS.md` for the other changes.
 ## Test environments
 
 * Local: Ubuntu 22.04, R 4.4.1, with lme4 2.1.0 (the current CRAN version)
+* win-builder: R-devel and R-release
 
 ## R CMD check results
 
-`R CMD check --as-cran` gives 0 errors | 0 warnings | 2 notes:
+There were no errors or warnings. The only NOTE on win-builder (R-devel and
+R-release) is the first one below. The local check gives these two NOTEs:
 
 * "New submission" and "Package was archived on CRAN": see above.
 * "unable to verify current time": a quirk of the local check environment.
