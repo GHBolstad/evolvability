@@ -19,7 +19,7 @@
 #'   dimensionality of the G-matrix, with higher bias for few dimensions (see
 #'   Hansen and Houle 2008). For low dimensional G-matrices, we recommend
 #'   estimating the averages of the evolvability parameters using
-#'   \code{evolavbilityBetaMCMC} over many random selection gradients (
+#'   \code{evolvabilityBetaMCMC} over many random selection gradients (
 #'   \code{randomBeta}). The maximum and minimum evolvability, which
 #'   are also the maximum and minimum respondability and conditional
 #'   evolvability, equals the largest and smallest eigenvalue of the G-matrix,

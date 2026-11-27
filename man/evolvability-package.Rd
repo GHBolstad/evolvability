@@ -12,8 +12,7 @@ This package calculates evolvability parameters from estimated G-matrices as def
 \tabular{ll}{
 Package: \tab evolvability\cr
 Type: \tab Package\cr
-Version: \tab 1.1.0\cr
-Date: \tab 2015-04-13\cr
+Version: \tab 2.0.2\cr
 License: \tab GPL (>= 2)\cr
 }
 }

@@ -52,9 +52,9 @@ described in Hansen and Houle (2008).
 }
 \details{
 If \code{solve(G)} fails for a posterior draw because the matrix is
-singular or computationally singular, a warning is issued. Conditional
-evolvability, autonomy and integration are \code{NA} for that draw, and
-their posterior summaries are \code{NA}; other results are retained.
+  singular or computationally singular, a warning is issued. Conditional
+  evolvability, autonomy and integration are \code{NA} for that draw, and
+  their posterior summaries are \code{NA}; other results are retained.
 }
 \examples{
 # Simulating a posterior distribution

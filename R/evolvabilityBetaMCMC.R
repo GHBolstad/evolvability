@@ -192,7 +192,7 @@ summary.evolvabilityBetaMCMC <- function(object, ...) {
 print.summary.evolvabilityBetaMCMC <- function(x, ...) {
   cat("Call:\n")
   print(x$call)
-  cat("\nAverage values over all selection gradients and 95% HPD intervals):\n")
+  cat("\nAverage values over all selection gradients and 95% HPD intervals:\n")
   print(x$Averages)
   cat("\nMinimum (the direction with the lowest posterior median):\n")
   print(x$Minimum)
